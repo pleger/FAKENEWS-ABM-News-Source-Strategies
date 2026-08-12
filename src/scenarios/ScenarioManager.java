@@ -2,8 +2,14 @@ package scenarios;
 
 import inputManager.Configuration;
 
+/** Coordinates scenario activation within the simulation's per-period lifecycle. */
 public class ScenarioManager {
 
+    /**
+     * Delegates the current period to the selected scenario unless scenarios are disabled.
+     *
+     * @param period current simulation period
+     */
     public static void apply(int period) {
         if (Configuration.SCENARIO != Configuration.DISABLED) {
             Scenario sc = ScenarioFactory.get(Configuration.SCENARIO);

@@ -56,7 +56,10 @@ Workbook sheets:
 - `NewsSources`: source-type endorsement distributions.
 - `SNSUsers`: SNS-user endorsement weights.
 - `SourceReach`: source reach or visibility probability.
-- `Scenario`: optional custom intervention. Use `SCENARIO=-2` and one row with `FROM`, `TO`, `START_PERIOD`, then attribute names to copy.
+- `Scenario`: optional custom intervention. Use `SCENARIO=-2` and one row with `FROM`, `TO`, `START_PERIOD`, then attribute names to copy. Omit all attribute names to copy every source attribute from `FROM` to `TO`.
+
+Set the optional `SAVED_FAKENEWS` configuration value to `1` to save every period's source
+publication classification, or omit it/use `0` to disable that report.
 
 ## CLI
 
@@ -102,6 +105,21 @@ java -cp "build/classes:lib/*" Main \
   --repetitions 20 \
   --no-gui
 ```
+
+## Reproducible batch experiments
+
+Batch-specific workbook changes are isolated in `experiments/`; the Java production entry point
+does not contain memory, report-flag, or scenario-timing controls created solely for one experiment.
+To execute the five memory/timing conditions using temporary workbook copies:
+
+```sh
+python3 -m venv /tmp/fakenews-experiment-venv
+/tmp/fakenews-experiment-venv/bin/pip install -r experiments/requirements.txt
+PYTHON_BIN=/tmp/fakenews-experiment-venv/bin/python \
+  experiments/run_memory_timing.sh --memory -1 --wom 1
+```
+
+See [`experiments/README.md`](experiments/README.md) for configuration and output details.
 
 ## Example Scenario Results
 
@@ -150,6 +168,7 @@ The build output is written to `web/dist/` and is deployed to GitHub Pages.
 - `src/`: Java reference implementation and simulation core.
 - `tests/`: Java tests for the reference implementation.
 - `input/`: Excel workbooks consumed by the Java CLI.
+- `experiments/`: isolated workbook preparation and batch-execution utilities.
 - `web/`: TypeScript browser implementation and GitHub Pages app.
 - `web/src/`: TypeScript port of the model, loader, reporter, charts, and UI.
 - `web/public/examples/`: Excel examples bundled into the web app.
@@ -182,9 +201,27 @@ Each run writes a timestamped folder under `output/`. The output workbook includ
 - `Results`;
 - `DetailedResult`;
 - `Endorsements`;
-- `ScenarioChanges`.
+- `ScenarioChanges`;
+- `FakeNewsPerSource` when `SAVED_FAKENEWS=1`; values are `1` for fake news and `0` otherwise.
 
 The source code now uses PLURALISMO/SNS vocabulary for the main domain types: `SNSUser`, `NewsSource`, `NewsSourceFactory`, `SNSUserFactory`, `RepostsPerSourceData`, and related input/report classes.
+
+### Generated charts
+
+When `GUI=1` and repost reporting is enabled, every simulation saves two charts:
+
+- `Simulation_<ID>_RepostsPerPeriod.png` plots the number of source selections in each period;
+- `Simulation_<ID>_UniqueReposters.png` plots the cumulative number of distinct agents that have
+  selected each source.
+
+For experiments with repetitions, the simulator also saves `Aggregate_RepostsPerPeriod_MeanSD.png`
+and `Aggregate_UniqueReposters_MeanSD.png`. These show the across-run arithmetic mean with sample
+standard-deviation error bars. A configured scenario is marked by a dashed vertical line when its
+start period falls inside the plotted reporting range.
+
+At the beginning of every repetition, source attributes are restored from the input workbook before
+initial user endorsements are generated. Consequently, scenario changes do not leak into the next
+simulation's initial conditions.
 
 ## License
 

@@ -30,6 +30,10 @@ import java.util.function.BiConsumer;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+/**
+ * Collects optional in-memory simulation results and writes a consolidated Excel workbook containing
+ * normalized configuration, copied inputs, decisions, endorsements, reposts, and scenario previews.
+ */
 public class Reporter {
     private static final int EXCEL_MAX_ROWS = 1_048_576;
     private static final String MAX_ROWS_PROPERTY = "reporter.maxRowsPerSheet";
@@ -39,7 +43,12 @@ public class Reporter {
     private static final List<EndorsementData> endorsData = new ArrayList<>();
     private static final List<RepostsPerSourceData> repostsPerNewsSourceData = new ArrayList<>();
     private static final List<UniqueRepostersPerSourceData> repostsUniquePerNewsSourceData = new ArrayList<>();
+    private static final List<FakeNewsPerSourceData> fakeNewsPerSourceData = new ArrayList<>();
 
+    /**
+     * Builds the final workbook from loaded inputs and accumulated records, writes it to the current
+     * output directory, and optionally compresses that directory.
+     */
     public static void write() {
         try (XSSFWorkbook workbook = new XSSFWorkbook()) {
             Console.info("Reporter: Adding sheets");
@@ -48,11 +57,12 @@ public class Reporter {
             addSheet(workbook, Loader.getNewsSources());
             addSheet(workbook, Loader.getSNSUsers());
             addSheet(workbook, Loader.getSourceReach());
-            if (Configuration.SCENARIO != Configuration.DISABLED) addSheet(workbook, Loader.getScenario());
+            if (Configuration.SCENARIO != Configuration.DISABLED) addScenarioSheet(workbook);
 
 
             writeRepostsPerNewsSource(workbook, "RepostsPerSource", repostsPerNewsSourceData);
             writeRepostsPerNewsSource(workbook, "UniqueRepostersPerSource", repostsUniquePerNewsSourceData);
+            if (Configuration.SAVED_FAKENEWS) writeFakeNewsPerSource(workbook);
             writeAgentDecision(workbook);
             writeDetailedAgentDecision(workbook);
             writeEndorsements(workbook);
@@ -65,14 +75,34 @@ public class Reporter {
         }
     }
 
+    /**
+     * Copies the input scenario definition and replaces its scheduled period with the effective
+     * runtime value, including any command-line override, so the report remains self-describing.
+     *
+     * @param workbook report workbook receiving the Scenario sheet
+     */
+    private static void addScenarioSheet(XSSFWorkbook workbook) {
+        addSheet(workbook, Loader.getScenario());
+        Sheet outputScenario = workbook.getSheet("Scenario");
+        outputScenario.getRow(0).getCell(2).setCellValue(
+                ScenarioFactory.get(Configuration.SCENARIO).getStartPeriod());
+    }
+
+    /** Clears all accumulated rows before a new top-level CLI execution begins. */
     public static void clear() {
         agentDecisionData.clear();
         detailedAgentDecisionData.clear();
         endorsData.clear();
         repostsPerNewsSourceData.clear();
         repostsUniquePerNewsSourceData.clear();
+        fakeNewsPerSourceData.clear();
     }
 
+    /**
+     * Writes a non-mutating preview of each source after the configured intervention.
+     *
+     * @param scenarios output ScenarioChanges sheet
+     */
     private static void writeScenarioChanges(XSSFSheet scenarios) {
         boolean enabled = Configuration.SCENARIO != Configuration.DISABLED;
         Console.info("Reporter: Information of Scenario Changes: " + enabled);
@@ -91,6 +121,7 @@ public class Reporter {
                 headRow.createCell(column).setCellValue(attribute);
                 ++column;
             }
+            headRow.createCell(column).setCellValue("SCENARIO_ATTRIBUTES");
 
             int rowIndex = 1;
             for (NewsSource mk : newsSources) {
@@ -106,37 +137,117 @@ public class Reporter {
                     dataRow.createCell(column).setCellValue(Arrays.toString(vals));
                     ++column;
                 }
+                dataRow.createCell(column).setCellValue(scenario.getAttributeSelectionDescription());
                 ++rowIndex;
             }
 
-            setReadableColumnWidths(scenarios, 3 + newsSources.get(0).getAttributes().getNames().length);
+            setReadableColumnWidths(scenarios, 4 + newsSources.get(0).getAttributes().getNames().length);
         }
     }
 
+    /**
+     * Accumulates endorsement rows only when their detailed-output option is enabled.
+     *
+     * @param endors current-period rows to register
+     */
     public static void addEndorsementData(ArrayList<EndorsementData> endors) {
         if (Configuration.SAVED_ENDORSEMENTS) endorsData.addAll(endors);
     }
 
+    /**
+     * Registers a user's selected source when agent-decision output is enabled.
+     *
+     * @param simulationId run identifier
+     * @param period decision period
+     * @param snsUserId selecting user identifier
+     * @param newsSourceName selected source
+     * @param evaluation selected source score
+     */
     public static void addAgentDecisionData(int simulationId, int period, int snsUserId, String newsSourceName, double evaluation) {
         if (Configuration.SAVED_AGENT_DECISIONS)
             agentDecisionData.add(new AgentDecisionData(simulationId, period, snsUserId, newsSourceName, evaluation));
     }
 
+    /**
+     * Registers one candidate score when detailed decision output is enabled.
+     *
+     * @param simulationId run identifier
+     * @param period evaluation period
+     * @param snsUserId evaluating user identifier
+     * @param newsSourceName candidate source
+     * @param evaluation candidate score
+     */
     public static void addDetailedAgentDecisionData(int simulationId, int period, int snsUserId, String newsSourceName, double evaluation) {
         if (Configuration.SAVED_DETAILED_AGENT_DECISIONS)
             detailedAgentDecisionData.add(new DetailedAgentDecisionData(simulationId, period, snsUserId, newsSourceName, evaluation));
     }
 
+    /**
+     * Registers total source selections when aggregate repost output is enabled.
+     *
+     * @param simulationId run identifier
+     * @param period aggregation period
+     * @param reposts counts indexed by source identifier
+     */
     public static void addRepostsByNewsSourceData(int simulationId, int period, int[] reposts) {
         if (Configuration.SAVED_REPOSTS_PER_SOURCE)
             repostsPerNewsSourceData.add(new RepostsPerSourceData(simulationId, period, reposts));
     }
 
+    /**
+     * Registers cumulative unique-reposter counts when aggregate output is enabled.
+     *
+     * @param simulationId run identifier
+     * @param period aggregation period
+     * @param reposts distinct-user counts indexed by source identifier
+     */
     public static void addRepostsUniqueByNewsSourceData(int simulationId, int period, int[] reposts) {
         if (Configuration.SAVED_REPOSTS_PER_SOURCE)
             repostsUniquePerNewsSourceData.add(new UniqueRepostersPerSourceData(simulationId,period,reposts));
     }
 
+    /**
+     * Registers all source publication classifications for one simulation period when enabled.
+     *
+     * @param simulationId run identifier
+     * @param period publication period
+     * @param fakeNews source-ID-indexed fake-news statuses
+     */
+    public static void addFakeNewsPerSourceData(int simulationId, int period, boolean[] fakeNews) {
+        if (Configuration.SAVED_FAKENEWS) {
+            fakeNewsPerSourceData.add(new FakeNewsPerSourceData(simulationId, period, fakeNews));
+        }
+    }
+
+    /**
+     * Exposes accumulated fake-news rows for report verification and other read-only consumers.
+     *
+     * @return current fake-news report rows
+     */
+    public static List<FakeNewsPerSourceData> getFakeNewsPerSourceData() {
+        return fakeNewsPerSourceData;
+    }
+
+    /** Writes source publication classifications using numeric {@code 1}/{@code 0} cells. */
+    private static void writeFakeNewsPerSource(XSSFWorkbook workbook) {
+        Console.info("Reporter: Adding Fake News Per Source: " + fakeNewsPerSourceData.size());
+        writePagedRows(workbook, "FakeNewsPerSource", FakeNewsPerSourceData.getHeader(),
+                fakeNewsPerSourceData, (dataRow, oneRow) -> {
+                    dataRow.createCell(0).setCellValue(oneRow.simulationId);
+                    dataRow.createCell(1).setCellValue(oneRow.period);
+                    for (int i = 0; i < oneRow.fakeNews.length; ++i) {
+                        dataRow.createCell(2 + i).setCellValue(oneRow.fakeNews[i] ? 1 : 0);
+                    }
+                });
+    }
+
+    /**
+     * Writes either total-repost or unique-reposter rows using their shared schema and paging logic.
+     *
+     * @param workbook output workbook
+     * @param sheetName base worksheet name
+     * @param reposts aggregate rows to write
+     */
     private static void writeRepostsPerNewsSource(XSSFWorkbook workbook, String sheetName, List<? extends RepostsPerSourceData> reposts) {
         Console.info("Reporter: Adding Reposts Per Source: " + reposts.size());
         writePagedRows(workbook, sheetName, RepostsPerSourceData.getHeader(), reposts, (dataRow, oneRow) -> {
@@ -149,6 +260,11 @@ public class Reporter {
         });
     }
 
+    /**
+     * Writes all source-candidate evaluations to paged DetailedResult sheets.
+     *
+     * @param workbook output workbook
+     */
     private static void writeDetailedAgentDecision(XSSFWorkbook workbook) {
         Console.info("Reporter: Adding Detailed Agent Decisions: " + detailedAgentDecisionData.size());
         writePagedRows(workbook, "DetailedResult", DetailedAgentDecisionData.getHeader(), detailedAgentDecisionData, (dataRow, oneRow) -> {
@@ -160,6 +276,12 @@ public class Reporter {
         });
     }
 
+    /**
+     * Copies supported cell values from an input worksheet into the result workbook.
+     *
+     * @param workbook output workbook
+     * @param sheet loaded input sheet to reproduce
+     */
     private static void addSheet(XSSFWorkbook workbook, Sheet sheet) {
         Sheet newSheet = workbook.createSheet(sheet.getSheetName());
 
@@ -185,10 +307,40 @@ public class Reporter {
         }
     }
 
-    public static List<? extends RepostsPerSourceData> getRepostsPerSourceData() {
+    /**
+     * Exposes per-period source-selection totals used by repost charts and aggregate analysis.
+     *
+     * @return accumulated total-repost rows
+     */
+    public static List<? extends RepostsPerSourceData> getTotalRepostsPerSourceData() {
+        return repostsPerNewsSourceData;
+    }
+
+    /**
+     * Exposes cumulative unique-reposter aggregates used by repost charts and aggregate analysis.
+     *
+     * @return accumulated unique-reposter rows
+     */
+    public static List<? extends RepostsPerSourceData> getUniqueRepostersPerSourceData() {
         return repostsUniquePerNewsSourceData;
     }
 
+    /**
+     * Compatibility alias for the original ambiguous chart-data accessor.
+     *
+     * @return accumulated cumulative unique-reposter rows
+     * @deprecated use {@link #getUniqueRepostersPerSourceData()}
+     */
+    @Deprecated
+    public static List<? extends RepostsPerSourceData> getRepostsPerSourceData() {
+        return getUniqueRepostersPerSourceData();
+    }
+
+    /**
+     * Writes attribute-level events to one or more Endorsements sheets.
+     *
+     * @param workbook output workbook
+     */
     private static void writeEndorsements(XSSFWorkbook workbook) {
         Console.info("Reporter: Adding endorsements: " + endorsData.size());
         writePagedRows(workbook, "Endorsements", EndorsementData.getHeader(), endorsData, (dataRow, oneRow) -> {
@@ -201,6 +353,11 @@ public class Reporter {
         });
     }
 
+    /**
+     * Writes selected-source decision rows to one or more Results sheets.
+     *
+     * @param workbook output workbook
+     */
     private static void writeAgentDecision(XSSFWorkbook workbook) {
         Console.info("Reporter: Adding Agent Decisions: " + agentDecisionData.size());
         writePagedRows(workbook, "Results", AgentDecisionData.getHeader(), agentDecisionData, (dataRow, oneRow) -> {
@@ -212,6 +369,16 @@ public class Reporter {
         });
     }
 
+    /**
+     * Writes typed rows across sequentially suffixed sheets without exceeding the configured row cap.
+     *
+     * @param workbook output workbook
+     * @param baseSheetName first sheet name and suffix base
+     * @param headers ordered column labels repeated on every page
+     * @param rows records to write
+     * @param writer record-specific cell writer
+     * @param <T> report row type
+     */
     private static <T> void writePagedRows(XSSFWorkbook workbook, String baseSheetName, List<String> headers,
                                           List<T> rows, BiConsumer<Row, T> writer) {
         int maxRows = maxRowsPerSheet();
@@ -232,6 +399,15 @@ public class Reporter {
         }
     }
 
+    /**
+     * Creates one report page and installs its header row.
+     *
+     * @param workbook output workbook
+     * @param baseSheetName unsuffixed report name
+     * @param sheetNumber one-based page number
+     * @param headers ordered column labels
+     * @return newly created sheet
+     */
     private static XSSFSheet createPagedSheet(XSSFWorkbook workbook, String baseSheetName, int sheetNumber,
                                               List<String> headers) {
         String sheetName = sheetNumber == 1 ? baseSheetName : baseSheetName + "_" + sheetNumber;
@@ -248,6 +424,11 @@ public class Reporter {
         return sheet;
     }
 
+    /**
+     * Resolves the optional test/runtime paging override while enforcing Excel's row limit.
+     *
+     * @return valid maximum rows per sheet, including its header row
+     */
     private static int maxRowsPerSheet() {
         String configuredValue = System.getProperty(MAX_ROWS_PROPERTY);
         if (configuredValue == null || configuredValue.trim().isEmpty()) {
@@ -267,6 +448,11 @@ public class Reporter {
         return EXCEL_MAX_ROWS;
     }
 
+    /**
+     * Writes normalized effective configuration rather than copying potentially incomplete input.
+     *
+     * @param conf output Configuration sheet
+     */
     private static void writeConfiguration(Sheet conf) {
         Console.info("Reporter: Adding Configuration");
         Map<String, Double> dump = Configuration.toMap();
@@ -285,12 +471,19 @@ public class Reporter {
         setReadableColumnWidths(conf, 2);
     }
 
+    /**
+     * Applies a consistent readable width to generated metadata columns.
+     *
+     * @param sheet sheet to format
+     * @param columns number of leading columns to resize
+     */
     private static void setReadableColumnWidths(Sheet sheet, int columns) {
         for (int i = 0; i < columns; ++i) {
             sheet.setColumnWidth(i, 28 * 256);
         }
     }
 
+    /** Compresses the complete run directory when compressed-result output is enabled. */
     private static void compressFolder() {
         if (Configuration.COMPRESSED_RESULTS) {
             File compressedFile = new File(Configuration.OUTPUT_DIRECTORY + ".zip");
@@ -303,12 +496,27 @@ public class Reporter {
         }
     }
 
+    /**
+     * Opens the target ZIP stream and recursively adds the output directory.
+     *
+     * @param sourceFolder run directory to archive
+     * @param targetFile ZIP file to create
+     * @throws IOException if the archive cannot be created or written
+     */
     private static void zipFolder(File sourceFolder, File targetFile) throws IOException {
         try (ZipOutputStream zip = new ZipOutputStream(new FileOutputStream(targetFile))) {
             zipFile(sourceFolder, sourceFolder.getName(), zip);
         }
     }
 
+    /**
+     * Recursively adds visible files to an open ZIP stream while preserving directory paths.
+     *
+     * @param fileToZip file or directory being traversed
+     * @param fileName archive-relative path
+     * @param zip open destination stream
+     * @throws IOException if a source file cannot be read or the entry cannot be written
+     */
     private static void zipFile(File fileToZip, String fileName, ZipOutputStream zip) throws IOException {
         if (fileToZip.isHidden()) {
             return;
@@ -332,6 +540,11 @@ public class Reporter {
         }
     }
 
+    /**
+     * Writes the completed workbook under a timestamped name and triggers optional compression.
+     *
+     * @param workbook completed output workbook
+     */
     private static void writeDisk(XSSFWorkbook workbook) {
         System.gc(); //call garbage collector (memory leaks?)
         Console.info("Saving results in: " + (new File(Configuration.OUTPUT_DIRECTORY)).getAbsolutePath());

@@ -1,0 +1,160 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="1180" viewBox="0 0 1400 1180" role="img" aria-labelledby="title desc">
+  <title id="title">Flujo de seleccion de fuente y evaluacion de endorsements</title>
+  <desc id="desc">Diagrama de flujo del modelo FAKENEWS-ABM para seleccionar una fuente y generar endorsements, con foco en EndorsementEvalStrategies.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto" markerUnits="strokeWidth">
+      <path d="M2,2 L10,6 L2,10 Z" fill="#263238"/>
+    </marker>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#0f172a" flood-opacity="0.16"/>
+    </filter>
+    <style>
+      .bg { fill: #f7f8fa; }
+      .lane { fill: #eef2f6; stroke: #cbd5df; stroke-width: 2; }
+      .card { fill: #ffffff; stroke: #9fb0c0; stroke-width: 2; filter: url(#shadow); }
+      .decision { fill: #fff7df; stroke: #d1a436; stroke-width: 2; filter: url(#shadow); }
+      .code { fill: #eef7f1; stroke: #5d9a6e; stroke-width: 2; filter: url(#shadow); }
+      .wom { fill: #f3efff; stroke: #8466c6; stroke-width: 2; filter: url(#shadow); }
+      .output { fill: #e9f6fb; stroke: #4388a5; stroke-width: 2; filter: url(#shadow); }
+      .title { font: 700 34px Arial, sans-serif; fill: #1f2933; }
+      .subtitle { font: 400 18px Arial, sans-serif; fill: #50606d; }
+      .lane-title { font: 700 18px Arial, sans-serif; fill: #334155; letter-spacing: 0; }
+      .h { font: 700 18px Arial, sans-serif; fill: #1f2933; }
+      .t { font: 400 16px Arial, sans-serif; fill: #2f3b45; }
+      .s { font: 400 14px Arial, sans-serif; fill: #51616f; }
+      .mono { font: 400 15px "SFMono-Regular", Consolas, monospace; fill: #24313c; }
+      .line { stroke: #263238; stroke-width: 2.2; fill: none; marker-end: url(#arrow); }
+      .line-soft { stroke: #6b7280; stroke-width: 2; fill: none; marker-end: url(#arrow); stroke-dasharray: 8 7; }
+      .note { fill: #fff; stroke: #d5dde5; stroke-width: 1.5; }
+    </style>
+  </defs>
+
+  <rect class="bg" width="1400" height="1180"/>
+
+  <text x="70" y="62" class="title">Seleccion de una NewsSource y evaluacion de Endorsements</text>
+  <text x="70" y="92" class="subtitle">El usuario primero evalua fuentes conocidas con endorsements acumulados; despues la fuente elegida genera nuevos endorsements para el futuro.</text>
+
+  <rect x="55" y="125" width="410" height="960" rx="8" class="lane"/>
+  <rect x="495" y="125" width="410" height="960" rx="8" class="lane"/>
+  <rect x="935" y="125" width="410" height="960" rx="8" class="lane"/>
+
+  <text x="80" y="160" class="lane-title">1. Seleccion en Interaction</text>
+  <text x="520" y="160" class="lane-title">2. Calculo de evaluacion acumulada</text>
+  <text x="960" y="160" class="lane-title">3. Creacion de nuevos endorsements</text>
+
+  <rect x="95" y="195" width="330" height="92" rx="8" class="card"/>
+  <text x="118" y="226" class="h">Inicio del periodo t</text>
+  <text x="118" y="253" class="t">SNSUser.doStep(t)</text>
+  <text x="118" y="276" class="s">Solo continua si knownNewsSources no esta vacio.</text>
+
+  <path d="M260 287 L260 330" class="line"/>
+
+  <rect x="95" y="330" width="330" height="112" rx="8" class="card"/>
+  <text x="118" y="361" class="h">Para cada fuente conocida</text>
+  <text x="118" y="388" class="mono">for newsSource in knownNewsSources</text>
+  <text x="118" y="415" class="s">Se evalua cada fuente por separado.</text>
+
+  <path d="M425 386 C470 386 470 386 515 386" class="line"/>
+
+  <rect x="535" y="315" width="330" height="142" rx="8" class="card"/>
+  <text x="558" y="346" class="h">Filtrar endorsements</text>
+  <text x="558" y="374" class="mono">filterByNewsSource(source)</text>
+  <text x="558" y="400" class="mono">filterByMemory(t)</text>
+  <text x="558" y="429" class="s">Incluye endorsements normales y WORD OF MOUTH</text>
+  <text x="558" y="449" class="s">que sigan dentro de la memoria.</text>
+
+  <path d="M700 457 L700 505" class="line"/>
+
+  <rect x="535" y="505" width="330" height="145" rx="8" class="code"/>
+  <text x="558" y="536" class="h">Sumar contribuciones</text>
+  <text x="558" y="565" class="mono">if value &gt; 0:</text>
+  <text x="585" y="590" class="mono">eval += BASE ^ value</text>
+  <text x="558" y="619" class="mono">if value &lt; 0:</text>
+  <text x="585" y="644" class="mono">eval -= BASE ^ abs(value)</text>
+
+  <path d="M535 578 C485 578 475 548 425 548" class="line"/>
+
+  <rect x="95" y="500" width="330" height="118" rx="8" class="output"/>
+  <text x="118" y="531" class="h">Guardar evaluacion</text>
+  <text x="118" y="559" class="mono">evaluations[source.id] = eval</text>
+  <text x="118" y="588" class="s">El mapa contiene una evaluacion por fuente conocida.</text>
+
+  <path d="M260 618 L260 670" class="line"/>
+
+  <rect x="95" y="670" width="330" height="128" rx="8" class="decision"/>
+  <text x="118" y="703" class="h">Elegir fuente</text>
+  <text x="118" y="732" class="mono">BY_PROBABILITY(evaluations)</text>
+  <text x="118" y="759" class="s">Mas evaluacion implica mas probabilidad,</text>
+  <text x="118" y="779" class="s">pero no garantiza ser seleccionada.</text>
+
+  <path d="M260 798 L260 845" class="line"/>
+
+  <rect x="95" y="845" width="330" height="112" rx="8" class="output"/>
+  <text x="118" y="876" class="h">Fuente seleccionada</text>
+  <text x="118" y="904" class="mono">selectedNewsSource</text>
+  <text x="118" y="932" class="s">Representa la fuente que el usuario repostea en t.</text>
+
+  <path d="M425 901 C555 901 790 900 955 900" class="line"/>
+
+  <rect x="975" y="825" width="330" height="150" rx="8" class="card"/>
+  <text x="998" y="856" class="h">Endorsements por repost</text>
+  <text x="998" y="884" class="mono">createByStep(t, user, selected)</text>
+  <text x="998" y="911" class="s">Usa EndorsementEvalStrategies.BY_PROBABILITY</text>
+  <text x="998" y="933" class="s">para generar nuevos endorsements de atributos.</text>
+
+  <path d="M1140 825 L1140 735" class="line"/>
+
+  <rect x="975" y="575" width="330" height="160" rx="8" class="code"/>
+  <text x="998" y="606" class="h">EndorsementEvalStrategies.evaluate</text>
+  <text x="998" y="634" class="mono">for each attribute i:</text>
+  <text x="1025" y="660" class="mono">name = source.getName(i)</text>
+  <text x="1025" y="686" class="mono">dist = source.getValues(name)</text>
+  <text x="1025" y="712" class="mono">mean = user.getValue(name)</text>
+
+  <path d="M1140 575 L1140 515" class="line"/>
+
+  <rect x="975" y="365" width="330" height="150" rx="8" class="decision"/>
+  <text x="998" y="397" class="h">Elegir nivel del atributo</text>
+  <text x="998" y="425" class="mono">BY_PROBABILITY(dist, mean)</text>
+  <text x="998" y="452" class="s">Se sortea Low/High segun la distribucion</text>
+  <text x="998" y="474" class="s">de la fuente para ese atributo.</text>
+
+  <path d="M1140 365 L1140 305" class="line"/>
+
+  <rect x="975" y="200" width="330" height="105" rx="8" class="code"/>
+  <text x="998" y="231" class="h">Aplicar formula</text>
+  <text x="998" y="260" class="mono">calculateEndorsementFormula</text>
+  <text x="998" y="285" class="s">Convierte nivel elegido + peso del usuario en valor.</text>
+
+  <path d="M975 253 C905 253 870 253 865 315" class="line-soft"/>
+
+  <rect x="535" y="185" width="330" height="100" rx="8" class="note"/>
+  <text x="558" y="216" class="h">Formula con LEVELS=2</text>
+  <text x="558" y="246" class="mono">Low  =&gt; -mean / 2</text>
+  <text x="558" y="271" class="mono">High =&gt;  mean</text>
+
+  <path d="M1140 200 C1140 135 700 120 700 185" class="line-soft"/>
+
+  <rect x="975" y="1005" width="330" height="92" rx="8" class="output"/>
+  <text x="998" y="1036" class="h">Se guardan para memoria futura</text>
+  <text x="998" y="1064" class="s">En periodos siguientes entran al filtro por fuente</text>
+  <text x="998" y="1085" class="s">y vuelven a afectar la evaluacion acumulada.</text>
+
+  <path d="M1140 975 L1140 1005" class="line"/>
+  <path d="M975 1051 C900 1051 770 760 700 650" class="line-soft"/>
+
+  <rect x="535" y="705" width="330" height="155" rx="8" class="wom"/>
+  <text x="558" y="736" class="h">Refuerzo social si WOM=true</text>
+  <text x="558" y="765" class="mono">receiveRecommendation(t)</text>
+  <text x="558" y="792" class="s">Si un amigo recomendo una fuente ya conocida,</text>
+  <text x="558" y="814" class="s">no se duplica la fuente.</text>
+  <text x="558" y="840" class="mono">WORD_OF_MOUTH = userWeight / 2</text>
+
+  <path d="M700 860 L700 900 C700 980 855 1030 975 1051" class="line-soft"/>
+  <path d="M865 780 C910 780 930 780 975 780" class="line-soft"/>
+
+  <rect x="975" y="760" width="330" height="42" rx="8" class="wom"/>
+  <text x="998" y="787" class="s">WOM se comporta como otro endorsement acumulado.</text>
+
+  <text x="70" y="1135" class="s">Lectura corta: una fuente se selecciona por evaluacion acumulada; cada seleccion genera nuevos endorsements; WOM agrega evidencia social aunque la fuente ya sea conocida.</text>
+</svg>

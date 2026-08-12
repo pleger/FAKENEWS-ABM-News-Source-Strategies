@@ -16,10 +16,16 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * Central validated runtime configuration shared by loading, agent construction, simulation,
+ * endorsement evaluation, reporting, and chart generation. Workbook values replace defaults,
+ * after which CLI overrides may update selected public settings.
+ */
 public class Configuration {
     public final static String DEFAULT_FILE_NAME = "FAKENEWS_BASELINE_2";
     public final static int DISABLED = -1;
     public final static int MEMORY_INFINITE = -1;
+    // TODO: Unify the Excel/UI disabled value with the internal disabled scenario representation.
     private final static int EXCEL_DISABLED = 0;
     private final static int CUSTOMIZED_SCENARIO = -2;
 
@@ -35,13 +41,14 @@ public class Configuration {
     private final static int D_LEARNING_PERIODS = 100;
     private final static boolean D_SOURCE_REACH = false;
     private final static boolean D_WOM = false;
-    private final static int D_SCENARIO = -1;
+    private final static int D_SCENARIO = DISABLED;
 
     private final static boolean D_COMPRESSED_RESULTS = false;
     private final static boolean D_SAVED_ENDORSEMENTS = false;
     private final static boolean D_SAVED_AGENT_DECISIONS = false;
     private final static boolean D_SAVED_DETAILED_AGENT_DECISIONS = false;
     private final static boolean D_SAVED_REPOSTS_PER_SOURCE = false;
+    private final static boolean D_SAVED_FAKENEWS = false;
     private final static long LARGE_EXPERIMENT_OPERATIONS_WARNING_THRESHOLD = 1_000_000L;
 
     private final static String PERIODS_KEY = "PERIODS";
@@ -62,6 +69,7 @@ public class Configuration {
     private final static String SAVED_AGENT_DECISIONS_KEY = "SAVED_AGENT_DECISIONS";
     private final static String SAVED_DETAILED_AGENT_DECISIONS_KEY = "SAVED_DETAILED_AGENT_DECISIONS";
     private final static String SAVED_REPOSTS_PER_SOURCE_KEY = "SAVED_REPOSTS_PER_SOURCE";
+    private final static String SAVED_FAKENEWS_KEY = "SAVED_FAKENEWS";
 
     private final static String[] REQUIRED_PARAMETERS = new String[]{
             PERIODS_KEY, AGENTS_KEY, CONTACTS_KEY, FRIENDS_KEY, LEVELS_KEY, REPETITIONS_KEY, GUI_KEY,
@@ -71,6 +79,11 @@ public class Configuration {
     };
 
     private final static Set<String> REQUIRED_PARAMETER_SET = new HashSet<>(Arrays.asList(REQUIRED_PARAMETERS));
+    private final static Set<String> SUPPORTED_PARAMETER_SET = new HashSet<>(REQUIRED_PARAMETER_SET);
+
+    static {
+        SUPPORTED_PARAMETER_SET.add(SAVED_FAKENEWS_KEY);
+    }
 
     public static String FILE_NAME;
     public static String OUTPUT_DIRECTORY;
@@ -99,7 +112,16 @@ public class Configuration {
     public static boolean SAVED_DETAILED_AGENT_DECISIONS = D_SAVED_DETAILED_AGENT_DECISIONS;
     public static boolean SAVED_AGENT_DECISIONS = D_SAVED_AGENT_DECISIONS;
     public static boolean SAVED_ENDORSEMENTS = D_SAVED_ENDORSEMENTS;
+    public static boolean SAVED_FAKENEWS = D_SAVED_FAKENEWS;
 
+    /**
+     * Validates workbook configuration and installs every supported value or its default.
+     * Warnings identify configurations that are valid but likely to suppress output or create
+     * very large detailed reports.
+     *
+     * @param conf uppercase configuration keys mapped to numeric workbook values
+     * @throws IllegalArgumentException when a supplied value violates its model constraint
+     */
     public static void set(HashMap<String, Double> conf) {
         checkConfigurationInput(conf);
 
@@ -122,10 +144,17 @@ public class Configuration {
         SAVED_AGENT_DECISIONS = conf.get(SAVED_AGENT_DECISIONS_KEY) != null ? conf.get(SAVED_AGENT_DECISIONS_KEY) == 1 : D_SAVED_AGENT_DECISIONS;
         SAVED_DETAILED_AGENT_DECISIONS = conf.get(SAVED_DETAILED_AGENT_DECISIONS_KEY) != null ? conf.get(SAVED_DETAILED_AGENT_DECISIONS_KEY) == 1 : D_SAVED_DETAILED_AGENT_DECISIONS;
         SAVED_REPOSTS_PER_SOURCE = conf.get(SAVED_REPOSTS_PER_SOURCE_KEY) != null ? conf.get(SAVED_REPOSTS_PER_SOURCE_KEY) == 1 : D_SAVED_REPOSTS_PER_SOURCE;
+        SAVED_FAKENEWS = conf.get(SAVED_FAKENEWS_KEY) != null ? conf.get(SAVED_FAKENEWS_KEY) == 1 : D_SAVED_FAKENEWS;
 
+        warnIfLearningPeriodsCoverSimulation();
         warnIfLargeExperimentSavesDetailedResults();
     }
 
+    /**
+     * Creates an output directory required by logs and generated workbooks.
+     *
+     * @param output directory path to create
+     */
     private static void creatingOutputFolder(String output) {
         try {
             File dir = new File(output);
@@ -137,6 +166,11 @@ public class Configuration {
         }
     }
 
+    /**
+     * Establishes the input label and timestamped run directory before logging begins.
+     *
+     * @param fileName workbook-derived run label without its extension
+     */
     public static void setPath(String fileName) {
         FILE_NAME = fileName;
         DateFormat df = new SimpleDateFormat("dd-MM-yy(HH-mm-ss)");
@@ -161,15 +195,32 @@ public class Configuration {
         }
     }
 
+    /**
+     * Records loaded source/user attribute counts so endorsement evaluation can check alignment.
+     *
+     * @param newsSources number of attributes defined for each news source
+     * @param snsUsers number of weights defined for the SNS-user prototype
+     */
     public static void setAttributes(int newsSources, int snsUsers) {
         set("ATTRIBUTES_SOURCE", newsSources);
         set("ATTRIBUTES_USER", snsUsers);
     }
 
+    /**
+     * Records the loaded source count used to size simulation reports.
+     *
+     * @param newsSources number of loaded source definitions
+     */
     public static void setNewsSources(int newsSources) {
         set("NEWS_SOURCES", newsSources);
     }
 
+    /**
+     * Routes a normalized numeric setting to its typed global runtime field.
+     *
+     * @param name supported configuration or derived-count key
+     * @param value numeric value to install
+     */
     private static void set(String name, double value) {
         switch (name.toUpperCase()) {
             case PERIODS_KEY:
@@ -235,11 +286,20 @@ public class Configuration {
             case SAVED_REPOSTS_PER_SOURCE_KEY:
                 SAVED_REPOSTS_PER_SOURCE = value == 1;
                 break;
+            case SAVED_FAKENEWS_KEY:
+                SAVED_FAKENEWS = value == 1;
+                break;
             default:
                 Console.error("CONFIGURATOR.SET: Wrong Parameter: " + name.toUpperCase());
         }
     }
 
+    /**
+     * Warns about missing or unknown keys and delegates type/range checks for known settings.
+     *
+     * @param conf values parsed from the Configuration worksheet
+     * @throws IllegalArgumentException when any supplied known value is invalid
+     */
     private static void checkConfigurationInput(HashMap<String, Double> conf) {
         for (String param : REQUIRED_PARAMETERS) {
             if (!conf.containsKey(param)) {
@@ -248,7 +308,7 @@ public class Configuration {
         }
 
         for (String param : conf.keySet()) {
-            if (!REQUIRED_PARAMETER_SET.contains(param)) {
+            if (!SUPPORTED_PARAMETER_SET.contains(param)) {
                 Console.warn(param + " is not a recognized configuration parameter.");
             }
         }
@@ -268,11 +328,18 @@ public class Configuration {
         validateNonNegativeInt(conf, LEARNING_PERIODS_KEY);
         validateBoolean(conf, SAVED_ENDORSEMENTS_KEY);
         validateBoolean(conf, SAVED_REPOSTS_PER_SOURCE_KEY);
+        validateBoolean(conf, SAVED_FAKENEWS_KEY);
         validateBoolean(conf, SAVED_DETAILED_AGENT_DECISIONS_KEY);
         validateBoolean(conf, SAVED_AGENT_DECISIONS_KEY);
         validateBoolean(conf, COMPRESSED_RESULTS_KEY);
     }
 
+    /**
+     * Requires a present parameter to be an integer greater than zero.
+     *
+     * @param conf configuration map
+     * @param param key to validate when present
+     */
     private static void validatePositiveInt(HashMap<String, Double> conf, String param) {
         if (conf.containsKey(param)) {
             validateInteger(conf, param);
@@ -282,6 +349,12 @@ public class Configuration {
         }
     }
 
+    /**
+     * Requires a present parameter to be a nonnegative integer.
+     *
+     * @param conf configuration map
+     * @param param key to validate when present
+     */
     private static void validateNonNegativeInt(HashMap<String, Double> conf, String param) {
         if (conf.containsKey(param)) {
             validateInteger(conf, param);
@@ -291,6 +364,12 @@ public class Configuration {
         }
     }
 
+    /**
+     * Rejects fractional numeric values for settings used as counts or sentinel integers.
+     *
+     * @param conf configuration map containing {@code param}
+     * @param param key whose numeric value must be integral
+     */
     private static void validateInteger(HashMap<String, Double> conf, String param) {
         double value = conf.get(param);
         if (value != Math.rint(value)) {
@@ -298,18 +377,38 @@ public class Configuration {
         }
     }
 
+    /**
+     * Requires a present value to fall within an inclusive numeric range.
+     *
+     * @param conf configuration map
+     * @param param key to validate
+     * @param min inclusive lower bound
+     * @param max inclusive upper bound
+     */
     private static void validateRange(HashMap<String, Double> conf, String param, double min, double max) {
         if (conf.containsKey(param) && (conf.get(param) < min || conf.get(param) > max)) {
             failConfiguration(param + " must be between " + min + " and " + max + ".");
         }
     }
 
+    /**
+     * Requires a present numeric value to exceed a lower bound.
+     *
+     * @param conf configuration map
+     * @param param key to validate
+     * @param min exclusive lower bound
+     */
     private static void validateGreaterThan(HashMap<String, Double> conf, String param, double min) {
         if (conf.containsKey(param) && conf.get(param) <= min) {
             failConfiguration(param + " must be greater than " + min + ".");
         }
     }
 
+    /**
+     * Restricts endorsement distributions to the binary or ternary scales implemented by scoring.
+     *
+     * @param conf configuration map
+     */
     private static void validateLevels(HashMap<String, Double> conf) {
         if (conf.containsKey(LEVELS_KEY)) {
             validateInteger(conf, LEVELS_KEY);
@@ -320,6 +419,11 @@ public class Configuration {
         }
     }
 
+    /**
+     * Accepts either the infinite-memory sentinel or a nonnegative period window.
+     *
+     * @param conf configuration map
+     */
     private static void validateMemory(HashMap<String, Double> conf) {
         if (conf.containsKey(MEMORY_KEY)) {
             validateInteger(conf, MEMORY_KEY);
@@ -331,6 +435,11 @@ public class Configuration {
         }
     }
 
+    /**
+     * Accepts the Excel/legacy disabled values or the customized-scenario identifier.
+     *
+     * @param conf configuration map
+     */
     private static void validateScenario(HashMap<String, Double> conf) {
         if (conf.containsKey(SCENARIO_KEY)) {
             validateInteger(conf, SCENARIO_KEY);
@@ -342,10 +451,22 @@ public class Configuration {
         }
     }
 
+    /**
+     * Converts the workbook's zero disabled value to the internal disabled sentinel.
+     *
+     * @param scenario workbook or internal scenario identifier
+     * @return normalized internal identifier
+     */
     private static int normalizeScenario(int scenario) {
         return scenario == EXCEL_DISABLED ? DISABLED : scenario;
     }
 
+    /**
+     * Requires a present workbook boolean to use its numeric {@code 0}/{@code 1} encoding.
+     *
+     * @param conf configuration map
+     * @param param key to validate
+     */
     private static void validateBoolean(HashMap<String, Double> conf, String param) {
         if (conf.containsKey(param)) {
             double value = conf.get(param);
@@ -355,10 +476,28 @@ public class Configuration {
         }
     }
 
+    /**
+     * Produces the consistent exception used to abort invalid configuration loading.
+     *
+     * @param message constraint-specific diagnostic
+     * @throws IllegalArgumentException always, with the standardized prefix
+     */
     private static void failConfiguration(String message) {
         throw new IllegalArgumentException("Invalid configuration: " + message);
     }
 
+    /** Warns when the learning window prevents all period-level results from being saved. */
+    private static void warnIfLearningPeriodsCoverSimulation() {
+        if (LEARNING_PERIODS >= PERIODS) {
+            Console.warn("Configuration: LEARNING_PERIODS (" + LEARNING_PERIODS +
+                    ") is greater than or equal to PERIODS (" + PERIODS +
+                    "). No post-learning periods will be reported; repost charts may have no data.");
+        }
+    }
+
+    /**
+     * Estimates agent-period work and warns when detailed output is enabled for a large run.
+     */
     private static void warnIfLargeExperimentSavesDetailedResults() {
         if (!SAVED_ENDORSEMENTS && !SAVED_AGENT_DECISIONS && !SAVED_DETAILED_AGENT_DECISIONS &&
                 !SAVED_REPOSTS_PER_SOURCE) {
@@ -381,6 +520,11 @@ public class Configuration {
                 "or enable COMPRESSED_RESULTS for large experiments.");
     }
 
+    /**
+     * Builds the option list included in the large-report warning.
+     *
+     * @return comma-separated enabled detailed-output keys
+     */
     private static String enabledDetailedResultKeys() {
         StringBuilder keys = new StringBuilder();
         appendEnabledKey(keys, SAVED_ENDORSEMENTS, SAVED_ENDORSEMENTS_KEY);
@@ -390,6 +534,13 @@ public class Configuration {
         return keys.toString();
     }
 
+    /**
+     * Adds one enabled option to a comma-separated diagnostic list.
+     *
+     * @param keys accumulating option list
+     * @param enabled whether the option should be included
+     * @param key configuration key to append
+     */
     private static void appendEnabledKey(StringBuilder keys, boolean enabled, String key) {
         if (!enabled) {
             return;
@@ -401,6 +552,11 @@ public class Configuration {
         keys.append(key);
     }
 
+    /**
+     * Serializes current runtime settings in stable workbook/report order.
+     *
+     * @return insertion-ordered configuration map using numeric boolean encodings
+     */
     public static Map<String, Double> toMap() {
         Map<String, Double> conf = new LinkedHashMap<>();
         conf.put(PERIODS_KEY, (double) PERIODS);
@@ -422,10 +578,16 @@ public class Configuration {
         conf.put(SAVED_DETAILED_AGENT_DECISIONS_KEY, SAVED_DETAILED_AGENT_DECISIONS ? 1.0 : 0.0);
         conf.put(SAVED_AGENT_DECISIONS_KEY, SAVED_AGENT_DECISIONS ? 1.0 : 0.0);
         conf.put(SAVED_REPOSTS_PER_SOURCE_KEY, SAVED_REPOSTS_PER_SOURCE ? 1.0 : 0.0);
+        conf.put(SAVED_FAKENEWS_KEY, SAVED_FAKENEWS ? 1.0 : 0.0);
 
         return conf;
     }
 
+    /**
+     * Formats the normalized settings for CLI startup logging.
+     *
+     * @return current runtime configuration formatted for startup logging
+     */
     public static String toStringConfiguration() {
         return Configuration.toMap().toString();
     }

@@ -2,6 +2,7 @@ import agent.SNSUserFactory;
 import agent.NewsSourceFactory;
 import inputManager.Configuration;
 import inputManager.Loader;
+import gui.Chart;
 import utils.Console;
 import reporter.Reporter;
 import simulation.Simulation;
@@ -11,8 +12,17 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
 
+/**
+ * Command-line entry point that loads one workbook, applies CLI overrides, constructs the model,
+ * executes all configured repetitions, writes reports, and releases input resources.
+ */
 public class Main {
 
+    /**
+     * Runs the complete Java reference implementation or handles a help/listing command.
+     *
+     * @param args command-line options and optional workbook name/path
+     */
     public static void main(String[] args) {
         CliOptions options = CliOptions.parse(args);
         if (options.help) {
@@ -38,6 +48,9 @@ public class Main {
                 Console.info(s);
                 s.run();
             }
+            if (Configuration.GUI && Configuration.REPETITIONS > 0) {
+                Chart.displayAggregateReposts(NewsSourceFactory.getNewsSources());
+            }
             Instant end = Instant.now();
 
 
@@ -50,6 +63,7 @@ public class Main {
         }
     }
 
+    /** Parsed command-line state kept separate from workbook configuration until loading completes. */
     private static final class CliOptions {
         private String inputFile = "";
         private boolean help = false;
@@ -61,6 +75,13 @@ public class Main {
         private Boolean wom;
         private Boolean gui;
 
+        /**
+         * Parses supported flags, overrides, and a positional input name.
+         *
+         * @param args raw command-line arguments
+         * @return parsed option state
+         * @throws IllegalArgumentException for unknown options, missing values, or invalid integers
+         */
         private static CliOptions parse(String[] args) {
             CliOptions options = new CliOptions();
             for (int i = 0; i < args.length; ++i) {
@@ -111,6 +132,15 @@ public class Main {
             return options;
         }
 
+        /**
+         * Retrieves the token following a value-bearing option.
+         *
+         * @param args complete argument array
+         * @param index expected value position
+         * @param option option name used in diagnostics
+         * @return value token
+         * @throws IllegalArgumentException when no token exists at {@code index}
+         */
         private static String requireValue(String[] args, int index, String option) {
             if (index >= args.length) {
                 throw new IllegalArgumentException("Missing value for " + option);
@@ -118,6 +148,7 @@ public class Main {
             return args[index];
         }
 
+        /** Applies only explicitly supplied CLI overrides after workbook configuration is installed. */
         private void applyOverrides() {
             if (periods != null) Configuration.PERIODS = periods;
             if (agents != null) Configuration.AGENTS = agents;
@@ -127,6 +158,7 @@ public class Main {
             if (gui != null) Configuration.GUI = gui;
         }
 
+        /** Prints CLI usage without loading or executing a simulation. */
         private static void printHelp() {
             System.out.println("FAKENEWS-ABM");
             System.out.println();
@@ -146,6 +178,7 @@ public class Main {
             System.out.println("  -h, --help               Show this help.");
         }
 
+        /** Lists non-temporary Excel workbooks available in the primary input directory. */
         private static void listInputs() {
             File inputDir = new File("input");
             File[] files = inputDir.listFiles((dir, name) -> name.toLowerCase().endsWith(".xlsx") && !name.startsWith("~$"));

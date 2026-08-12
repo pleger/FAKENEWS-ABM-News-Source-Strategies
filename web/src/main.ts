@@ -25,6 +25,7 @@ type Config = {
   savedAgentDecisions: boolean;
   savedDetailedAgentDecisions: boolean;
   savedRepostsPerSource: boolean;
+  savedFakeNews: boolean;
   newsSources: number;
   attributesSource: number;
   attributesUser: number;
@@ -89,6 +90,12 @@ type RepostsData = {
   reposts: number[];
 };
 
+type FakeNewsData = {
+  simulationId: number;
+  period: number;
+  fakeNews: number[];
+};
+
 type SimulationOutput = {
   workbookBlob: Blob;
   zipBlob: Blob;
@@ -120,6 +127,7 @@ type ConfigEditableKey =
   | "learningPeriods"
   | "savedEndorsements"
   | "savedRepostsPerSource"
+  | "savedFakeNews"
   | "savedDetailedAgentDecisions"
   | "savedAgentDecisions"
   | "compressedResults";
@@ -186,6 +194,7 @@ const CONFIG_FIELDS: ConfigField[] = [
   { label: "LEARNING_PERIODS", key: "learningPeriods", min: 0, step: 1, integer: true },
   { label: "SAVED_ENDORSEMENTS", key: "savedEndorsements", min: 0, max: 1, step: 1, integer: true, boolean: true },
   { label: "SAVED_REPOSTS_PER_SOURCE", key: "savedRepostsPerSource", min: 0, max: 1, step: 1, integer: true, boolean: true },
+  { label: "SAVED_FAKENEWS", key: "savedFakeNews", min: 0, max: 1, step: 1, integer: true, boolean: true },
   { label: "SAVED_DETAILED_AGENT_DECISIONS", key: "savedDetailedAgentDecisions", min: 0, max: 1, step: 1, integer: true, boolean: true },
   { label: "SAVED_AGENT_DECISIONS", key: "savedAgentDecisions", min: 0, max: 1, step: 1, integer: true, boolean: true },
   { label: "COMPRESSED_RESULTS", key: "compressedResults", min: 0, max: 1, step: 1, integer: true, boolean: true }
@@ -450,6 +459,9 @@ function parseWorkbook(workbook: XLSX.WorkBook, fileName: string): InputModel {
   }
 
   const config = buildConfig(configMap, stripExtension(fileName));
+  if (configMap.has("SAVED_FAKENEWS") && ![0, 1].includes(configMap.get("SAVED_FAKENEWS")!)) {
+    throw new Error("SAVED_FAKENEWS must be 0 or 1.");
+  }
   if (config.levels < 2) throw new Error("LEVELS must be greater than 1.");
 
   const sourceReach = readSourceReach(sheets.SourceReach);
@@ -504,6 +516,7 @@ function buildConfig(conf: Map<string, number>, fileName: string): Config {
     savedAgentDecisions: boolConf(conf, "SAVED_AGENT_DECISIONS", false),
     savedDetailedAgentDecisions: boolConf(conf, "SAVED_DETAILED_AGENT_DECISIONS", false),
     savedRepostsPerSource: boolConf(conf, "SAVED_REPOSTS_PER_SOURCE", false),
+    savedFakeNews: boolConf(conf, "SAVED_FAKENEWS", false),
     newsSources: 0,
     attributesSource: 0,
     attributesUser: 0
@@ -693,6 +706,7 @@ class Simulation {
   }
 
   step(period: number): void {
+    for (const source of this.sources) source.doStep(period);
     for (const user of this.users) {
       user.doStep(period, this.sources, this.model.config, this.reporter, this.id);
     }
@@ -714,6 +728,8 @@ class Simulation {
   }
 
   private report(period: number): void {
+    this.reporter.addFakeNews(this.model.config, this.id, period,
+      this.sources.map((source) => source.isFakeNews(period) ? 1 : 0));
     if (period <= this.model.config.learningPeriods) return;
     const reposts = Array(this.sources.length).fill(0);
     const unique = Array(this.sources.length).fill(0);
@@ -745,6 +761,7 @@ class NewsSource {
   private readonly baseAttributes: Map<string, number[]>;
   private attributes: Map<string, number[]>;
   private uniqueUsers = new Set<number>();
+  private fakeNewsByPeriod = new Map<number, boolean>();
 
   constructor(id: number, inner: InnerNewsSource) {
     this.id = id;
@@ -767,6 +784,20 @@ class NewsSource {
   reinit(): void {
     this.attributes = new Map([...this.baseAttributes.entries()].map(([name, values]) => [name, [...values]]));
     this.uniqueUsers.clear();
+    this.fakeNewsByPeriod.clear();
+  }
+
+  doStep(period: number): void {
+    const credibility = this.valuesFor("CREDIBILIDAD DE LA FUENTE");
+    this.fakeNewsByPeriod.set(period, credibility[0] > Math.random());
+  }
+
+  isFakeNews(period: number): boolean {
+    const fakeNews = this.fakeNewsByPeriod.get(period);
+    if (fakeNews === undefined) {
+      throw new Error(`NewsSource ${this.name} has no fake-news state for period ${period}; doStep(period) must run before this query`);
+    }
+    return fakeNews;
   }
 
   valuesFor(attribute: string): number[] {
@@ -836,7 +867,13 @@ class SNSUser {
     const evaluations = new Map<number, number>();
     for (const friend of this.friends) {
       const selected = friend.getSelectedNewsSource(period);
-      if (selected) evaluations.set(selected.id, friend.currentEvaluation);
+      if (selected) {
+        const strongestEvaluation = Math.max(
+          evaluations.get(selected.id) ?? Number.NEGATIVE_INFINITY,
+          friend.currentEvaluation,
+        );
+        evaluations.set(selected.id, strongestEvaluation);
+      }
     }
     if (evaluations.size === 0) return;
     const selectedId = selectByMax(evaluations);
@@ -846,7 +883,8 @@ class SNSUser {
       if (!recommended) return;
       this.knownNewsSources.push(recommended);
     }
-    const mean = (this.attributes.get("WORD OF MOUTH") ?? 0) / 2;
+    const sign = recommended.isFakeNews(period) ? -1 : 1;
+    const mean = ((this.attributes.get("WORD OF MOUTH") ?? 0) / 2) * sign;
     this.endorsements.push({ period: period + 1, newsSource: recommended, attributeName: "WORD OF MOUTH", value: mean });
     void config;
   }
@@ -898,6 +936,7 @@ class ReporterStore {
   endorsementData: EndorsementData[] = [];
   repostsPerSourceData: RepostsData[] = [];
   uniqueRepostersPerSourceData: RepostsData[] = [];
+  fakeNewsPerSourceData: FakeNewsData[] = [];
 
   addAgentDecision(config: Config, simulationId: number, period: number, snsUserId: number, newsSourceName: string, evaluation: number): void {
     if (config.savedAgentDecisions) this.agentDecisionData.push({ simulationId, period, snsUserId, newsSourceName, evaluation });
@@ -915,6 +954,11 @@ class ReporterStore {
     if (!config.savedRepostsPerSource) return;
     this.repostsPerSourceData.push({ simulationId, period, reposts: [...reposts] });
     this.uniqueRepostersPerSourceData.push({ simulationId, period, reposts: [...unique] });
+  }
+
+  addFakeNews(config: Config, simulationId: number, period: number, fakeNews: number[]): void {
+    if (!config.savedFakeNews) return;
+    this.fakeNewsPerSourceData.push({ simulationId, period, fakeNews: [...fakeNews] });
   }
 }
 
@@ -1007,6 +1051,13 @@ async function createOutputs(model: InputModel, reporter: ReporterStore, elapsed
     { sheetName: "DetailedResult", fileName: "detailed-result.csv", rows: decisionRows(reporter.detailedAgentDecisionData) },
     { sheetName: "Endorsements", fileName: "endorsements.csv", rows: endorsementRows(reporter.endorsementData) }
   ];
+  if (model.config.savedFakeNews) {
+    reportTables.push({
+      sheetName: "FakeNewsPerSource",
+      fileName: "fake-news-per-source.csv",
+      rows: fakeNewsRows(model.newsSources, reporter.fakeNewsPerSourceData)
+    });
+  }
   for (const table of reportTables) addReportSheet(workbook, csvExports, table.sheetName, table.fileName, table.rows);
   addAoASheet(workbook, "ScenarioChanges", scenarioRows(model));
   if (csvExports.length > 0) {
@@ -1104,12 +1155,18 @@ function configRows(config: Config): CellValue[][] {
     ["SAVED_ENDORSEMENTS", config.savedEndorsements ? 1 : 0],
     ["SAVED_DETAILED_AGENT_DECISIONS", config.savedDetailedAgentDecisions ? 1 : 0],
     ["SAVED_AGENT_DECISIONS", config.savedAgentDecisions ? 1 : 0],
-    ["SAVED_REPOSTS_PER_SOURCE", config.savedRepostsPerSource ? 1 : 0]
+    ["SAVED_REPOSTS_PER_SOURCE", config.savedRepostsPerSource ? 1 : 0],
+    ["SAVED_FAKENEWS", config.savedFakeNews ? 1 : 0]
   ];
 }
 
 function repostRows(sources: InnerNewsSource[], rows: RepostsData[]): CellValue[][] {
   return [["SIMULATION_ID", "PERIOD", ...sources.map((source) => source.name)], ...rows.map((row) => [row.simulationId, row.period, ...row.reposts])];
+}
+
+function fakeNewsRows(sources: InnerNewsSource[], rows: FakeNewsData[]): CellValue[][] {
+  return [["Simulation", "Period", ...sources.map((source) => source.name)],
+    ...rows.map((row) => [row.simulationId, row.period, ...row.fakeNews])];
 }
 
 function decisionRows(rows: AgentDecisionData[]): CellValue[][] {

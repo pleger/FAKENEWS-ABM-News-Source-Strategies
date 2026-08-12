@@ -1,0 +1,147 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1120" viewBox="0 0 1600 1120" role="img" aria-labelledby="title desc">
+  <title id="title">Proceso de decision de reposteo de un agente en el periodo t</title>
+  <desc id="desc">Diagrama de flujo que muestra como un agente evalua fuentes conocidas, elige probabilisticamente una fuente para repostear, guarda la experiencia y recibe influencia social para el periodo siguiente.</desc>
+  <defs>
+    <style>
+      .bg { fill: #f6f7f9; }
+      .panel { fill: #ffffff; stroke: #d5dbe3; stroke-width: 2; rx: 18; }
+      .phase { fill: #14324a; }
+      .phaseText { fill: #ffffff; font: 700 25px Arial, Helvetica, sans-serif; }
+      .box { fill: #ffffff; stroke: #627589; stroke-width: 2.2; rx: 14; }
+      .boxAlt { fill: #f2f7f4; stroke: #4d7f62; stroke-width: 2.2; rx: 14; }
+      .boxWarn { fill: #fff6e6; stroke: #b4752b; stroke-width: 2.2; rx: 14; }
+      .boxBlue { fill: #eef5fb; stroke: #4d7598; stroke-width: 2.2; rx: 14; }
+      .diamond { fill: #ffffff; stroke: #627589; stroke-width: 2.2; }
+      .title { fill: #152536; font: 700 36px Arial, Helvetica, sans-serif; }
+      .subtitle { fill: #52616f; font: 20px Arial, Helvetica, sans-serif; }
+      .label { fill: #1e2b36; font: 700 21px Arial, Helvetica, sans-serif; }
+      .text { fill: #2f3b45; font: 18px Arial, Helvetica, sans-serif; }
+      .small { fill: #52616f; font: 16px Arial, Helvetica, sans-serif; }
+      .note { fill: #324150; font: 17px Arial, Helvetica, sans-serif; }
+      .arrow { fill: none; stroke: #425568; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; marker-end: url(#arrowHead); }
+      .arrowDashed { fill: none; stroke: #7b8c9c; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 9 8; marker-end: url(#arrowHeadMuted); }
+      .loop { fill: none; stroke: #4d7f62; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; marker-end: url(#arrowHeadGreen); }
+      .badge { fill: #e8edf2; stroke: #c6ced7; stroke-width: 1.5; rx: 12; }
+      .badgeText { fill: #344657; font: 700 16px Arial, Helvetica, sans-serif; }
+    </style>
+    <marker id="arrowHead" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M 0 0 L 12 6 L 0 12 z" fill="#425568"/>
+    </marker>
+    <marker id="arrowHeadMuted" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M 0 0 L 12 6 L 0 12 z" fill="#7b8c9c"/>
+    </marker>
+    <marker id="arrowHeadGreen" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M 0 0 L 12 6 L 0 12 z" fill="#4d7f62"/>
+    </marker>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="1600" height="1120"/>
+
+  <text class="title" x="80" y="76">Proceso de decision de reposteo en el periodo t</text>
+  <text class="subtitle" x="80" y="112">El agente combina experiencia propia con senales sociales para decidir que fuente repostear.</text>
+
+  <rect class="badge" x="80" y="142" width="190" height="40"/>
+  <text class="badgeText" x="104" y="168">Periodos: 100</text>
+  <rect class="badge" x="290" y="142" width="180" height="40"/>
+  <text class="badgeText" x="314" y="168">Agentes: 120</text>
+  <rect class="badge" x="490" y="142" width="190" height="40"/>
+  <text class="badgeText" x="514" y="168">Contactos: 17</text>
+  <rect class="badge" x="700" y="142" width="250" height="40"/>
+  <text class="badgeText" x="724" y="168">Amigos: 70% contactos</text>
+  <rect class="badge" x="970" y="142" width="190" height="40"/>
+  <text class="badgeText" x="994" y="168">WOM: activo</text>
+
+  <rect class="panel" x="60" y="215" width="1480" height="835"/>
+
+  <rect class="phase" x="100" y="255" width="330" height="54" rx="12"/>
+  <text class="phaseText" x="130" y="290">1. Estado del agente</text>
+
+  <rect class="phase" x="470" y="255" width="330" height="54" rx="12"/>
+  <text class="phaseText" x="500" y="290">2. Evaluacion</text>
+
+  <rect class="phase" x="840" y="255" width="330" height="54" rx="12"/>
+  <text class="phaseText" x="870" y="290">3. Reposteo</text>
+
+  <rect class="phase" x="1210" y="255" width="290" height="54" rx="12"/>
+  <text class="phaseText" x="1240" y="290">4. Influencia social</text>
+
+  <rect class="boxBlue" x="100" y="360" width="300" height="115"/>
+  <text class="label" x="126" y="396">Agente en t</text>
+  <text class="text" x="126" y="428">Tiene preferencias propias</text>
+  <text class="small" x="126" y="455">credibilidad, calidad, cercania,</text>
+  <text class="small" x="126" y="479">sensacionalismo, emociones, etc.</text>
+
+  <rect class="boxBlue" x="100" y="545" width="300" height="116"/>
+  <text class="label" x="126" y="581">Fuentes conocidas</text>
+  <text class="text" x="126" y="613">No necesariamente conoce</text>
+  <text class="text" x="126" y="639">todas las fuentes de noticias.</text>
+
+  <rect class="box" x="480" y="360" width="300" height="125"/>
+  <text class="label" x="506" y="397">Revisa historial</text>
+  <text class="text" x="506" y="430">Filtra experiencias previas</text>
+  <text class="text" x="506" y="456">con cada fuente conocida.</text>
+
+  <rect class="box" x="480" y="545" width="300" height="135"/>
+  <text class="label" x="506" y="581">Calcula valoracion</text>
+  <text class="text" x="506" y="614">Experiencias positivas suben</text>
+  <text class="text" x="506" y="640">la posicion de la fuente;</text>
+  <text class="text" x="506" y="666">negativas la reducen.</text>
+
+  <polygon class="diamond" points="995,350 1165,455 995,560 825,455"/>
+  <text class="label" x="914" y="438">Seleccion</text>
+  <text class="label" x="903" y="466">probabilistica</text>
+  <text class="small" x="897" y="496">mejor evaluacion =</text>
+  <text class="small" x="913" y="518">mayor probabilidad</text>
+
+  <rect class="boxAlt" x="850" y="625" width="300" height="120"/>
+  <text class="label" x="876" y="662">Repostea fuente s*</text>
+  <text class="text" x="876" y="695">La fuente elegida representa</text>
+  <text class="text" x="876" y="721">el repost del agente en t.</text>
+
+  <rect class="boxAlt" x="850" y="810" width="300" height="125"/>
+  <text class="label" x="876" y="846">Guarda experiencia</text>
+  <text class="text" x="876" y="879">La accion genera nuevos</text>
+  <text class="text" x="876" y="905">endorsements para decisiones</text>
+  <text class="text" x="876" y="931">futuras.</text>
+
+  <rect class="boxWarn" x="1210" y="360" width="290" height="125"/>
+  <text class="label" x="1236" y="397">Contactos observan</text>
+  <text class="text" x="1236" y="430">Despues del repost, otros</text>
+  <text class="text" x="1236" y="456">agentes pueden ver la fuente.</text>
+
+  <rect class="boxWarn" x="1210" y="545" width="290" height="135"/>
+  <text class="label" x="1236" y="581">Recomendacion WOM</text>
+  <text class="text" x="1236" y="614">El agente presta atencion</text>
+  <text class="text" x="1236" y="640">a la recomendacion con mejor</text>
+  <text class="text" x="1236" y="666">valoracion entre sus amigos.</text>
+
+  <rect class="boxWarn" x="1210" y="810" width="290" height="125"/>
+  <text class="label" x="1236" y="846">Influye en t + 1</text>
+  <text class="text" x="1236" y="879">No cambia el repost actual;</text>
+  <text class="text" x="1236" y="905">queda incorporada como</text>
+  <text class="text" x="1236" y="931">experiencia social futura.</text>
+
+  <path class="arrow" d="M 400 418 C 425 418, 445 418, 475 418"/>
+  <path class="arrow" d="M 400 603 C 425 603, 445 603, 475 603"/>
+  <path class="arrow" d="M 630 485 C 630 505, 630 520, 630 540"/>
+  <path class="arrow" d="M 780 610 C 810 580, 835 540, 875 505"/>
+  <path class="arrow" d="M 995 560 C 995 585, 995 600, 995 620"/>
+  <path class="arrow" d="M 995 745 C 995 775, 995 790, 995 805"/>
+  <path class="arrow" d="M 1150 685 C 1175 650, 1195 620, 1205 610"/>
+  <path class="arrow" d="M 1355 485 C 1355 510, 1355 525, 1355 540"/>
+  <path class="arrow" d="M 1355 680 C 1355 730, 1355 765, 1355 805"/>
+
+  <path class="arrowDashed" d="M 1000 935 C 1000 995, 470 995, 250 665"/>
+  <text class="note" x="435" y="1018">La memoria y las experiencias acumuladas realimentan el proximo periodo.</text>
+
+  <path class="loop" d="M 1210 872 C 1095 980, 730 1010, 630 685"/>
+  <text class="note" x="1020" y="1000">WOM agrega una senal social para t + 1.</text>
+
+  <rect class="box" x="100" y="810" width="300" height="125"/>
+  <text class="label" x="126" y="846">Resultado agregado</text>
+  <text class="text" x="126" y="879">En los reportes, cada fuente</text>
+  <text class="text" x="126" y="905">seleccionada se cuenta como</text>
+  <text class="text" x="126" y="931">un repost del periodo.</text>
+
+  <path class="arrowDashed" d="M 850 690 C 640 725, 470 795, 405 868"/>
+</svg>

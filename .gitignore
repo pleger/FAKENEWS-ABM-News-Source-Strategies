@@ -6,3 +6,9 @@ output/
 *.log
 .DS_Store
 ~$*.xlsx
+.idea/*
+!.idea/runConfigurations/
+!.idea/runConfigurations/*.xml
+*.iml
+__pycache__/
+*.py[cod]
