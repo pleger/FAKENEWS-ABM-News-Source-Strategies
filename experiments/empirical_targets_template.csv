@@ -1,0 +1,5 @@
+metric,value,scale,weight,description
+target_share_final100,,0.05,1,Observed share of reposts assigned to the transformed source in the final 100 periods
+fake_repost_share_final100,,0.05,1,Observed share of reposts whose selected source published fake news in the final 100 periods
+target_fake_rate_final100,,0.05,1,Observed fake-news publication rate of the transformed source in the final 100 periods
+target_unique_reposters_p400,,20,1,Observed cumulative unique reposters of the transformed source at period 400

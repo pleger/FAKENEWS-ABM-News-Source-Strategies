@@ -46,7 +46,7 @@ public class Interaction {
 
         for (NewsSource newsSource : newsSources) {
             Endorsements endors = snsUser.getEndorsements().filterByNewsSource(newsSource).filterByMemory(period);
-            double eval = evaluateNewsSource(endors.toArray());
+            double eval = evaluateNewsSource(endors, period);
             evaluations.put(newsSource.getID(), eval);
 
             report(period, snsUser, newsSource, eval);
@@ -78,9 +78,47 @@ public class Interaction {
         double result = 0;
 
         for (double value : values) {
-            result += value > 0 ? Math.pow(Configuration.BASE, value) : -1 * Math.pow(Configuration.BASE, Math.abs(value));
+            result += evaluateEndorsement(value);
         }
         return result;
+    }
+
+    /** Transforms one signed endorsement while preserving a zero contribution as neutral. */
+    private static double evaluateEndorsement(double value) {
+        if (value > 0) {
+            return Math.pow(Configuration.BASE, value);
+        }
+        if (value < 0) {
+            return -Math.pow(Configuration.BASE, Math.abs(value));
+        }
+        return 0.0;
+    }
+
+    /**
+     * Evaluates remembered events after applying optional exponential decay to each event's
+     * transformed contribution. Initial period {@code -1} events are treated as current at the
+     * first decision so enabling decay does not weaken the initial source evidence before use.
+     */
+    private static double evaluateNewsSource(Endorsements endorsements, int currentPeriod) {
+        final double[] result = {0.0};
+        endorsements.forEach(endorsement -> {
+            double contribution = evaluateEndorsement(endorsement.getValue());
+            result[0] += contribution * memoryDecayWeight(endorsement.getPeriod(), currentPeriod);
+        });
+        return result[0];
+    }
+
+    /** Returns one for disabled decay, otherwise a half-life weight based on event age. */
+    private static double memoryDecayWeight(int eventPeriod, int currentPeriod) {
+        if (Configuration.MEMORY_HALF_LIFE == Configuration.MEMORY_HALF_LIFE_DISABLED) {
+            return 1.0;
+        }
+
+        int effectiveEventPeriod = Math.max(1, eventPeriod);
+        int age = currentPeriod - effectiveEventPeriod;
+        Error.setAssert(age >= 0, "Interaction: endorsement belongs to future period " + eventPeriod +
+                " while evaluating period " + currentPeriod);
+        return Math.pow(0.5, age / Configuration.MEMORY_HALF_LIFE);
     }
 
     /**

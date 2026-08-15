@@ -1,5 +1,6 @@
 package inputManager;
 
+import endorsement.WomRecommendationEffect;
 import utils.Console;
 import utils.Error;
 
@@ -25,6 +26,7 @@ public class Configuration {
     public final static String DEFAULT_FILE_NAME = "FAKENEWS_BASELINE_2";
     public final static int DISABLED = -1;
     public final static int MEMORY_INFINITE = -1;
+    public final static double MEMORY_HALF_LIFE_DISABLED = -1.0;
     // TODO: Unify the Excel/UI disabled value with the internal disabled scenario representation.
     private final static int EXCEL_DISABLED = 0;
     private final static int CUSTOMIZED_SCENARIO = -2;
@@ -37,10 +39,14 @@ public class Configuration {
     private final static int D_REPETITIONS = 0;
     private final static boolean D_GUI = false; //could be removed
     private final static double D_BASE = 1.2;
-    private final static int D_MEMORY = MEMORY_INFINITE;
+    private final static int D_MEMORY = 25;
+    private final static double D_MEMORY_HALF_LIFE = MEMORY_HALF_LIFE_DISABLED;
     private final static int D_LEARNING_PERIODS = 100;
     private final static boolean D_SOURCE_REACH = false;
     private final static boolean D_WOM = false;
+    private final static double D_WOM_RECEIVER_SCALE = 0.5;
+    private final static WomRecommendationEffect D_WOM_FAKE_NEWS_EFFECT = WomRecommendationEffect.PENALIZE;
+    private final static WomRecommendationEffect D_WOM_TRUE_NEWS_EFFECT = WomRecommendationEffect.REWARD;
     private final static int D_SCENARIO = DISABLED;
 
     private final static boolean D_COMPRESSED_RESULTS = false;
@@ -60,8 +66,12 @@ public class Configuration {
     private final static String GUI_KEY = "GUI";
     private final static String BASE_KEY = "BASE";
     private final static String MEMORY_KEY = "MEMORY";
+    private final static String MEMORY_HALF_LIFE_KEY = "MEMORY_HALF_LIFE";
     private final static String SOURCE_REACH_KEY = "SOURCE_REACH";
     private final static String WOM_KEY = "WOM";
+    private final static String WOM_RECEIVER_SCALE_KEY = "WOM_RECEIVER_SCALE";
+    private final static String WOM_FAKE_NEWS_EFFECT_KEY = "WOM_FAKE_NEWS_EFFECT";
+    private final static String WOM_TRUE_NEWS_EFFECT_KEY = "WOM_TRUE_NEWS_EFFECT";
     private final static String SCENARIO_KEY = "SCENARIO";
     private final static String LEARNING_PERIODS_KEY = "LEARNING_PERIODS";
     private final static String COMPRESSED_RESULTS_KEY = "COMPRESSED_RESULTS";
@@ -83,6 +93,10 @@ public class Configuration {
 
     static {
         SUPPORTED_PARAMETER_SET.add(SAVED_FAKENEWS_KEY);
+        SUPPORTED_PARAMETER_SET.add(MEMORY_HALF_LIFE_KEY);
+        SUPPORTED_PARAMETER_SET.add(WOM_RECEIVER_SCALE_KEY);
+        SUPPORTED_PARAMETER_SET.add(WOM_FAKE_NEWS_EFFECT_KEY);
+        SUPPORTED_PARAMETER_SET.add(WOM_TRUE_NEWS_EFFECT_KEY);
     }
 
     public static String FILE_NAME;
@@ -101,8 +115,12 @@ public class Configuration {
     public static boolean GUI = D_GUI;
     public static double BASE = D_BASE;
     public static int MEMORY = D_MEMORY;
+    public static double MEMORY_HALF_LIFE = D_MEMORY_HALF_LIFE;
     public static boolean SOURCE_REACH = D_SOURCE_REACH;
     public static boolean WOM = D_WOM;
+    public static double WOM_RECEIVER_SCALE = D_WOM_RECEIVER_SCALE;
+    public static WomRecommendationEffect WOM_FAKE_NEWS_EFFECT = D_WOM_FAKE_NEWS_EFFECT;
+    public static WomRecommendationEffect WOM_TRUE_NEWS_EFFECT = D_WOM_TRUE_NEWS_EFFECT;
     public static int SCENARIO = D_SCENARIO;
     public static int LEARNING_PERIODS = D_LEARNING_PERIODS;
 
@@ -134,8 +152,18 @@ public class Configuration {
         GUI = conf.get(GUI_KEY) != null ? conf.get(GUI_KEY) == 1 : D_GUI;
         BASE = conf.get(BASE_KEY) != null ? conf.get(BASE_KEY) : D_BASE;
         MEMORY = conf.get(MEMORY_KEY) != null ? conf.get(MEMORY_KEY).intValue() : D_MEMORY;
+        MEMORY_HALF_LIFE = conf.get(MEMORY_HALF_LIFE_KEY) != null
+                ? conf.get(MEMORY_HALF_LIFE_KEY) : D_MEMORY_HALF_LIFE;
         SOURCE_REACH = conf.get(SOURCE_REACH_KEY) != null ? conf.get(SOURCE_REACH_KEY) == 1 : D_SOURCE_REACH;
         WOM = conf.get(WOM_KEY) != null ? conf.get(WOM_KEY) == 1 : D_WOM;
+        WOM_RECEIVER_SCALE = conf.get(WOM_RECEIVER_SCALE_KEY) != null
+                ? conf.get(WOM_RECEIVER_SCALE_KEY) : D_WOM_RECEIVER_SCALE;
+        WOM_FAKE_NEWS_EFFECT = conf.get(WOM_FAKE_NEWS_EFFECT_KEY) != null
+                ? WomRecommendationEffect.fromConfigurationValue(conf.get(WOM_FAKE_NEWS_EFFECT_KEY).intValue())
+                : D_WOM_FAKE_NEWS_EFFECT;
+        WOM_TRUE_NEWS_EFFECT = conf.get(WOM_TRUE_NEWS_EFFECT_KEY) != null
+                ? WomRecommendationEffect.fromConfigurationValue(conf.get(WOM_TRUE_NEWS_EFFECT_KEY).intValue())
+                : D_WOM_TRUE_NEWS_EFFECT;
         SCENARIO = conf.get(SCENARIO_KEY) != null ? normalizeScenario(conf.get(SCENARIO_KEY).intValue()) : D_SCENARIO;
         LEARNING_PERIODS = conf.get(LEARNING_PERIODS_KEY) != null ? conf.get(LEARNING_PERIODS_KEY).intValue() : D_LEARNING_PERIODS;
 
@@ -147,6 +175,7 @@ public class Configuration {
         SAVED_FAKENEWS = conf.get(SAVED_FAKENEWS_KEY) != null ? conf.get(SAVED_FAKENEWS_KEY) == 1 : D_SAVED_FAKENEWS;
 
         warnIfLearningPeriodsCoverSimulation();
+        warnIfMemoryModesOverlap();
         warnIfLargeExperimentSavesDetailedResults();
     }
 
@@ -259,11 +288,23 @@ public class Configuration {
             case MEMORY_KEY:
                 MEMORY = (int) value;
                 break;
+            case MEMORY_HALF_LIFE_KEY:
+                MEMORY_HALF_LIFE = value;
+                break;
             case SOURCE_REACH_KEY:
                 SOURCE_REACH = value == 1;
                 break;
             case WOM_KEY:
                 WOM = value == 1;
+                break;
+            case WOM_RECEIVER_SCALE_KEY:
+                WOM_RECEIVER_SCALE = value;
+                break;
+            case WOM_FAKE_NEWS_EFFECT_KEY:
+                WOM_FAKE_NEWS_EFFECT = WomRecommendationEffect.fromConfigurationValue((int) value);
+                break;
+            case WOM_TRUE_NEWS_EFFECT_KEY:
+                WOM_TRUE_NEWS_EFFECT = WomRecommendationEffect.fromConfigurationValue((int) value);
                 break;
             case SCENARIO_KEY:
                 SCENARIO = normalizeScenario((int) value);
@@ -301,6 +342,12 @@ public class Configuration {
      * @throws IllegalArgumentException when any supplied known value is invalid
      */
     private static void checkConfigurationInput(HashMap<String, Double> conf) {
+        for (Map.Entry<String, Double> entry : conf.entrySet()) {
+            if (entry.getValue() == null || !Double.isFinite(entry.getValue())) {
+                failConfiguration(entry.getKey() + " must be a finite numeric value.");
+            }
+        }
+
         for (String param : REQUIRED_PARAMETERS) {
             if (!conf.containsKey(param)) {
                 Console.warn(param + " is missing.");
@@ -322,8 +369,12 @@ public class Configuration {
         validateBoolean(conf, GUI_KEY);
         validateGreaterThan(conf, BASE_KEY, 0.0);
         validateMemory(conf);
+        validateMemoryHalfLife(conf);
         validateBoolean(conf, SOURCE_REACH_KEY);
         validateBoolean(conf, WOM_KEY);
+        validateNonNegative(conf, WOM_RECEIVER_SCALE_KEY);
+        validateWomRecommendationEffect(conf, WOM_FAKE_NEWS_EFFECT_KEY);
+        validateWomRecommendationEffect(conf, WOM_TRUE_NEWS_EFFECT_KEY);
         validateScenario(conf);
         validateNonNegativeInt(conf, LEARNING_PERIODS_KEY);
         validateBoolean(conf, SAVED_ENDORSEMENTS_KEY);
@@ -436,6 +487,31 @@ public class Configuration {
     }
 
     /**
+     * Accepts the disabled sentinel or a strictly positive exponential-memory half-life.
+     * A value of zero is undefined because the decay exponent divides by the half-life.
+     *
+     * @param conf configuration map
+     */
+    private static void validateMemoryHalfLife(HashMap<String, Double> conf) {
+        if (!conf.containsKey(MEMORY_HALF_LIFE_KEY)) {
+            return;
+        }
+
+        double halfLife = conf.get(MEMORY_HALF_LIFE_KEY);
+        if (halfLife != MEMORY_HALF_LIFE_DISABLED && halfLife <= 0.0) {
+            failConfiguration(MEMORY_HALF_LIFE_KEY + " must be " + MEMORY_HALF_LIFE_DISABLED +
+                    " (disabled) or greater than 0.");
+        }
+    }
+
+    /** Requires a present numeric scale to be zero or positive. */
+    private static void validateNonNegative(HashMap<String, Double> conf, String param) {
+        if (conf.containsKey(param) && conf.get(param) < 0.0) {
+            failConfiguration(param + " must be greater than or equal to 0.");
+        }
+    }
+
+    /**
      * Accepts the Excel/legacy disabled values or the customized-scenario identifier.
      *
      * @param conf configuration map
@@ -477,6 +553,24 @@ public class Configuration {
     }
 
     /**
+     * Requires an optional WOM outcome policy to be an integer in the supported signed scale.
+     *
+     * @param conf configuration map
+     * @param param fake-news or true-news WOM policy key
+     */
+    private static void validateWomRecommendationEffect(HashMap<String, Double> conf, String param) {
+        if (!conf.containsKey(param)) {
+            return;
+        }
+
+        validateInteger(conf, param);
+        int value = conf.get(param).intValue();
+        if (value < -1 || value > 1) {
+            failConfiguration(param + " must be -1 (penalize), 0 (ignore), or 1 (reward).");
+        }
+    }
+
+    /**
      * Produces the consistent exception used to abort invalid configuration loading.
      *
      * @param message constraint-specific diagnostic
@@ -492,6 +586,15 @@ public class Configuration {
             Console.warn("Configuration: LEARNING_PERIODS (" + LEARNING_PERIODS +
                     ") is greater than or equal to PERIODS (" + PERIODS +
                     "). No post-learning periods will be reported; repost charts may have no data.");
+        }
+    }
+
+    /** Warns when gradual decay is combined with the legacy abrupt memory cutoff. */
+    private static void warnIfMemoryModesOverlap() {
+        if (MEMORY != MEMORY_INFINITE && MEMORY_HALF_LIFE != MEMORY_HALF_LIFE_DISABLED) {
+            Console.warn("Configuration: MEMORY and MEMORY_HALF_LIFE are both active. " +
+                    "Endorsements will decay gradually and then be removed by the MEMORY cutoff. " +
+                    "Use MEMORY=-1 for a pure exponential-decay experiment.");
         }
     }
 
@@ -568,8 +671,12 @@ public class Configuration {
         conf.put(GUI_KEY, GUI ? 1.0 : 0.0);
         conf.put(BASE_KEY, BASE);
         conf.put(MEMORY_KEY, (double) MEMORY);
+        conf.put(MEMORY_HALF_LIFE_KEY, MEMORY_HALF_LIFE);
         conf.put(SOURCE_REACH_KEY, SOURCE_REACH ? 1.0 : 0.0);
         conf.put(WOM_KEY, WOM ? 1.0 : 0.0);
+        conf.put(WOM_RECEIVER_SCALE_KEY, WOM_RECEIVER_SCALE);
+        conf.put(WOM_FAKE_NEWS_EFFECT_KEY, (double) WOM_FAKE_NEWS_EFFECT.getConfigurationValue());
+        conf.put(WOM_TRUE_NEWS_EFFECT_KEY, (double) WOM_TRUE_NEWS_EFFECT.getConfigurationValue());
         conf.put(SCENARIO_KEY, (double) SCENARIO);
         conf.put(LEARNING_PERIODS_KEY, (double) LEARNING_PERIODS);
 

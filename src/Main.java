@@ -1,5 +1,6 @@
 import agent.SNSUserFactory;
 import agent.NewsSourceFactory;
+import endorsement.WomRecommendationEffect;
 import inputManager.Configuration;
 import inputManager.Loader;
 import gui.Chart;
@@ -73,6 +74,8 @@ public class Main {
         private Integer repetitions;
         private Integer learningPeriods;
         private Boolean wom;
+        private WomRecommendationEffect womFakeNewsEffect;
+        private WomRecommendationEffect womTrueNewsEffect;
         private Boolean gui;
 
         /**
@@ -116,6 +119,12 @@ public class Main {
                     case "--no-wom":
                         options.wom = false;
                         break;
+                    case "--wom-fake-news-effect":
+                        options.womFakeNewsEffect = parseWomEffect(requireValue(args, ++i, arg), arg);
+                        break;
+                    case "--wom-true-news-effect":
+                        options.womTrueNewsEffect = parseWomEffect(requireValue(args, ++i, arg), arg);
+                        break;
                     case "--gui":
                         options.gui = true;
                         break;
@@ -148,6 +157,15 @@ public class Main {
             return args[index];
         }
 
+        /** Parses the signed WOM policy used for fake or true recommended publications. */
+        private static WomRecommendationEffect parseWomEffect(String value, String option) {
+            try {
+                return WomRecommendationEffect.fromConfigurationValue(Integer.parseInt(value));
+            } catch (IllegalArgumentException exception) {
+                throw new IllegalArgumentException(option + " must be -1 (penalize), 0 (ignore), or 1 (reward).");
+            }
+        }
+
         /** Applies only explicitly supplied CLI overrides after workbook configuration is installed. */
         private void applyOverrides() {
             if (periods != null) Configuration.PERIODS = periods;
@@ -155,6 +173,8 @@ public class Main {
             if (repetitions != null) Configuration.REPETITIONS = repetitions;
             if (learningPeriods != null) Configuration.LEARNING_PERIODS = learningPeriods;
             if (wom != null) Configuration.WOM = wom;
+            if (womFakeNewsEffect != null) Configuration.WOM_FAKE_NEWS_EFFECT = womFakeNewsEffect;
+            if (womTrueNewsEffect != null) Configuration.WOM_TRUE_NEWS_EFFECT = womTrueNewsEffect;
             if (gui != null) Configuration.GUI = gui;
         }
 
@@ -174,6 +194,10 @@ public class Main {
             System.out.println("      --learning-periods <n>");
             System.out.println("                            Override LEARNING_PERIODS from the workbook.");
             System.out.println("      --wom / --no-wom     Enable or disable contact-based sharing.");
+            System.out.println("      --wom-fake-news-effect <-1|0|1>");
+            System.out.println("                            Penalize, ignore, or reward a fake-news recommendation.");
+            System.out.println("      --wom-true-news-effect <-1|0|1>");
+            System.out.println("                            Penalize, ignore, or reward a true-news recommendation.");
             System.out.println("      --gui / --no-gui     Enable or disable charts.");
             System.out.println("  -h, --help               Show this help.");
         }

@@ -4,6 +4,7 @@ import endorsement.AttributesSNSUser;
 import endorsement.Endorsement;
 import endorsement.EndorsementFactory;
 import endorsement.Endorsements;
+import endorsement.WomRecommendationEffect;
 import gui.DataChart;
 import inputManager.Configuration;
 import inputManager.InnerSNSUser;
@@ -27,7 +28,6 @@ import java.util.Map;
  */
 public class SNSUser implements Step, FlyWeight, ReportRegister {
     private static final String WORD_OF_MOUTH_ATTRIBUTE = "WORD OF MOUTH";
-    private static final double WORD_OF_MOUTH_ENDORSEMENT_SCALE = 0.5;
     private static int counter = 0;
 
     private final int ID;
@@ -220,11 +220,12 @@ public class SNSUser implements Step, FlyWeight, ReportRegister {
     }
 
     /**
-     * Selects the strongest source recommended by contacts and schedules a WOM endorsement for
-     * the next period, adding the source to this user's known set when necessary.
+     * Selects the strongest source recommended by contacts, adds the source to this user's known
+     * set when necessary, and applies the configured fake/true-news WOM policy. An ignored
+     * recommendation still makes an unknown source discoverable but creates no endorsement.
      *
      * @param period period whose contact decisions are observed
-     * @return {@code true} if a recommendation was available and recorded
+     * @return {@code true} if a recommendation was available and processed
      */
     public boolean receiveRecommendation(int period) {
         Map<Integer, Double> currentEvaluations = collectRecommendationEvaluations(period);
@@ -296,9 +297,17 @@ public class SNSUser implements Step, FlyWeight, ReportRegister {
      * @param recommendedSource source endorsed by the recommendation
      */
     private void addWordOfMouthEndorsement(int period, NewsSource recommendedSource) {
-        double value = attribute.getValue(WORD_OF_MOUTH_ATTRIBUTE) * WORD_OF_MOUTH_ENDORSEMENT_SCALE;
-        //adding support for fakenews sometimes true and other false
-        value *= recommendedSource.isFakeNews(period) ? -1.0 : 1.0;
+        boolean fakeNews = recommendedSource.isFakeNews(period);
+        WomRecommendationEffect effect = fakeNews
+                ? Configuration.WOM_FAKE_NEWS_EFFECT
+                : Configuration.WOM_TRUE_NEWS_EFFECT;
+        if (effect == WomRecommendationEffect.IGNORE) {
+            return;
+        }
+
+        double magnitude = Math.abs(attribute.getValue(WORD_OF_MOUTH_ATTRIBUTE))
+                * Configuration.WOM_RECEIVER_SCALE;
+        double value = magnitude * effect.getConfigurationValue();
 
         endors.add(new Endorsement(period + 1, recommendedSource, WORD_OF_MOUTH_ATTRIBUTE, value));
     }

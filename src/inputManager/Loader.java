@@ -75,6 +75,8 @@ public class Loader {
             Configuration.setAttributes(NewsSources.attributeSize(), SNSUsers.attributeSize());
             Configuration.setNewsSources(NewsSources.getInnerNewsSources().size());
         } catch (Exception ex) {
+            // Configuration validation deliberately throws so it remains unit-testable; the
+            // application boundary converts every invalid input into a fatal model-start error.
             Error.trigger("Loader.read: Input cannot be opened: " + file.getAbsolutePath(), ex);
         }
     }

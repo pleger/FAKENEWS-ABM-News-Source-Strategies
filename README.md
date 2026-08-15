@@ -52,7 +52,7 @@ Generated fake-news inputs:
 
 Workbook sheets:
 
-- `Configuration`: simulation controls such as `PERIODS`, `AGENTS`, `REPETITIONS`, `WOM`, and report flags.
+- `Configuration`: simulation controls such as `PERIODS`, `AGENTS`, `REPETITIONS`, `WOM`, and report flags. `MEMORY` is the legacy hard cutoff (default `25`); `MEMORY_HALF_LIFE` optionally applies exponential decay (`-1` disables it, positive decimals are allowed). For a pure decay experiment, use `MEMORY=-1`. `WOM_RECEIVER_SCALE` controls recommendation magnitude and defaults to the legacy value `0.5`. `WOM_FAKE_NEWS_EFFECT` and `WOM_TRUE_NEWS_EFFECT` independently set the effect of a recommendation to `-1` (penalize), `0` (ignore), or `1` (reward). Optional keys preserve their documented defaults when omitted.
 - `NewsSources`: source-type endorsement distributions.
 - `SNSUsers`: SNS-user endorsement weights.
 - `SourceReach`: source reach or visibility probability.
@@ -120,6 +120,11 @@ PYTHON_BIN=/tmp/fakenews-experiment-venv/bin/python \
 ```
 
 See [`experiments/README.md`](experiments/README.md) for configuration and output details.
+
+For the truth-sensitive baseline and the hypothetical fake-news dissemination matrix, use
+`experiments/run_dissemination_experiments.sh`. It separates no-WOM, discovery-only WOM, and
+truth-sensitive WOM before testing credibility-only, non-credibility camouflage, and full-copy
+scenarios with paired seeds.
 
 ## Example Scenario Results
 

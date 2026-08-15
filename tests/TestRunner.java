@@ -3,6 +3,7 @@ import agent.NewsSource;
 import agent.NewsSourceFactory;
 import agent.NewsSourceSelectionStrategies;
 import agent.SNSUser;
+import endorsement.WomRecommendationEffect;
 import endorsement.AttributesNewsSource;
 import endorsement.Endorsement;
 import endorsement.EndorsementEvalStrategies;
@@ -27,6 +28,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -55,6 +57,8 @@ public class TestRunner {
         testEndorsementFormulaForHighBinaryLevel();
         testConfigurationAppliesPluralSavedEndorsementsKey();
         testConfigurationSupportsSavedFakeNews();
+        testConfigurationSupportsWomRecommendationEffects();
+        testConfigurationSupportsMemoryDecayAndWomScale();
         testConfigurationOutputOrderIsStable();
         testConfigurationRejectsInvalidValues();
         testConfigurationAcceptsExcelDisabledScenario();
@@ -76,6 +80,9 @@ public class TestRunner {
         testNewsSourceRejectsMissingLastFakeNewsState();
         testNewsSourceUsesGreatestProcessedPeriodAsLast();
         testRecommendationsUseStrongestEvaluationAndRememberSourceOnce();
+        testWomRecommendationOutcomePolicies();
+        testZeroEndorsementHasNeutralEvaluation();
+        testExponentialMemoryDecay();
         testUserWithNoKnownSourcesCanStep();
         testMainWritesReporterWorkbookWithExpectedSheets();
         testAttributeReplacementLeavesOriginalUntouched();
@@ -123,6 +130,81 @@ public class TestRunner {
         assertThrows("SAVED_FAKENEWS should reject values other than 0 or 1", () -> {
             HashMap<String, Double> invalid = validConfiguration();
             invalid.put("SAVED_FAKENEWS", 2.0);
+            Configuration.set(invalid);
+        });
+        passed++;
+    }
+
+    private static void testConfigurationSupportsWomRecommendationEffects() {
+        Configuration.set(validConfiguration());
+        assertTrue("old workbooks should penalize fake recommendations by default",
+                Configuration.WOM_FAKE_NEWS_EFFECT == WomRecommendationEffect.PENALIZE);
+        assertTrue("old workbooks should reward true recommendations by default",
+                Configuration.WOM_TRUE_NEWS_EFFECT == WomRecommendationEffect.REWARD);
+
+        HashMap<String, Double> configured = validConfiguration();
+        configured.put("WOM_FAKE_NEWS_EFFECT", 0.0);
+        configured.put("WOM_TRUE_NEWS_EFFECT", -1.0);
+        Configuration.set(configured);
+        assertTrue("fake-news WOM policy should be configurable",
+                Configuration.WOM_FAKE_NEWS_EFFECT == WomRecommendationEffect.IGNORE);
+        assertTrue("true-news WOM policy should be configurable",
+                Configuration.WOM_TRUE_NEWS_EFFECT == WomRecommendationEffect.PENALIZE);
+
+        assertThrows("WOM effects should reject values outside -1, 0, and 1", () -> {
+            HashMap<String, Double> invalid = validConfiguration();
+            invalid.put("WOM_FAKE_NEWS_EFFECT", 2.0);
+            Configuration.set(invalid);
+        });
+        assertThrows("WOM effects should reject fractional values", () -> {
+            HashMap<String, Double> invalid = validConfiguration();
+            invalid.put("WOM_TRUE_NEWS_EFFECT", 0.5);
+            Configuration.set(invalid);
+        });
+        passed++;
+    }
+
+    private static void testConfigurationSupportsMemoryDecayAndWomScale() {
+        HashMap<String, Double> legacy = validConfiguration();
+        legacy.remove("MEMORY");
+        Configuration.set(legacy);
+        assertEquals("missing MEMORY should use the new 25-period default", 25, Configuration.MEMORY);
+        assertEquals("old workbooks should disable exponential decay by default",
+                Configuration.MEMORY_HALF_LIFE_DISABLED, Configuration.MEMORY_HALF_LIFE, 0.0001);
+        assertEquals("old workbooks should retain the legacy WOM receiver scale",
+                0.5, Configuration.WOM_RECEIVER_SCALE, 0.0001);
+
+        HashMap<String, Double> configured = validConfiguration();
+        configured.put("MEMORY_HALF_LIFE", 5.5);
+        configured.put("WOM_RECEIVER_SCALE", 0.25);
+        Configuration.set(configured);
+        assertEquals("memory half-life should accept positive decimal periods",
+                5.5, Configuration.MEMORY_HALF_LIFE, 0.0001);
+        assertEquals("WOM receiver scale should be configurable",
+                0.25, Configuration.WOM_RECEIVER_SCALE, 0.0001);
+        assertEquals("configuration output should preserve memory half-life",
+                5.5, Configuration.toMap().get("MEMORY_HALF_LIFE"), 0.0001);
+        assertEquals("configuration output should preserve WOM receiver scale",
+                0.25, Configuration.toMap().get("WOM_RECEIVER_SCALE"), 0.0001);
+
+        assertThrows("zero memory half-life should be rejected", () -> {
+            HashMap<String, Double> invalid = validConfiguration();
+            invalid.put("MEMORY_HALF_LIFE", 0.0);
+            Configuration.set(invalid);
+        });
+        assertThrows("negative memory half-lives other than -1 should be rejected", () -> {
+            HashMap<String, Double> invalid = validConfiguration();
+            invalid.put("MEMORY_HALF_LIFE", -2.0);
+            Configuration.set(invalid);
+        });
+        assertThrows("negative WOM receiver scales should be rejected", () -> {
+            HashMap<String, Double> invalid = validConfiguration();
+            invalid.put("WOM_RECEIVER_SCALE", -0.1);
+            Configuration.set(invalid);
+        });
+        assertThrows("non-finite configuration values should be rejected", () -> {
+            HashMap<String, Double> invalid = validConfiguration();
+            invalid.put("WOM_RECEIVER_SCALE", Double.NaN);
             Configuration.set(invalid);
         });
         passed++;
@@ -582,13 +664,112 @@ public class TestRunner {
                 traditional.getName(), recommendationData.get(0).newsSourceName);
         assertEquals("recommendation should use the WOM attribute", "WORD OF MOUTH",
                 recommendationData.get(0).attribute);
-        assertEquals("recommendation should use half of the user's WOM weight",
+        Configuration.WOM_RECEIVER_SCALE = 0.25;
+        target.receiveRecommendation(1);
+        ArrayList<EndorsementData> scaledRecommendationData = target.getEndorsementData(2);
+        EndorsementData scaledRecommendation = scaledRecommendationData.get(scaledRecommendationData.size() - 1);
+        assertEquals("recommendation should use the configured receiver scale",
+                target.getAttribute().getValue("WORD OF MOUTH") * Configuration.WOM_RECEIVER_SCALE,
+                Math.abs(scaledRecommendation.value), 0.0001);
+        assertEquals("default recommendation should retain half of the user's WOM weight",
                 target.getAttribute().getValue("WORD OF MOUTH") / 2.0,
                 recommendationData.get(0).value, 0.0001);
         assertEquals("a newly recommended source should be remembered", 1, target.getKnownNewsSourceCount());
 
         assertTrue("the same source can be recommended again", target.receiveRecommendation(1));
         assertEquals("an already known source should not be added twice", 1, target.getKnownNewsSourceCount());
+        passed++;
+    }
+
+    private static void testWomRecommendationOutcomePolicies() {
+        assertRecommendationEffect(true, WomRecommendationEffect.PENALIZE, 1, -1.0);
+        assertRecommendationEffect(true, WomRecommendationEffect.IGNORE, 0, 0.0);
+        assertRecommendationEffect(false, WomRecommendationEffect.REWARD, 1, 1.0);
+        assertRecommendationEffect(false, WomRecommendationEffect.IGNORE, 0, 0.0);
+        passed++;
+    }
+
+    private static void assertRecommendationEffect(boolean fakeNews, WomRecommendationEffect effect,
+                                                   int expectedEndorsements, double expectedSign) {
+        Loader.load("FAKENEWS_BASELINE");
+        Configuration.AGENTS = 2;
+        Configuration.CONTACTS = 1;
+        Configuration.FRIENDS = 1.0;
+        List<SNSUser> users = SNSUserFactory.createFromInput();
+        List<NewsSource> sources = NewsSourceFactory.createFromInput();
+        SNSUser target = users.get(0);
+        SNSUser friend = users.get(1);
+        target.setFriends(users);
+        target.setKnowNewsSources(new ArrayList<>());
+
+        NewsSource source = sources.get(0);
+        Double[] credibility = fakeNews ? new Double[]{1.0, 0.0} : new Double[]{0.0, 1.0};
+        source.setAttributes(source.getAttributes().replace("CREDIBILIDAD DE LA FUENTE", credibility));
+        source.doStep(1);
+        friend.getEndorsements().add(new Endorsement(1, source, "QUALITY", 1.0));
+        friend.setCurrentEvaluation(1.0);
+        if (fakeNews) {
+            Configuration.WOM_FAKE_NEWS_EFFECT = effect;
+        } else {
+            Configuration.WOM_TRUE_NEWS_EFFECT = effect;
+        }
+
+        assertTrue("recommendation should be processed even when its valuation is ignored",
+                target.receiveRecommendation(1));
+        ArrayList<EndorsementData> recommendations = target.getEndorsementData(2);
+        assertEquals("WOM policy should control endorsement creation", expectedEndorsements,
+                recommendations.size());
+        assertEquals("ignored recommendation should still reveal its source", 1,
+                target.getKnownNewsSourceCount());
+        if (!recommendations.isEmpty()) {
+            assertTrue("WOM policy should control endorsement direction",
+                    Math.signum(recommendations.get(0).value) == expectedSign);
+        }
+    }
+
+    private static void testZeroEndorsementHasNeutralEvaluation() {
+        try {
+            Method evaluate = agent.Interaction.class.getDeclaredMethod("evaluateNewsSource", double[].class);
+            evaluate.setAccessible(true);
+            double result = (double) evaluate.invoke(null, (Object) new double[]{0.0});
+            assertEquals("zero endorsement should add neither reward nor penalty", 0.0, result, 0.0001);
+        } catch (ReflectiveOperationException exception) {
+            throw new AssertionError("zero endorsement evaluation should be testable: " + exception);
+        }
+        passed++;
+    }
+
+    private static void testExponentialMemoryDecay() {
+        try {
+            Method evaluate = agent.Interaction.class.getDeclaredMethod(
+                    "evaluateNewsSource", Endorsements.class, int.class);
+            evaluate.setAccessible(true);
+            Endorsements endorsements = new Endorsements();
+            endorsements.add(new Endorsement(1, null, "QUALITY", 1.0));
+            endorsements.add(new Endorsement(3, null, "QUALITY", 1.0));
+
+            Configuration.BASE = 1.2;
+            Configuration.MEMORY_HALF_LIFE = 2.0;
+            double decayed = (double) evaluate.invoke(null, endorsements, 3);
+            assertEquals("one-half-life-old evidence should retain half its transformed contribution",
+                    1.8, decayed, 0.0001);
+
+            Configuration.MEMORY_HALF_LIFE = Configuration.MEMORY_HALF_LIFE_DISABLED;
+            double disabled = (double) evaluate.invoke(null, endorsements, 3);
+            assertEquals("disabled decay should preserve full contributions",
+                    2.4, disabled, 0.0001);
+
+            Endorsements initial = new Endorsements();
+            initial.add(new Endorsement(-1, null, "QUALITY", 1.0));
+            Configuration.MEMORY_HALF_LIFE = 2.0;
+            double firstPeriod = (double) evaluate.invoke(null, initial, 1);
+            assertEquals("initial evidence should have full weight at the first decision",
+                    1.2, firstPeriod, 0.0001);
+        } catch (ReflectiveOperationException exception) {
+            throw new AssertionError("exponential memory evaluation should be testable: " + exception);
+        } finally {
+            Configuration.MEMORY_HALF_LIFE = Configuration.MEMORY_HALF_LIFE_DISABLED;
+        }
         passed++;
     }
 
