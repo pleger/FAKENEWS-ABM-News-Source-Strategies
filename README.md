@@ -1,5 +1,51 @@
 # FAKENEWS-ABM
 
+## Paper reproducibility package
+
+This repository is the executable companion for the study **“Evaluations of News Source
+Strategies to Disseminate Fake News in X.”** It preserves the history of the generic
+[FAKENEWS-ABM framework](https://github.com/pleger/FAKENEWS-ABM/tree/feature/generic-study-framework)
+and adds only the paper-specific provider, input workbook, research-question design, manuscript
+materials, and result archive structure.
+
+The Java definition in
+[`NewsSourceStrategiesStudy`](src/experiment/NewsSourceStrategiesStudy.java) contains four research
+questions, four experiments, 79 conditions, and 2,010 seeded simulation runs. The safe default is
+to inspect the plan:
+
+```sh
+make study-plan
+```
+
+Run one research question into its permanent reproducibility directory:
+
+```sh
+make study-run ARGS="--questions RQ1 --jobs 2 --output results/RQ1/raw"
+```
+
+Repeat the command with the same output directory to resume incomplete runs. Before launching the
+full matrix, use a smoke execution:
+
+```sh
+make study-run ARGS="--questions RQ1 --seeds 1 --max-runs 2 --jobs 1 --output results/smoke"
+```
+
+| Research question | Experiment | Conditions | Seeds | Runs |
+|---|---|---:|---:|---:|
+| RQ1: strategy comparison | E1 | 6 | 30 | 180 |
+| RQ2: timing and duration | E2 | 19 | 30 | 570 |
+| RQ3: reach mitigation | E3 | 30 | 30 | 900 |
+| RQ4: sensitivity and robustness | E4 | 24 | 15 | 360 |
+
+The `results/RQ*/` directories document the expected raw and analyzed artifacts. The complete raw
+archives will be attached to versioned GitHub Releases after each research question finishes;
+their manifests and checksums will remain tracked in this repository. This avoids placing several
+gigabytes of logs and generated workbooks directly in Git history while retaining public,
+downloadable raw data.
+
+`prior-analysis/` contains preliminary material produced before the final RQ1–RQ4 design. It is
+retained for provenance and must not be confused with the final paper results.
+
 FAKENEWS-ABM is an agent-based model for simulating the dissemination of fake news on Social Network Sites (SNSs) such as X or Instagram.
 
 ## Project Context

@@ -1,0 +1,18 @@
+\begin{table}[tbp]
+\centering
+\caption{Core simulation configuration and interpretation.}
+\label{tab:configuration}
+\begin{tabular}{p{0.25\linewidth}p{0.18\linewidth}p{0.47\linewidth}}
+\toprule
+Component & Value & Interpretation \\
+\midrule
+SNS users & 400 & Decision-making agents in every run \\
+News sources & 4 & Traditional, unknown, fake-news, and mixed source types \\
+Periods & 400 & Sequential opportunities to evaluate and repost \\
+Primary window & 301--400 & Late-run average used for selection and fake-repost shares \\
+Memory & 5, 10, 25, 50, 100, $\infty$ & Number of periods for which endorsements remain active \\
+Scenario timing & 1, 25, 50, 100 & First period in which copied attributes become active \\
+WOM outcome & $-1,0,+1$ & Penalise, ignore, or reward a recommendation after truth is known \\
+\bottomrule
+\end{tabular}
+\end{table}

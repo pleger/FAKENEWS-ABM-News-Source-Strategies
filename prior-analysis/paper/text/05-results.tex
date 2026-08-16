@@ -1,0 +1,101 @@
+\section{Results}
+\label{sec:results}
+
+\subsection{Baseline validation and truth-sensitive WOM}
+
+All five baseline checks passed. The observed false-publication rates were 9.26\% for traditional media, 20.58\% for unknown media, 67.24\% for the fake-news source, and 41.64\% for the mixed source. Each value was within 0.02 of its configured probability (Table~\ref{tab:baseline}). These checks establish that the saved period-level truth states reproduce the intended source ecology closely enough for the subsequent repost metric.
+
+\input{tablas/baseline-results}
+
+Figure~\ref{fig:baseline} compares late-run fake-repost shares. B0 (no WOM) and B1 (discovery-only WOM) both averaged 15.36\%. Their paired difference was exactly zero for the retained metrics. Under this configuration, allowing contacts to reveal sources without creating outcome endorsements did not alter aggregate selection. B2 (false penalised, true rewarded) averaged 10.11\%. The B2--B1 paired effect was $-5.26$ percentage points (Student 95\% CI $[-5.95,-4.56]$, $n=30$). Target-source selection changed by less than 0.001 percentage points and its interval included zero. Thus truth-sensitive WOM reduced system-level false reposting primarily through source-choice composition rather than a detectable late-run change in the already small target-source share.
+
+\begin{figure}[tbp]
+\centering
+\includegraphics[width=0.86\linewidth]{01_baseline_wom.png}
+\caption{Baseline WOM comparison. Bars show mean realised fake-repost share in periods 301--400 across 30 common seeds. Discovery-only WOM ignores both truth outcomes; truth-sensitive WOM penalises false and rewards true recommendations.}
+\label{fig:baseline}
+\end{figure}
+
+Memory sensitivity shows that the protective magnitude is configuration dependent. The truth-sensitive minus discovery-only difference is particularly large at memory 10 and remains negative at memory 50, 100, and infinite. These comparisons support the direction of the baseline mechanism but also warn against treating 5.26 points as a universal constant.
+
+\subsection{Copy scope separates popularity from false dissemination}
+
+The exploratory copy-scope experiment provides the clearest descriptive example. With infinite memory and WOM active, the no-scenario target received 0.81\% of selections and published false items in 67.36\% of the final 100 periods. Engagement-only copying increased selection to 4.29\% while the target false-publication rate remained 65.82\%. Full copying increased selection further, to 9.22\%, but lowered the target false-publication rate to 9.82\%. Full imitation therefore made the target more popular and simultaneously transformed its content process into one resembling the traditional donor.
+
+Figure~\ref{fig:scope} places target selection and target false-publication rate on separate axes. The engagement-only point moves mostly to the right, whereas all-copy moves right and sharply downward. This pattern motivates non-credibility copying as the primary camouflage treatment in the later suite.
+
+\begin{figure}[tbp]
+\centering
+\includegraphics[width=0.86\linewidth]{03_copy_scope.png}
+\caption{Copy-scope comparison under infinite memory and active WOM in the exploratory phase. Target selection and target false-publication rate are distinct outcomes.}
+\label{fig:scope}
+\end{figure}
+
+The broader strategy matrix confirms the distinction (Figure~\ref{fig:quadrants}). The largest target-selection increase was produced by all-copy at period 1, infinite memory, false-news penalisation, and true-news reward: $+8.54$ points (95\% CI $[7.83,9.25]$, $n=11$). Yet its actual fake-repost effect was $-1.16$ points (95\% CI $[-1.37,-0.95]$), and cumulative false reposts decreased by 2,572. All-copy points therefore occupy the high-selection, lower-false-repost region.
+
+By contrast, non-credibility points are predominantly in the quadrant where both target selection and fake reposting increase. The strongest 11-seed strategy cell used period 1, infinite memory, false-news penalisation, and true-news reward. It increased target selection by 3.50 points (95\% CI $[3.24,3.76]$), fake reposts by 1.76 points (95\% CI $[1.58,1.93]$), and cumulative false reposts by 2,737. Copying credibility alone generally reduced false reposting, again reflecting the content-generation coupling.
+
+\begin{figure}[tbp]
+\centering
+\includegraphics[width=0.90\linewidth]{04_popularity_vs_misinformation.png}
+\caption{Paired strategy effects on target selection and actual fake reposting. Each point is a treatment relative to its matched control. The horizontal and vertical zero lines separate increased and decreased outcomes.}
+\label{fig:quadrants}
+\end{figure}
+
+\input{tablas/strategy-results}
+
+\subsection{Memory and intervention timing}
+
+The exploratory memory/timing grid shows a strong interaction (Figure~\ref{fig:memory}). With memory 5, target-selection effects were essentially zero at all activation times. At memory 10, activation in period 1 added 0.16 points, while later effects were weak. From memory 25 upward, period 1 was consistently strongest and effects declined at periods 25, 50, and 100. The maximum exploratory target-selection effect was 8.34 points for memory 100 and period 1; infinite memory at period 1 produced 8.20 points.
+
+\begin{figure}[tbp]
+\centering
+\includegraphics[width=0.88\linewidth]{02_memory_timing.png}
+\caption{Exploratory interaction between memory horizon and scenario activation. Cell values are target-source selection effects in percentage points relative to a no-scenario control with the same memory.}
+\label{fig:memory}
+\end{figure}
+
+The new strategy matrix yields the same qualitative timing result for the primary non-credibility outcome. With infinite memory and the $-1/+1$ policy, the fake-repost effect falls from 1.76 points at period 1 to 0.66 at period 25, 0.43 at period 50, and 0.26 at period 100. At memory 100, the period-1 effect is 0.93 points. Memory 25 under the standard $-1/+1$ policy has a small final-window effect, a result that later motivated the 30-seed policy confirmation. Timing should therefore be interpreted jointly with the outcome policy: the same nominal memory does not generate the same treatment-control contrast when true outcomes are ignored rather than rewarded.
+
+\subsection{Outcome-specific WOM policies}
+
+Figure~\ref{fig:policies} presents the six confirmatory policy contrasts for non-credibility copying at period 1 and memory 25. When true recommendations were ignored, the false-news rule produced a graded response. Penalising false recommendations yielded the largest treatment effect: $+2.89$ fake-repost points (95\% CI $[2.69,3.10]$), $+5.64$ target-selection points (95\% CI $[5.27,6.01]$), and 4,354 additional cumulative false reposts. Ignoring false outcomes yielded $+1.36$ fake-repost points, and rewarding false outcomes yielded $+0.57$ points. All three intervals were above zero.
+
+\begin{figure}[tbp]
+\centering
+\includegraphics[width=0.88\linewidth]{05_wom_policies.png}
+\caption{Confirmatory non-credibility camouflage effects under six WOM outcome policies. Bars show treatment-control effects on fake-repost share; error bars are paired Student 95\% confidence intervals across 30 seeds.}
+\label{fig:policies}
+\end{figure}
+
+When true recommendations were rewarded, the final-window treatment effects were close to zero. The $-1/+1$ condition produced $+0.017$ points (95\% CI $[-0.008,0.042]$), the $0/+1$ condition $+0.017$ points (95\% CI $[-0.007,0.041]$), and the $+1/+1$ condition $-0.002$ points (95\% CI $[-0.032,0.029]$). None of these intervals excluded zero. Cumulative effects remained positive, between approximately 766 and 859 false reposts, indicating earlier-period differences that were not sustained strongly in periods 301--400.
+
+The apparently counterintuitive $-1/0$ ranking does not imply that penalising false news increases misinformation in absolute terms. Each point compares camouflage and control under the same policy. The baseline establishes that $-1/+1$ reduces false reposting relative to discovery-only WOM. The confirmation asks a different question: how much additional effect camouflage produces after the policy is fixed. Rewarding true outcomes appears to stabilise treatment and control sufficiently that their late-run difference is small, whereas ignoring true outcomes leaves more room for copied non-credibility attributes to separate them.
+
+\subsection{Network and reach robustness}
+
+The exploratory WOM-on/off comparison found negative target-selection effects in all six supported degree/reach cells. WOM reduced transformed-source share by 1.42--2.67 points and reduced fake-repost share by 1.61--6.19 points. These intervals were below zero for target selection. Under that estimand, WOM was unfavourable to the transformed source and favourable to the system-level misinformation outcome.
+
+The later robustness phase estimates a different quantity: non-credibility camouflage minus a matched no-scenario control when truth-sensitive WOM is already enabled. Its fake-repost effects range from approximately 0.00 to 0.18 points (Figure~\ref{fig:robustness}). The largest effect occurs with six contacts and 46.7\% target reach: $+0.176$ points (95\% CI $[0.082,0.270]$). Several cells have intervals crossing zero. Cumulative effects are positive in all 12 cells, ranging from 301 to 2,334 additional false reposts, because small period-level differences accumulate over 400 periods.
+
+\begin{figure}[tbp]
+\centering
+\includegraphics[width=0.88\linewidth]{06_network_robustness.png}
+\caption{Robustness of non-credibility camouflage effects across contact and target-reach settings. Values are paired effects on actual fake-repost share.}
+\label{fig:robustness}
+\end{figure}
+
+These results are not contradictory. WOM-on/off measures the total contribution of social recommendations, while camouflage/control measures the incremental contribution of copied attributes inside an active WOM regime. Table~\ref{tab:robustness} summarises the distinct contrasts.
+
+\input{tablas/robustness-results}
+
+\subsection{Seeded reproduction and precision}
+
+Common-seed runs reproduced the earlier condition ordering. Across 20 memory, WOM, and timing cells, Spearman's $\rho$ was 0.998 for target-source share and 0.974 for fake-repost share. Both associations were statistically distinguishable from zero. Pairing reduced the estimated WOM-effect standard error in eight of ten cells (Figure~\ref{fig:seeds}); the median paired-to-unpaired standard-error ratio was 0.789. The two exceptions were memory 25 at period 1 (ratio 1.22) and memory 25 with no scenario (ratio 2.03), where stream divergence and a near-zero effect limited the benefit of pairing.
+
+\begin{figure}[tbp]
+\centering
+\includegraphics[width=0.88\linewidth]{07_seeded_precision.png}
+\caption{Ratio of paired to prior unpaired standard errors. Values below one indicate a precision gain from common seeds.}
+\label{fig:seeds}
+\end{figure}

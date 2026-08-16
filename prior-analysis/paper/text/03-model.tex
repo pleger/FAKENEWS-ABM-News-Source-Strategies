@@ -1,0 +1,54 @@
+\section{The FAKENEWS-ABM model}
+\label{sec:model}
+
+\subsection{Purpose, entities, and environment}
+
+FAKENEWS-ABM represents repeated source evaluation and reposting on a generic social-network site. Its purpose is to compare how source attributes, social recommendations, memory, reach, and timed interventions affect source selection and realised fake-news dissemination. The model is not tied to a specific platform or population and is not calibrated to reproduce an observed national prevalence. It is a mechanism-oriented computational laboratory.
+
+The environment contains 400 SNS-user agents and four source types: \texttt{TRADITIONAL\_MEDIA}, \texttt{UNKNOWN\_MEDIA}, \texttt{FAKE\_NEWS\_SOURCE}, and \texttt{MIXED\_SOURCE}. Each run lasts 400 periods. The source types differ in their attribute distributions, initial reach, and probability of publishing a false item. The configured false-publication probabilities are 0.092, 0.206, 0.667, and 0.416, respectively. At each period, every source independently produces a binary truth state. A user selection of a source is interpreted as reposting that period's item from that source.
+
+User agents have weights for source attributes and a WOM weight. Source attributes are represented by two-level probability distributions and cover positive and negative evoked emotion, simple language, political, geographic and social proximity, sensationalism, information quality, information entertainment value, source credibility, audiovisual material, hashtags, and links. These dimensions are paired by name with user weights. The setup allows the same observed source characteristic to be attractive to one user and less influential to another.
+
+\input{tablas/configuration}
+
+\subsection{Scheduling and source selection}
+
+Each period follows a fixed schedule. First, sources produce their period-specific true or false states. Each user then evaluates known sources using active endorsements, applies the stochastic source-selection rule, and records one selected source when reach permits. The reporting subsystem stores selections per source, source truth states, and the cumulative number of distinct reposters. Timed scenarios update source attributes at their configured starting period. After decisions and reports, WOM recommendations are generated for use by contacts in the subsequent decision process.
+
+The evaluation process converts source attribute distributions and user weights into endorsement events. Let $E_{u,s,t}$ denote the set of active endorsements that user $u$ holds for source $s$ at period $t$. A memory horizon $m$ retains endorsement $e$ when its period is newer than $t-m$; $m=-1$ denotes infinite memory. The source score is an aggregation of active evidence. Selection is stochastic rather than a deterministic maximum, allowing repeated runs to explore the distribution induced by attribute sampling and social feedback.
+
+When source reach is disabled, every user selects exactly one source per period, so the four source counts sum to 400. When reach is enabled, a user may know no eligible source and contribute no selection. The denominator nevertheless remains the 400-agent population. This convention treats non-exposure as absence of reposting and prevents a reduced exposed population from mechanically inflating shares.
+
+\subsection{WOM and outcome-specific policies}
+
+WOM operates through contacts. A recommending user supplies evidence about a recently selected source. The receiver aggregates friend evaluations and deterministically identifies the strongest recommendation. If the source is previously unknown, it is added once to the receiver's known-source set. The model then applies the configured outcome policy after identifying whether the recommended item was false or true.
+
+The policy values are \texttt{PENALIZE} ($-1$), \texttt{IGNORE} ($0$), and \texttt{REWARD} ($+1$). The signed policy is distinct from the user's WOM weight: the policy sets the direction of evidence, whereas the user attribute determines its importance in subsequent evaluation. An ignored outcome creates no endorsement. This implementation supports four central experimental regimes: false penalised or ignored, crossed with true rewarded or ignored. A positive treatment of false news is retained as a deliberately adverse counterfactual.
+
+Three baseline WOM configurations isolate the mechanism. B0 disables WOM. B1 enables WOM but ignores both false and true outcomes, preserving discovery without outcome evidence. B2 enables WOM, penalises false outcomes, and rewards true ones. A B1--B0 contrast isolates discovery under the baseline source ecology, whereas B2--B1 isolates truth-sensitive outcome feedback.
+
+\subsection{Source credibility and false-publication generation}
+
+Credibility is both a perceived source attribute and an input to false-news generation in the current implementation. A source's probability of publishing fake news is obtained from its credibility distribution. This coupling is consequential. If a fake-news source copies a traditional source's credibility, its content-generation probability also becomes traditional-like. A larger selection share may then coexist with fewer false reposts.
+
+The model records every source's binary false-news state in every period. This report was introduced specifically to prevent interpretation from relying on source identity alone. A selection from \texttt{FAKE\_NEWS\_SOURCE} is not automatically classified as a false repost; it is false only when that source's state in the same period equals one. Conversely, a selection from a traditional or mixed source contributes to the fake-repost count if that source published a false item in that period.
+
+For run $r$, the target-source selection share over the final 100 periods is
+\begin{equation}
+S_r = \frac{1}{100}\sum_{t=301}^{400}\frac{N_{\mathrm{target},t}}{400},
+\end{equation}
+where $N_{s,t}$ is the number of users selecting source $s$. The corresponding realised fake-repost share is
+\begin{equation}
+F_r = \frac{1}{100}\sum_{t=301}^{400}\frac{\sum_s N_{s,t}I_{s,t}^{\mathrm{false}}}{400},
+\end{equation}
+where $I_{s,t}^{\mathrm{false}}$ is the source's binary publication state. The cumulative count extends the numerator over all 400 periods without dividing by population or time.
+
+\subsection{Scenario mechanism}
+
+Scenarios copy attributes from a donor source A to a target source B at a configured period. The Excel scenario sheet names the donor, target, start period, and optional list of attributes. An explicit list copies only those dimensions. An empty list is a shortcut for copying all attributes. The experiment harness creates temporary workbooks and invokes the unchanged Java command-line entry point, keeping experiment-specific concerns outside the production simulation core.
+
+We define three copy scopes. \emph{Credibility-only} copies just source credibility and therefore primarily diagnoses the coupled false-publication mechanism. \emph{Non-credibility} copies every source attribute except credibility; it changes engagement-related competitiveness while preserving the target's original false-publication propensity. \emph{All-copy} copies every source attribute and represents complete imitation. The non-credibility treatment is the primary dissemination scenario. The other two are necessary to understand why target selection and false reposting can move in opposite directions.
+
+\subsection{Implementation and reproducibility}
+
+The reference implementation is written in Java. Configuration and source attributes are loaded from Excel workbooks, while the experiment harness uses Python and shell scripts to produce isolated workbook variants and execute the generic CLI. An experiment-only launcher seeds Java's pseudo-random source so that treatment and control can share initial random streams. The analyzer validates workbooks, derives run-level metrics, performs matched comparisons, and saves CSV summaries and static figures. The repository is publicly available at \url{https://github.com/pleger/FAKENEWS-ABM}. The exact experiment directories and commands are stated in Section~\ref{sec:design} and the data-availability declaration.

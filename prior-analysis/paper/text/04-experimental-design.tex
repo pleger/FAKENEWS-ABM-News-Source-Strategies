@@ -1,0 +1,52 @@
+\section{Experimental design and analysis}
+\label{sec:design}
+
+\subsection{Phased design}
+
+The analysis consolidates three completed experiment roots while preserving their different purposes. The first root, \texttt{research\_questions\_20260812\_180619}, contains 814 run-level records from exploratory questions on copy scope, memory and timing, WOM under network variation, and seeded replication. The second, \texttt{dissemination\_experiments\_20260813\_215632}, contains 178 baseline runs. The third, \texttt{dissemination\_experiments\_20260814\_083018}, contains 1,911 strategy, confirmation, and robustness runs. Together they provide 2,903 simulation runs.
+
+The phases are used hierarchically. Baseline checks test whether the implementation produces expected publication rates and a directional WOM response. The broad strategy grid maps interactions and ranks candidate conditions. The confirmation phase repeats six policy-specific non-credibility contrasts with 30 common seeds. Robustness analyses vary supported network opportunity and reach. The exploratory phase supplies additional memory values, WOM-on/off contrasts, and evidence about seed pairing. We do not pool all runs into a single regression because configurations and estimands differ across phases.
+
+\input{tablas/experiment-design}
+
+\subsection{Baseline design}
+
+The baseline uses 30 common seeds, numbered 1001--1030, for three conditions at memory 25. B0 disables WOM and uses the default signed outcome policy, which is inactive because no recommendations occur. B1 enables WOM but sets false and true outcomes to zero. B2 enables WOM, penalises false outcomes ($-1$), and rewards true outcomes ($+1$). All three use 15 contacts, a friends proportion of 0.33, and disabled source reach. The baseline also contains memory-sensitivity pairs at memory 10, 50, 100, and infinite with 11 seeds per condition, contrasting discovery-only and truth-sensitive WOM.
+
+Five a priori checks define baseline success. Four compare observed source-specific false-publication rates with configured values using an absolute tolerance of 0.02. The fifth requires the upper bound of the paired 95\% confidence interval for B2 minus B1 fake-repost share to be below zero. B1 minus B0 is reported but was not required to be non-zero.
+
+\subsection{Strategy matrix}
+
+The strategy phase uses memories 25, 100, and infinite; false-news WOM outcomes $-1$, $0$, and $+1$; true-news outcome $+1$; and activation periods 1, 25, 50, and 100. For every memory-policy combination, 11 common seeds are run for a no-scenario control and for credibility-only, non-credibility, and all-copy treatments. Each treatment is compared only with the control that has the same memory, WOM policies, contact configuration, reach configuration, and seed. This produces 1,287 runs and 108 paired treatment effects.
+
+The confirmation phase fixes memory at 25, activates non-credibility copying in period 1, and crosses false-news outcomes $-1$, $0$, and $+1$ with true-news outcomes $0$ and $+1$. Each of the six treatment-control pairs uses seeds 1001--1030, giving 360 runs. This design tests whether the large differences associated with ignoring true recommendations persist with more replications.
+
+\subsection{Robustness and exploratory matrices}
+
+The robustness phase fixes non-credibility copying at period 1, memory 25, false-news penalisation, and true-news reward. It varies the number of contacts across 6, 15, and 27. For each contact count, source reach is either disabled or enabled with target reach 14.7\%, 46.7\%, or 81.2\%. Each treatment and matched control uses 11 common seeds, producing 264 runs and 12 paired effects. The model has no homophily parameter, so the experiment does not claim a homophily sensitivity result.
+
+The earlier exploratory matrix examines engagement-only and all-copy scenarios under memory 25 and infinite, with WOM on or off. Its memory/timing grid contains memories 5, 10, 25, 50, 100, and infinite crossed with activation periods 1, 25, 50, and 100. Its network matrix compares WOM on and off for realised contact degrees 1, 4, and 8, with source reach disabled or enabled. Finally, 20 conditions are rerun with common seeds to compare rank ordering and paired precision against earlier unpaired estimates.
+
+\subsection{Metrics and estimands}
+
+The primary metric is realised fake-repost share in periods 301--400, $F_r$. Secondary metrics are target-source selection share in the same window, cumulative fake reposts across all periods, target-source false-publication rate, and the number of unique target-source reposters at period 400. The final-100 window was chosen before the consolidated analysis to emphasise sustained late-run behaviour while retaining the cumulative metric for total burden.
+
+For each treatment $T$ and matched control $C$, run-level differences are constructed by seed:
+\begin{equation}
+D_i = Y_{T,i} - Y_{C,i}, \qquad i=1,\ldots,n.
+\end{equation}
+The reported effect is $\bar{D}$. Its standard error is $s_D/\sqrt{n}$, and the 95\% interval is
+\begin{equation}
+\bar{D} \pm t_{0.975,n-1}\frac{s_D}{\sqrt{n}}.
+\end{equation}
+The archived analyzer initially displayed normal-approximation intervals using 1.96. We independently recomputed headline intervals with Student's $t$ distribution for this manuscript; point estimates are unchanged. Because the strategy grid contains many comparisons, its ranking is descriptive and exploratory. No multiplicity correction is applied. Confirmatory emphasis is placed on the six pre-specified policy cells with 30 pairs.
+
+\subsection{Validation and quality controls}
+
+Every new-suite output workbook was required to contain exactly 400 period rows in the repost, fake-news-state, and unique-reposter sheets. Simulation-period keys had to be unique, source truth states binary, and selection totals within 0--400. With source reach disabled, the source totals had to equal 400 in every period. Metadata in the manifest was matched to each workbook, and expected run counts were checked: 178 baseline, 1,287 strategy, 360 confirmation, and 264 robustness runs.
+
+The baseline root passed all five behavioural checks. The strategy root does not repeat baseline conditions and therefore reports zero baseline checks by design; its 1,911 workbooks all passed structural loading and metric construction. The exploratory root separately reports 274 workbooks and 814 internal simulation runs with balanced condition coverage. The distinction occurs because earlier workbooks contain multiple repetitions, whereas the seeded launcher writes one run per workbook.
+
+Common random numbers improve precision only if shared randomness induces positive correlation between treatment and control. Scenario branches can cause random streams to diverge later, so pairing is not assumed to help universally. We therefore report the ratio of paired to prior unpaired standard errors. A ratio below one indicates improvement. Rank reproduction is assessed with Spearman's $\rho$ across the 20 shared conditions.
+
+All analysis is descriptive of the implemented model. We use causal language only for within-model interventions whose treatment-control difference is mechanically defined by the scenario. We do not interpret the Monte Carlo intervals as uncertainty about a real population, and we do not claim empirical calibration.

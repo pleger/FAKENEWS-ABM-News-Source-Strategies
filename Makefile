@@ -4,10 +4,12 @@ JAR ?= jar
 VERSION ?= 0.1.0
 APP_NAME := FAKENEWS-ABM
 CLASSPATH := build/classes:lib/*
+STUDY_CLASS ?= experiment.NewsSourceStrategiesStudy
+STUDY_BASE ?= input/FAKENEWS_BASELINE_4_STRATEGIES.xlsx
 DIST_DIR := dist/$(APP_NAME)-$(VERSION)
 DIST_ZIP := dist/$(APP_NAME)-$(VERSION).zip
 
-.PHONY: build test jar dist run study-plan clean
+.PHONY: build test jar dist run study-plan study-run clean
 
 build:
 	mkdir -p build/classes
@@ -32,8 +34,10 @@ run: build
 	$(JAVA) -cp "$(CLASSPATH)" Main --input FAKENEWS_BASELINE --no-gui
 
 study-plan: build
-	@test -n "$(STUDY_CLASS)" || (echo "Set STUDY_CLASS to an experiment.StudyProvider implementation" && exit 2)
-	$(JAVA) -cp "$(CLASSPATH)" experiment.StudyMain --study-class "$(STUDY_CLASS)" $(ARGS)
+	$(JAVA) -cp "$(CLASSPATH)" experiment.StudyMain --study-class "$(STUDY_CLASS)" --base "$(STUDY_BASE)" $(ARGS)
+
+study-run: build
+	$(JAVA) -cp "$(CLASSPATH)" experiment.StudyMain --study-class "$(STUDY_CLASS)" --base "$(STUDY_BASE)" $(ARGS) --execute
 
 clean:
 	rm -rf build dist output
