@@ -7,7 +7,7 @@ CLASSPATH := build/classes:lib/*
 DIST_DIR := dist/$(APP_NAME)-$(VERSION)
 DIST_ZIP := dist/$(APP_NAME)-$(VERSION).zip
 
-.PHONY: build test jar dist run clean
+.PHONY: build test jar dist run study-plan clean
 
 build:
 	mkdir -p build/classes
@@ -30,6 +30,10 @@ test: build
 
 run: build
 	$(JAVA) -cp "$(CLASSPATH)" Main --input FAKENEWS_BASELINE --no-gui
+
+study-plan: build
+	@test -n "$(STUDY_CLASS)" || (echo "Set STUDY_CLASS to an experiment.StudyProvider implementation" && exit 2)
+	$(JAVA) -cp "$(CLASSPATH)" experiment.StudyMain --study-class "$(STUDY_CLASS)" $(ARGS)
 
 clean:
 	rm -rf build dist output

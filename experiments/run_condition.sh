@@ -36,8 +36,8 @@ MAIN_OPTIONS=(--input "$INPUT_COPY" --periods 400 --agents 400 --learning-period
 if [[ "$SEED" == "none" ]]; then
   COMMAND=("$JAVA_BIN" -cp "build/classes:lib/*" Main --repetitions 10 "${MAIN_OPTIONS[@]}")
 else
-  COMMAND=("$JAVA_BIN" --add-opens java.base/java.lang=ALL-UNNAMED
-    -cp "build/classes:lib/*" SeededMain --seed "$SEED" --repetitions 0 "${MAIN_OPTIONS[@]}")
+  COMMAND=("$JAVA_BIN" -cp "build/classes:lib/*" SeededMain
+    --seed "$SEED" --repetitions 0 "${MAIN_OPTIONS[@]}")
 fi
 
 printf 'Starting %s\n' "$CONDITION"

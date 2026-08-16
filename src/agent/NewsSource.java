@@ -5,6 +5,7 @@ import inputManager.InnerNewsSource;
 import simulation.Step;
 import utils.Console;
 import utils.Error;
+import utils.Randomness;
 import simulation.FlyWeight;
 
 import java.util.*;
@@ -19,7 +20,8 @@ public class NewsSource implements FlyWeight, Step {
     private final int ID;
     private final String name;
     private final double reach;
-    private final String CREDIBILITY = "CREDIBILIDAD DE LA FUENTE";
+    private static final String CREDIBILITY = "CREDIBILIDAD DE LA FUENTE";
+    private final Double fakeNewsProbability;
     private final InnerNewsSource innerNewsSource;
     private AttributesNewsSource attributes;
     private Set<Integer> uniqueSNSUsers;
@@ -34,6 +36,7 @@ public class NewsSource implements FlyWeight, Step {
         this.ID = counter++;
         this.name = innerNewsSource.name;
         this.reach = innerNewsSource.reach;
+        this.fakeNewsProbability = innerNewsSource.fakeNewsProbability;
         this.attributes = new AttributesNewsSource(innerNewsSource.attributeNames, innerNewsSource.attributeValues);
         this.innerNewsSource = innerNewsSource;
         this.fakenews = new HashMap<Integer,Boolean>();
@@ -75,6 +78,14 @@ public class NewsSource implements FlyWeight, Step {
     }
 
     /**
+     * Returns the configured objective fake-news probability, or {@code null} when this source was
+     * loaded from a legacy workbook that retains the credibility-based rule.
+     */
+    public Double getFakeNewsProbability() {
+        return fakeNewsProbability;
+    }
+
+    /**
      * Supplies distributions for endorsement generation and scenario processing.
      *
      * @return current source attributes, including any active scenario transformation
@@ -111,8 +122,10 @@ public class NewsSource implements FlyWeight, Step {
     }
 
     private boolean publishesFakeNews() {
-       //we compared the LOW LEVEL credibility to check if the source publishes a fake news
-       return attributes.getValues(CREDIBILITY)[0] > Math.random();
+       double probability = fakeNewsProbability == null
+               ? attributes.getValues(CREDIBILITY)[0]
+               : fakeNewsProbability;
+       return probability > Randomness.nextDouble();
     }
 
     /**
@@ -180,6 +193,8 @@ public class NewsSource implements FlyWeight, Step {
                 "id=" + ID + "," +
                 "name='" + name + '\'' + "," +
                 "reach='" + reach + '\'' + "," +
+                "fakeNewsProbability='" + (fakeNewsProbability == null
+                        ? "LEGACY_CREDIBILITY" : fakeNewsProbability) + '\'' + "," +
                 "attributes=" + attributes + "," +
                 "fakenews='" + (fakenews.isEmpty()? "": wasLastFakeNews()) + '\'' +
                 '}';

@@ -18,10 +18,14 @@ public class NewsSources {
      * @param names source names in worksheet order
      * @param reach source names mapped to normalized visibility probabilities
      */
-    public static void set(HashMap<String, ArrayList<Double[]>> data, ArrayList<String> names, HashMap<String,Double> reach) {
+    public static void set(HashMap<String, ArrayList<Double[]>> data, ArrayList<String> names,
+                           HashMap<String,Double> reach, HashMap<String, Double> fakeNewsProbabilities) {
         innerNewsSources.clear();
         for (String name : names) {
-            innerNewsSources.add(new InnerNewsSource(name, reach.get(name)));
+            Double fakeNewsProbability = fakeNewsProbabilities == null
+                    ? null
+                    : fakeNewsProbabilities.get(name);
+            innerNewsSources.add(new InnerNewsSource(name, reach.get(name), fakeNewsProbability));
         }
 
         for (Map.Entry<String, ArrayList<Double[]>> entry : data.entrySet()) {

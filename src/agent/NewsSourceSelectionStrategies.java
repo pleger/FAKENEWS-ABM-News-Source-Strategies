@@ -1,6 +1,7 @@
 package agent;
 
 import utils.Error;
+import utils.Randomness;
 
 import java.util.Map;
 
@@ -46,7 +47,7 @@ public class NewsSourceSelectionStrategies {
         }
 
         int selected = -1;
-        double random = Math.random();
+        double random = Randomness.nextDouble();
         double sum = sum(evaluations);
         double acc = 0;
 

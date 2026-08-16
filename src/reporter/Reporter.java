@@ -57,6 +57,8 @@ public class Reporter {
             addSheet(workbook, Loader.getNewsSources());
             addSheet(workbook, Loader.getSNSUsers());
             addSheet(workbook, Loader.getSourceReach());
+            if (Loader.getSourceBehavior() != null) addSheet(workbook, Loader.getSourceBehavior());
+            if (Loader.getStrategies() != null) addSheet(workbook, Loader.getStrategies());
             if (Configuration.SCENARIO != Configuration.DISABLED) addScenarioSheet(workbook);
 
 
@@ -84,8 +86,14 @@ public class Reporter {
     private static void addScenarioSheet(XSSFWorkbook workbook) {
         addSheet(workbook, Loader.getScenario());
         Sheet outputScenario = workbook.getSheet("Scenario");
-        outputScenario.getRow(0).getCell(2).setCellValue(
-                ScenarioFactory.get(Configuration.SCENARIO).getStartPeriod());
+        Scenario scenario = ScenarioFactory.get(Configuration.SCENARIO);
+        boolean headerBased = "FROM".equalsIgnoreCase(
+                outputScenario.getRow(0).getCell(0).toString().trim());
+        int definitionRow = headerBased ? 1 : 0;
+        outputScenario.getRow(definitionRow).getCell(2).setCellValue(scenario.getStartPeriod());
+        if (headerBased) {
+            outputScenario.getRow(definitionRow).getCell(3).setCellValue(scenario.getEndPeriod());
+        }
     }
 
     /** Clears all accumulated rows before a new top-level CLI execution begins. */
@@ -122,6 +130,9 @@ public class Reporter {
                 ++column;
             }
             headRow.createCell(column).setCellValue("SCENARIO_ATTRIBUTES");
+            headRow.createCell(column + 1).setCellValue("SCENARIO_STRATEGIES");
+            headRow.createCell(column + 2).setCellValue("START_PERIOD");
+            headRow.createCell(column + 3).setCellValue("END_PERIOD");
 
             int rowIndex = 1;
             for (NewsSource mk : newsSources) {
@@ -138,10 +149,13 @@ public class Reporter {
                     ++column;
                 }
                 dataRow.createCell(column).setCellValue(scenario.getAttributeSelectionDescription());
+                dataRow.createCell(column + 1).setCellValue(scenario.getStrategySelectionDescription());
+                dataRow.createCell(column + 2).setCellValue(scenario.getStartPeriod());
+                dataRow.createCell(column + 3).setCellValue(scenario.getEndPeriod());
                 ++rowIndex;
             }
 
-            setReadableColumnWidths(scenarios, 4 + newsSources.get(0).getAttributes().getNames().length);
+            setReadableColumnWidths(scenarios, 7 + newsSources.get(0).getAttributes().getNames().length);
         }
     }
 

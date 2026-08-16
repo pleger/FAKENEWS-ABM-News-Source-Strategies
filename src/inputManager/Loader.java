@@ -15,6 +15,11 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Resolves and parses the Excel input workbook, populating configuration, source, user, and
@@ -25,6 +30,8 @@ public class Loader {
     private static Sheet newsSources;
     private static Sheet snsUsers;
     private static Sheet sourceReach;
+    private static Sheet sourceBehavior;
+    private static Sheet strategies;
     private static Sheet scenario;
     private static Workbook workbook;
 
@@ -51,6 +58,7 @@ public class Loader {
             close();
             ScenarioFactory.clear();
             Scenarios.clear();
+            Strategies.clear();
 
             workbook = WorkbookFactory.create(file, null, true);
             showAvailableSheets(workbook);
@@ -61,13 +69,28 @@ public class Loader {
             newsSources = workbook.getSheet("NewsSources");
             snsUsers = workbook.getSheet("SNSUsers");
             sourceReach = workbook.getSheet("SourceReach");
+            sourceBehavior = workbook.getSheet("SourceBehavior");
+            strategies = workbook.getSheet("Strategies");
             scenario =  (Configuration.SCENARIO != Configuration.DISABLED)? workbook.getSheet("Scenario"): null;
 
+            HashMap<String, ArrayList<Double[]>> sourceAttributes =
+                    readNewsSourceAttributes(getNewsSources(), Configuration.LEVELS);
+            ArrayList<String> sourceNames =
+                    readNewsSourceNames(getNewsSources(), Configuration.LEVELS);
+            HashMap<String, Double> fakeNewsProbabilities = null;
+            if (sourceBehavior == null) {
+                Console.warn("Loader: SourceBehavior is absent; preserving the legacy rule that "
+                        + "derives fake-news probability from current low credibility");
+            } else {
+                fakeNewsProbabilities = readSourceBehavior(sourceBehavior, sourceNames);
+            }
 
+            NewsSources.set(sourceAttributes, sourceNames, readSourceReach(getSourceReach()),
+                    fakeNewsProbabilities);
 
-            NewsSources.set(readNewsSourceAttributes(getNewsSources(), Configuration.LEVELS),
-                    readNewsSourceNames(getNewsSources(), Configuration.LEVELS),
-                    readSourceReach(getSourceReach()));
+            if (strategies != null) {
+                Strategies.set(readStrategies(strategies, sourceAttributes.keySet()));
+            }
 
             SNSUsers.set(readSNSUsers(getSNSUsers()));
             if (Configuration.SCENARIO != Configuration.DISABLED) readScenario(getScenario());
@@ -117,29 +140,162 @@ public class Loader {
      */
     private static void readScenario(Sheet scenario) {
         Console.info("Loader: Reading Scenario");
-        String from;
-        String to;
-        int start;
+        Row firstRow = scenario.getRow(0);
+        Error.setAssert(firstRow != null, "Scenario: worksheet is empty");
+        boolean newFormat = isNewScenarioFormat(firstRow);
+        Row row = scenario.getRow(newFormat ? 1 : 0);
+        Error.setAssert(row != null, "Scenario: scenario definition row is missing");
+
+        String from = requiredString(row, 0, "Scenario FROM").toUpperCase();
+        String to = requiredString(row, 1, "Scenario TO").toUpperCase();
+        int start = requiredInteger(row, 2, "Scenario START_PERIOD");
+        int end = -1;
+        ArrayList<String> strategyNames = new ArrayList<>();
         ArrayList<String> attNames = new ArrayList<>();
 
-        Row row = scenario.getRow(0);
-        from = row.getCell(0).getStringCellValue().toUpperCase();
-        to = row.getCell(1).getStringCellValue().toUpperCase();
-        start = (int) row.getCell(2).getNumericCellValue();
-
-        for (int i = 3; i < row.getLastCellNum(); ++i) {
-            Cell cell = row.getCell(i, Row.MissingCellPolicy.RETURN_BLANK_AS_NULL);
-            if (cell == null) {
-                continue;
+        if (newFormat) {
+            Cell endCell = row.getCell(3, Row.MissingCellPolicy.RETURN_BLANK_AS_NULL);
+            if (endCell != null) {
+                end = integerCell(endCell, "Scenario END_PERIOD");
             }
-
-            String attributeName = cell.getStringCellValue().trim();
-            if (!attributeName.isEmpty()) {
-                attNames.add(attributeName.toUpperCase());
-            }
+            addCommaSeparatedNames(row.getCell(4, Row.MissingCellPolicy.RETURN_BLANK_AS_NULL),
+                    strategyNames);
         }
 
-        Scenarios.set(from, to, start, attNames);
+        int attributesStart = newFormat ? 5 : 3;
+        for (int i = attributesStart; i < row.getLastCellNum(); ++i) {
+            Cell cell = row.getCell(i, Row.MissingCellPolicy.RETURN_BLANK_AS_NULL);
+            addCommaSeparatedNames(cell, attNames);
+        }
+
+        Error.setAssert(start >= 1 && start <= Configuration.PERIODS,
+                "Scenario: START_PERIOD must be within 1.." + Configuration.PERIODS);
+        ArrayList<String> resolvedAttributes = Strategies.resolve(strategyNames, attNames);
+        validateScenarioDefinition(from, to, resolvedAttributes);
+        Scenarios.set(from, to, start, end, strategyNames, resolvedAttributes);
+    }
+
+    /** Validates scenario source names and dimensions during input loading, before simulation starts. */
+    private static void validateScenarioDefinition(String from, String to, List<String> attributes) {
+        InnerNewsSource source = null;
+        InnerNewsSource target = null;
+        for (InnerNewsSource candidate : NewsSources.getInnerNewsSources()) {
+            if (candidate.name.equals(from)) source = candidate;
+            if (candidate.name.equals(to)) target = candidate;
+        }
+        Error.setAssert(source != null, "Scenario: FROM source was not found: " + from);
+        Error.setAssert(target != null, "Scenario: TO source was not found: " + to);
+
+        List<String> required = attributes.isEmpty() ? source.attributeNames : attributes;
+        Error.setAssert(source.attributeNames.containsAll(required),
+                "Scenario: some attributes were not found in FROM source: " + required);
+        Error.setAssert(target.attributeNames.containsAll(required),
+                "Scenario: some attributes were not found in TO source: " + required);
+    }
+
+    /** Detects the header-based scenario schema without changing legacy row-zero semantics. */
+    private static boolean isNewScenarioFormat(Row firstRow) {
+        Cell from = firstRow.getCell(0, Row.MissingCellPolicy.RETURN_BLANK_AS_NULL);
+        Cell start = firstRow.getCell(2, Row.MissingCellPolicy.RETURN_BLANK_AS_NULL);
+        return from != null && start != null
+                && "FROM".equalsIgnoreCase(from.toString().trim())
+                && "START_PERIOD".equalsIgnoreCase(start.toString().trim());
+    }
+
+    /** Appends comma-separated, uppercase identifiers from one optional workbook cell. */
+    private static void addCommaSeparatedNames(Cell cell, ArrayList<String> destination) {
+        if (cell == null || cell.toString().trim().isEmpty()) {
+            return;
+        }
+        for (String token : cell.toString().split(",")) {
+            String normalized = token.trim().toUpperCase();
+            if (!normalized.isEmpty()) {
+                destination.add(normalized);
+            }
+        }
+    }
+
+    private static String requiredString(Row row, int column, String label) {
+        Cell cell = row.getCell(column, Row.MissingCellPolicy.RETURN_BLANK_AS_NULL);
+        Error.setAssert(cell != null && !cell.toString().trim().isEmpty(), label + " is required");
+        return cell.toString().trim();
+    }
+
+    private static int requiredInteger(Row row, int column, String label) {
+        Cell cell = row.getCell(column, Row.MissingCellPolicy.RETURN_BLANK_AS_NULL);
+        Error.setAssert(cell != null, label + " is required");
+        return integerCell(cell, label);
+    }
+
+    private static int integerCell(Cell cell, String label) {
+        Error.setAssert(cell.getCellType() == Cell.CELL_TYPE_NUMERIC, label + " must be numeric");
+        double value = cell.getNumericCellValue();
+        Error.setAssert(Double.isFinite(value) && value == Math.rint(value), label + " must be an integer");
+        return (int) value;
+    }
+
+    /** Reads and validates one explicit objective fake-news probability for every source. */
+    private static HashMap<String, Double> readSourceBehavior(Sheet sheet, List<String> sourceNames) {
+        Console.info("Loader: Reading SourceBehavior");
+        Row header = sheet.getRow(0);
+        Error.setAssert(header != null
+                        && "SOURCE".equalsIgnoreCase(requiredString(header, 0, "SourceBehavior SOURCE header"))
+                        && "FAKE_NEWS_PROBABILITY".equalsIgnoreCase(
+                                requiredString(header, 1, "SourceBehavior FAKE_NEWS_PROBABILITY header")),
+                "SourceBehavior: expected headers SOURCE and FAKE_NEWS_PROBABILITY");
+
+        HashMap<String, Double> result = new HashMap<>();
+        for (int rowIndex = 1; rowIndex <= sheet.getLastRowNum(); ++rowIndex) {
+            Row row = sheet.getRow(rowIndex);
+            if (row == null || row.getCell(0, Row.MissingCellPolicy.RETURN_BLANK_AS_NULL) == null) {
+                continue;
+            }
+            String source = requiredString(row, 0, "SourceBehavior SOURCE").toUpperCase();
+            Cell probabilityCell = row.getCell(1, Row.MissingCellPolicy.RETURN_BLANK_AS_NULL);
+            Error.setAssert(probabilityCell != null
+                            && probabilityCell.getCellType() == Cell.CELL_TYPE_NUMERIC,
+                    "SourceBehavior: probability must be numeric for " + source);
+            double probability = probabilityCell.getNumericCellValue();
+            Error.setAssert(Double.isFinite(probability) && probability >= 0.0 && probability <= 1.0,
+                    "SourceBehavior: probability must be within [0,1] for " + source);
+            Error.setAssert(!result.containsKey(source),
+                    "SourceBehavior: duplicate source: " + source);
+            result.put(source, probability);
+        }
+
+        Set<String> expected = new LinkedHashSet<>(sourceNames);
+        Error.setAssert(result.keySet().equals(expected),
+                "SourceBehavior: sources must exactly match NewsSources; expected " + expected
+                        + " but found " + result.keySet());
+        return result;
+    }
+
+    /** Reads the normalized STRATEGY/ATTRIBUTE catalog and validates model dimensions. */
+    private static Map<String, List<String>> readStrategies(Sheet sheet, Set<String> validAttributes) {
+        Console.info("Loader: Reading Strategies");
+        Row header = sheet.getRow(0);
+        Error.setAssert(header != null
+                        && "STRATEGY".equalsIgnoreCase(requiredString(header, 0, "Strategies STRATEGY header"))
+                        && "ATTRIBUTE".equalsIgnoreCase(requiredString(header, 1, "Strategies ATTRIBUTE header")),
+                "Strategies: expected headers STRATEGY and ATTRIBUTE");
+
+        Map<String, List<String>> result = new LinkedHashMap<>();
+        Set<String> pairs = new LinkedHashSet<>();
+        for (int rowIndex = 1; rowIndex <= sheet.getLastRowNum(); ++rowIndex) {
+            Row row = sheet.getRow(rowIndex);
+            if (row == null || row.getCell(0, Row.MissingCellPolicy.RETURN_BLANK_AS_NULL) == null) {
+                continue;
+            }
+            String strategy = requiredString(row, 0, "Strategies STRATEGY").toUpperCase();
+            String attribute = requiredString(row, 1, "Strategies ATTRIBUTE").toUpperCase();
+            Error.setAssert(validAttributes.contains(attribute),
+                    "Strategies: attribute is not present in NewsSources: " + attribute);
+            Error.setAssert(pairs.add(strategy + "\u0000" + attribute),
+                    "Strategies: duplicate strategy/attribute pair: " + strategy + " / " + attribute);
+            result.computeIfAbsent(strategy, key -> new ArrayList<>()).add(attribute);
+        }
+        Error.setAssert(!result.isEmpty(), "Strategies: worksheet contains no definitions");
+        return result;
     }
 
 
@@ -335,6 +491,16 @@ public class Loader {
     public static Sheet getSourceReach() {
         verifyLoadedSheet(sourceReach, "SourceReach");
         return sourceReach;
+    }
+
+    /** Returns the optional explicit source-behavior worksheet, or {@code null} for legacy inputs. */
+    public static Sheet getSourceBehavior() {
+        return sourceBehavior;
+    }
+
+    /** Returns the optional strategy-catalog worksheet, or {@code null} for legacy inputs. */
+    public static Sheet getStrategies() {
+        return strategies;
     }
 
     /**

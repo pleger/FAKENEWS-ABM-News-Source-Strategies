@@ -10,6 +10,11 @@ import java.util.Arrays;
 public class InnerNewsSource {
     public final String name;
     public final double reach;
+    /**
+     * Objective probability of publishing fake news. A {@code null} value identifies a legacy
+     * workbook, whose historical credibility-based publication rule must be preserved.
+     */
+    public final Double fakeNewsProbability;
     public final ArrayList<String> attributeNames;
     public final ArrayList<Double[]> attributeValues;
 
@@ -19,9 +24,10 @@ public class InnerNewsSource {
      * @param name workbook source name
      * @param reach normalized visibility probability
      */
-    InnerNewsSource(String name, double reach) {
+    InnerNewsSource(String name, double reach, Double fakeNewsProbability) {
         this.name = name;
         this.reach = reach;
+        this.fakeNewsProbability = fakeNewsProbability;
         attributeNames = new ArrayList<>();
         attributeValues = new ArrayList<>();
     }
@@ -46,6 +52,9 @@ public class InnerNewsSource {
     public String toString() {
         StringBuilder text = new StringBuilder(name);
         text.append("{reach:").append(reach).append("}");
+        text.append("{fakeNewsProbability:")
+                .append(fakeNewsProbability == null ? "LEGACY_CREDIBILITY" : fakeNewsProbability)
+                .append("}");
 
         for (int i = 0; i < attributeNames.size(); ++i) {
             String result = Arrays.toString(attributeValues.get(i));

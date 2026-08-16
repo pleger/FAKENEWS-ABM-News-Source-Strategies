@@ -5,6 +5,7 @@ import agent.NewsSource;
 import gui.Chart;
 import inputManager.Configuration;
 import utils.Console;
+import utils.Randomness;
 import reporter.ReportRegister;
 import reporter.Reporter;
 import scenarios.ScenarioManager;
@@ -49,6 +50,7 @@ public class Simulation implements FlyWeight, Step, ReportRegister {
     public void reinit() {
         ++Simulation.ID;
         newsSources.iterator().forEachRemaining(NewsSource::reinit);
+        ScenarioManager.reinit();
         snsUsers.iterator().forEachRemaining(SNSUser::reinit);
         snsUsers.iterator().forEachRemaining(snsUser -> snsUser.setFriends(snsUsers));
         snsUsers.iterator().forEachRemaining(snsUser -> snsUser.setKnowNewsSources(filterReach(newsSources)));
@@ -71,7 +73,7 @@ public class Simulation implements FlyWeight, Step, ReportRegister {
 
         double random;
         for (NewsSource mk : newsSources) {
-            random = Math.random();
+            random = Randomness.nextDouble();
             if (random < mk.getReach()) {
                 filteredNewsSource.add(mk);
             }

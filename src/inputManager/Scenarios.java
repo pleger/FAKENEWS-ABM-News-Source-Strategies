@@ -20,8 +20,10 @@ public class Scenarios {
      * @param start activation period
      * @param attributesName attribute names to transfer
      */
-    public static void set(String from, String to, int start, ArrayList<String> attributesName) {
-       scenario = new Scenario(ScenarioFactory.CUSTOMIZED, start, from, to, attributesName);
+    public static void set(String from, String to, int start, int end,
+                           ArrayList<String> strategyNames, ArrayList<String> attributesName) {
+       scenario = new Scenario(ScenarioFactory.CUSTOMIZED, start, end, from, to,
+               strategyNames, attributesName);
     }
 
     /**

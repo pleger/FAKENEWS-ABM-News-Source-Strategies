@@ -10,6 +10,7 @@ import inputManager.Configuration;
 import inputManager.InnerSNSUser;
 import utils.Console;
 import utils.Error;
+import utils.Randomness;
 import reporter.ReportRegister;
 import reporter.Reporter;
 import reporter.EndorsementData;
@@ -72,7 +73,7 @@ public class SNSUser implements Step, FlyWeight, ReportRegister {
         int friendSize = Math.min((int) (Configuration.CONTACTS * Configuration.FRIENDS), Math.max(0, snsUsers.size() - 1));
 
         while (friendCounter < friendSize) {
-            SNSUser potentialContact = snsUsers.get((int) (Math.random() * snsUsers.size()));
+            SNSUser potentialContact = snsUsers.get((int) (Randomness.nextDouble() * snsUsers.size()));
             if (addFriend(potentialContact)) {
                 ++friendCounter;
             }

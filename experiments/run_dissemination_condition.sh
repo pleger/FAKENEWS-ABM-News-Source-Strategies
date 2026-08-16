@@ -34,8 +34,7 @@ fi
 
 WOM_OPTION=--no-wom
 if [[ "$WOM" == "1" ]]; then WOM_OPTION=--wom; fi
-COMMAND=("$JAVA_BIN" --add-opens java.base/java.lang=ALL-UNNAMED
-  -cp "build/classes:lib/*" SeededMain --seed "$SEED"
+COMMAND=("$JAVA_BIN" -cp "build/classes:lib/*" SeededMain --seed "$SEED"
   --input "$INPUT_COPY" --periods 400 --agents 400 --repetitions 0 --learning-periods 0
   "$WOM_OPTION" --wom-fake-news-effect "$FAKE_EFFECT" --wom-true-news-effect "$TRUE_EFFECT" --no-gui)
 

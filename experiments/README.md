@@ -1,5 +1,20 @@
 # CLI experiment runners
 
+## Java study orchestrator
+
+Typed Java study providers do not require Python to generate workbooks or execute simulations:
+
+```sh
+make study-plan STUDY_CLASS=your.package.YourStudyProvider
+java -cp "build/classes:lib/*" experiment.StudyMain \
+  --study-class your.package.YourStudyProvider --base input/your-study.xlsx \
+  --questions RQ1,RQ2 --jobs 2 --output output/studies/main --execute
+```
+
+Planning is the safe default. Execution requires `--execute`; supplying the same output directory
+resumes the study and skips runs marked complete. Python remains useful for statistical analysis,
+figures, and the legacy batch scripts documented below.
+
 This directory keeps batch-experiment concerns outside the Java simulation core. The runner creates
 temporary copies of an input workbook, changes configuration and scenario cells in those copies,
 and invokes the existing generic Java CLI.
@@ -18,9 +33,11 @@ uses 400 agents, 400 periods, saved fake-news state, and the current `REPETITION
 which executes simulations 1 through 11. Generated results remain under `output/`. Add
 `--keep-workbooks` when the generated input variants should also be retained for auditing.
 
-Use `--input path/to/workbook.xlsx` to select another source workbook. Scenario conditions require
-the workbook's `Scenario` sheet to define `FROM` in A1 and `TO` in B1. Columns D onward are preserved,
-so an empty attribute list continues to mean “copy all attributes.”
+Use `--input path/to/workbook.xlsx` to select another source workbook. Legacy scenario conditions
+require `FROM` in A1 and `TO` in B1; columns D onward remain explicit attributes and an empty list
+means “copy all attributes.” Header-based workbooks can additionally define reusable groups in
+`Strategies`, reference them from `Scenario`, and set an inclusive `END_PERIOD`. Workbooks with
+`SourceBehavior` keep objective fake-news probability independent from copied credibility.
 
 ## Follow-up research questions
 
@@ -50,9 +67,9 @@ Question 1 defines “engagement attributes” as every source attribute except 
 fuente`; this preserves the target source's original fake-news probability. Question 2 tests memory
 5, 10, 25, 50, 100, and infinite (`-1`) at scenario periods 1, 25, 50, and 100. Question 3 varies
 realized contact degree and the model's binary source-reach switch. The current simulation has no
-homophily parameter, so homophily cannot be estimated by the CLI harness alone. Question 5 uses an
-experiment-only launcher to seed `Math.random`; it requires Java's
-`--add-opens java.base/java.lang=ALL-UNNAMED` flag, which the runner supplies.
+homophily parameter, so homophily cannot be estimated by the CLI harness alone. Question 5 uses
+the model's explicit reproducible random seed support. The legacy `SeededMain` launcher remains as
+a compatibility wrapper around `Main --seed`.
 
 Empirical calibration (question 4) additionally requires observed target metrics and uncertainty
 or weights. No empirical repost, exposure, or credibility dataset is included in this repository,
@@ -122,11 +139,10 @@ PYTHON_BIN=/tmp/fakenews-experiment-venv/bin/python \
 
 The analyzer validates period rows and source fake-news states, calculates paired effects against
 matched controls, and creates CSV summaries, a Markdown report, and figures under `analysis/`.
-The primary outcome is actual fake-repost share. `non-credibility` is the principal camouflage
-scenario because it copies every traditional-source attribute except credibility and therefore
-retains the fake source's original probability of publishing fake news. `credibility` and `all`
-are mechanistic diagnostics because credibility also controls objective fake-news generation in
-the current model.
+The primary outcome is actual fake-repost share. In legacy workbooks, `non-credibility` remains the
+principal camouflage scenario because credibility also controls fake-news generation. In new
+workbooks with `SourceBehavior`, credibility is only perceived credibility, so credibility and
+all-attribute strategies no longer alter the source's objective fake-news probability.
 
 Expected run counts are 178 for `baseline` (including memory sensitivity), 1,287 for `strategies`,
 360 for `confirmation`, and 264 for `robustness`. Run the suites separately when results should be

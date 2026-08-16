@@ -203,7 +203,10 @@ public class Configuration {
     public static void setPath(String fileName) {
         FILE_NAME = fileName;
         DateFormat df = new SimpleDateFormat("dd-MM-yy(HH-mm-ss)");
-        OUTPUT_DIRECTORY = "output/" + fileName + "_" + df.format(new Date());
+        String requestedOutput = System.getProperty("fakenews.outputDirectory");
+        OUTPUT_DIRECTORY = requestedOutput == null || requestedOutput.trim().isEmpty()
+                ? "output/" + fileName + "_" + df.format(new Date())
+                : requestedOutput;
 
         //checking and creating the output folder
         if (Files.notExists(Paths.get("output"))) {

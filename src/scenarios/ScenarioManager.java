@@ -16,4 +16,11 @@ public class ScenarioManager {
             sc.apply(period);
         }
     }
+
+    /** Clears stateful campaign activation between simulation repetitions. */
+    public static void reinit() {
+        if (Configuration.SCENARIO != Configuration.DISABLED) {
+            ScenarioFactory.get(Configuration.SCENARIO).reset();
+        }
+    }
 }

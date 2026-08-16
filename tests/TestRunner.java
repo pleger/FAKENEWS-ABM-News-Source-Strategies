@@ -8,6 +8,12 @@ import endorsement.AttributesNewsSource;
 import endorsement.Endorsement;
 import endorsement.EndorsementEvalStrategies;
 import endorsement.Endorsements;
+import experiment.ConditionSpecification;
+import experiment.ExperimentSpecification;
+import experiment.ResearchQuestionSpecification;
+import experiment.SimulationRunSpecification;
+import experiment.StudyRunner;
+import experiment.StudySpecification;
 import gui.Chart;
 import gui.DataRepostChart;
 import inputManager.Configuration;
@@ -22,6 +28,7 @@ import reporter.RepostsPerSourceData;
 import scenarios.Scenario;
 import scenarios.ScenarioFactory;
 import simulation.Simulation;
+import utils.Randomness;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -33,11 +40,16 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.function.Consumer;
 
 public class TestRunner {
     private static final String PROBE_UNPROCESSED_FAKE_NEWS = "--probe-unprocessed-fake-news";
     private static final String PROBE_MISSING_LAST_FAKE_NEWS = "--probe-missing-last-fake-news";
     private static final String PROBE_INCOMPATIBLE_COPY_ALL_SCENARIO = "--probe-incompatible-copy-all-scenario";
+    private static final String PROBE_LOAD_WORKBOOK = "--probe-load-workbook";
     private static int passed = 0;
 
     public static void main(String[] args) {
@@ -53,6 +65,10 @@ public class TestRunner {
             probeIncompatibleCopyAllScenario();
             return;
         }
+        if (args.length == 2 && PROBE_LOAD_WORKBOOK.equals(args[0])) {
+            Loader.load(args[1]);
+            return;
+        }
 
         testEndorsementFormulaForHighBinaryLevel();
         testConfigurationAppliesPluralSavedEndorsementsKey();
@@ -66,8 +82,20 @@ public class TestRunner {
         testConfigurationRejectsInvalidMemoryValues();
         testLargeConfigurationWithDetailedSavingIsAcceptedWithWarning();
         testLoaderReadsFakeNewsBaseline();
+        testSeededRandomnessIsReproducible();
+        testStudyDefinitionPlansExpectedRuns();
+        testJavaStudyRunnerExecutesIsolatedSmokeRun();
+        testLegacyWorkbookPreservesCredibilityPublicationRule();
         testCustomizedScenarioCopiesSelectedAttributes();
+        testLegacyScenarioRemainsPermanentAndUnnamed();
         testCustomizedScenarioWithoutAttributesCopiesAll();
+        testHeaderScenarioUsesStrategiesObjectiveProbabilityAndEndPeriod();
+        testSourceBehaviorRejectsInvalidProbabilitiesAndCoverage();
+        testStrategiesRejectInvalidDefinitionsAndReferences();
+        testHeaderScenarioRejectsInvalidEndPeriod();
+        testHeaderScenarioCombinesMultipleStrategiesAndExplicitAttributes();
+        testSimulationResetReactivatesPermanentStrategyScenario();
+        testNewScenarioReporterCopiesInputAndMetadataSheets();
         testCopyAllScenarioRejectsIncompatibleTargetSchema();
         testScenarioReportPreviewDoesNotMutateSource();
         testProbabilitySelectionHandlesNonPositiveEvaluations();
@@ -95,6 +123,7 @@ public class TestRunner {
         testRepostChartsUseStableOutputNames();
         testRepostsDataClonesInputArray();
         System.out.println("Tests passed: " + passed);
+        System.exit(0);
     }
 
     private static void testEndorsementFormulaForHighBinaryLevel() {
@@ -316,6 +345,126 @@ public class TestRunner {
         passed++;
     }
 
+    private static void testLegacyWorkbookPreservesCredibilityPublicationRule() {
+        Loader.load("FAKENEWS_BASELINE");
+        NewsSource source = NewsSourceFactory.createFromInput().get(0);
+        String credibility = "CREDIBILIDAD DE LA FUENTE";
+
+        assertTrue("legacy sources should not invent an explicit fake-news probability",
+                source.getFakeNewsProbability() == null);
+        source.setAttributes(source.getAttributes().replace(credibility, new Double[]{1.0, 0.0}));
+        source.doStep(1);
+        assertTrue("legacy low credibility of one should deterministically publish fake news",
+                source.isFakeNews(1));
+
+        source.setAttributes(source.getAttributes().replace(credibility, new Double[]{0.0, 1.0}));
+        source.doStep(2);
+        assertTrue("legacy low credibility of zero should deterministically publish true news",
+                !source.isFakeNews(2));
+        passed++;
+    }
+
+    private static void testSeededRandomnessIsReproducible() {
+        try {
+            Randomness.setSeed(20260816L);
+            double first = Randomness.nextDouble();
+            double second = Randomness.nextDouble();
+            Randomness.setSeed(20260816L);
+            assertEquals("the same seed should reproduce the first random value",
+                    first, Randomness.nextDouble(), 0.0);
+            assertEquals("the same seed should reproduce the full random sequence",
+                    second, Randomness.nextDouble(), 0.0);
+        } finally {
+            Randomness.clearSeed();
+        }
+        passed++;
+    }
+
+    private static void testStudyDefinitionPlansExpectedRuns() {
+        ConditionSpecification first = new ConditionSpecification(
+                "first", Collections.emptyMap(), null, null);
+        ConditionSpecification second = new ConditionSpecification(
+                "second", Collections.emptyMap(), null, null);
+        ExperimentSpecification firstExperiment = new ExperimentSpecification(
+                "first-experiment", "First generic hypothesis",
+                java.util.Arrays.asList(first, second), java.util.Arrays.asList(1L, 2L, 3L));
+        ExperimentSpecification secondExperiment = new ExperimentSpecification(
+                "second-experiment", "Second generic hypothesis",
+                Collections.singletonList(first), java.util.Arrays.asList(1L, 2L));
+        StudySpecification study = new StudySpecification(
+                "generic-study", "Generic study", new File("input/FAKENEWS_BASELINE.xlsx").toPath(),
+                java.util.Arrays.asList(
+                        new ResearchQuestionSpecification("RQ1", "First question",
+                                Collections.singletonList(firstExperiment)),
+                        new ResearchQuestionSpecification("RQ2", "Second question",
+                                Collections.singletonList(secondExperiment))));
+        StudyRunner runner = new StudyRunner(study);
+        Path unusedOutput = new File(System.getProperty("java.io.tmpdir"), "fakenews-study-plan").toPath();
+
+        List<SimulationRunSpecification> complete = runner.plan(
+                Collections.emptySet(), 0, 0, unusedOutput);
+        assertEquals("generic study should preserve its research-question hierarchy", 2,
+                study.getResearchQuestions().size());
+        assertEquals("study plan should flatten every condition/seed combination", 8, complete.size());
+
+        List<SimulationRunSpecification> rq1SingleSeed = runner.plan(
+                new HashSet<>(Collections.singletonList("RQ1")), 1, 0, unusedOutput);
+        assertEquals("question and seed limits should filter the generic plan", 2, rq1SingleSeed.size());
+        passed++;
+    }
+
+    private static void testJavaStudyRunnerExecutesIsolatedSmokeRun() {
+        Path output = null;
+        try {
+            LinkedHashMap<String, Double> configuration = new LinkedHashMap<>();
+            configuration.put("PERIODS", 2.0);
+            configuration.put("AGENTS", 2.0);
+            configuration.put("CONTACTS", 0.0);
+            configuration.put("FRIENDS", 0.0);
+            configuration.put("REPETITIONS", 0.0);
+            configuration.put("GUI", 0.0);
+            configuration.put("LEARNING_PERIODS", 0.0);
+            configuration.put("SOURCE_REACH", 0.0);
+            configuration.put("WOM", 0.0);
+            configuration.put("SCENARIO", 0.0);
+            configuration.put("SAVED_ENDORSEMENTS", 0.0);
+            configuration.put("SAVED_REPOSTS_PER_SOURCE", 1.0);
+            configuration.put("SAVED_DETAILED_AGENT_DECISIONS", 0.0);
+            configuration.put("SAVED_AGENT_DECISIONS", 0.0);
+            configuration.put("SAVED_FAKENEWS", 1.0);
+            configuration.put("COMPRESSED_RESULTS", 0.0);
+            ConditionSpecification condition = new ConditionSpecification(
+                    "smoke-control", configuration, null, null);
+            ExperimentSpecification experiment = new ExperimentSpecification(
+                    "smoke-experiment", "The Java orchestrator launches an isolated model run.",
+                    Collections.singletonList(condition), Collections.singletonList(4242L));
+            ResearchQuestionSpecification question = new ResearchQuestionSpecification(
+                    "RQ9", "Can the orchestration layer execute one isolated run?",
+                    Collections.singletonList(experiment));
+            File baseWorkbook = createHeaderScenarioWorkbook();
+            StudySpecification study = new StudySpecification(
+                    "smoke-study", "Smoke study",
+                    baseWorkbook.toPath(),
+                    Collections.singletonList(question));
+            output = Files.createTempDirectory("fakenews-java-study-");
+            StudyRunner runner = new StudyRunner(study);
+            List<SimulationRunSpecification> runs = runner.plan(Collections.emptySet(), 0, 0, output);
+
+            runner.execute(runs, output, 1);
+
+            String manifest = new String(Files.readAllBytes(output.resolve("manifest.tsv")));
+            assertTrue("study manifest should mark the smoke run complete", manifest.contains("\tCOMPLETE\t"));
+            assertTrue("study runner should preserve the run log",
+                    Files.isRegularFile(runs.get(0).getOutputDirectory().resolve("run.log")));
+            if (!baseWorkbook.delete()) baseWorkbook.deleteOnExit();
+        } catch (Exception exception) {
+            throw new AssertionError("Java study runner should execute a reproducible smoke run", exception);
+        } finally {
+            if (output != null) deleteTree(output);
+        }
+        passed++;
+    }
+
     private static void testCustomizedScenarioCopiesSelectedAttributes() {
         Loader.load("FAKENEWS_COORDINATED_PUSH");
         NewsSourceFactory.createFromInput();
@@ -335,6 +484,24 @@ public class TestRunner {
                 fakeSensationalism[0], newUnknownSensationalism[0], 0.0001);
         assertEquals("scenario should copy fake-news high probability",
                 fakeSensationalism[1], newUnknownSensationalism[1], 0.0001);
+        passed++;
+    }
+
+    private static void testLegacyScenarioRemainsPermanentAndUnnamed() {
+        Loader.load("FAKENEWS_COORDINATED_PUSH");
+        NewsSourceFactory.createFromInput();
+        NewsSource target = NewsSourceFactory.getNewsSource("UNKNOWN_MEDIA");
+        Scenario scenario = ScenarioFactory.get(Configuration.SCENARIO);
+        String attribute = "SENSACIONALISMO DE LA NOTICIA";
+
+        assertEquals("legacy scenarios should remain permanent", -1, scenario.getEndPeriod());
+        assertEquals("legacy scenarios should not acquire a strategy label", "NONE",
+                scenario.getStrategySelectionDescription());
+        scenario.apply(scenario.getStartPeriod());
+        Double[] applied = target.getAttributes().getValues(attribute).clone();
+        scenario.apply(scenario.getStartPeriod() + 100);
+        assertArrayEquals("legacy scenario attributes should remain applied in later periods",
+                applied, target.getAttributes().getValues(attribute), 0.0001);
         passed++;
     }
 
@@ -406,6 +573,346 @@ public class TestRunner {
         } catch (Exception exception) {
             throw new AssertionError("copy-all scenario test workbook should be created", exception);
         }
+    }
+
+    private static void testHeaderScenarioUsesStrategiesObjectiveProbabilityAndEndPeriod() {
+        File workbookFile = createHeaderScenarioWorkbook();
+        try {
+            Loader.load(workbookFile.getAbsolutePath());
+            NewsSourceFactory.createFromInput();
+            NewsSource from = NewsSourceFactory.getNewsSource("FAKE_NEWS_SOURCE");
+            NewsSource to = NewsSourceFactory.getNewsSource("UNKNOWN_MEDIA");
+            Scenario scenario = ScenarioFactory.get(Configuration.SCENARIO);
+            String credibility = "CREDIBILIDAD DE LA FUENTE";
+            String sensationalism = "SENSACIONALISMO DE LA NOTICIA";
+            Double[] originalCredibility = to.getAttributes().getValues(credibility).clone();
+            Double[] originalSensationalism = to.getAttributes().getValues(sensationalism).clone();
+
+            assertEquals("SourceBehavior should load an objective fake-news probability",
+                    0.0, to.getFakeNewsProbability(), 0.0001);
+            assertEquals("new scenario should expose its inclusive end period", 16,
+                    scenario.getEndPeriod());
+            assertEquals("new scenario should report its named strategy",
+                    "[CREDIBILITY_CAMOUFLAGE]", scenario.getStrategySelectionDescription());
+
+            scenario.apply(14);
+            assertArrayEquals("scenario should not apply before START_PERIOD", originalCredibility,
+                    to.getAttributes().getValues(credibility), 0.0001);
+
+            scenario.apply(15);
+            assertArrayEquals("strategy should copy its configured credibility attribute",
+                    from.getAttributes().getValues(credibility),
+                    to.getAttributes().getValues(credibility), 0.0001);
+            assertArrayEquals("explicit attributes should be added to strategy attributes",
+                    from.getAttributes().getValues(sensationalism),
+                    to.getAttributes().getValues(sensationalism), 0.0001);
+
+            to.doStep(15);
+            assertTrue("objective probability should remain independent of copied credibility",
+                    !to.isFakeNews(15));
+
+            scenario.apply(16);
+            assertArrayEquals("campaign should remain active through inclusive END_PERIOD",
+                    from.getAttributes().getValues(credibility),
+                    to.getAttributes().getValues(credibility), 0.0001);
+
+            scenario.apply(17);
+            assertArrayEquals("campaign should restore credibility after END_PERIOD",
+                    originalCredibility, to.getAttributes().getValues(credibility), 0.0001);
+            assertArrayEquals("campaign should restore explicit attributes after END_PERIOD",
+                    originalSensationalism, to.getAttributes().getValues(sensationalism), 0.0001);
+        } finally {
+            Loader.close();
+            if (!workbookFile.delete()) {
+                workbookFile.deleteOnExit();
+            }
+        }
+        passed++;
+    }
+
+    private static File createHeaderScenarioWorkbook() {
+        try {
+            File result = File.createTempFile("fakenews-header-scenario-", ".xlsx");
+            try (FileInputStream input = new FileInputStream("input/FAKENEWS_COORDINATED_PUSH.xlsx");
+                 Workbook workbook = WorkbookFactory.create(input);
+                 FileOutputStream output = new FileOutputStream(result)) {
+                Sheet sourceBehavior = workbook.createSheet("SourceBehavior");
+                sourceBehavior.createRow(0).createCell(0).setCellValue("SOURCE");
+                sourceBehavior.getRow(0).createCell(1).setCellValue("FAKE_NEWS_PROBABILITY");
+                String[] sources = {"TRADITIONAL_MEDIA", "UNKNOWN_MEDIA", "FAKE_NEWS_SOURCE", "MIXED_SOURCE"};
+                double[] probabilities = {0.092, 0.0, 0.667, 0.416};
+                for (int i = 0; i < sources.length; ++i) {
+                    org.apache.poi.ss.usermodel.Row row = sourceBehavior.createRow(i + 1);
+                    row.createCell(0).setCellValue(sources[i]);
+                    row.createCell(1).setCellValue(probabilities[i]);
+                }
+
+                Sheet strategies = workbook.createSheet("Strategies");
+                strategies.createRow(0).createCell(0).setCellValue("STRATEGY");
+                strategies.getRow(0).createCell(1).setCellValue("ATTRIBUTE");
+                strategies.createRow(1).createCell(0).setCellValue("CREDIBILITY_CAMOUFLAGE");
+                strategies.getRow(1).createCell(1).setCellValue("CREDIBILIDAD DE LA FUENTE");
+                strategies.createRow(2).createCell(0).setCellValue("PROXIMITY");
+                strategies.getRow(2).createCell(1).setCellValue("PROXIMIDAD POLÍTICA");
+                strategies.createRow(3).createCell(0).setCellValue("PROXIMITY");
+                strategies.getRow(3).createCell(1).setCellValue("PROXIMIDAD GEOGRÁFICA AL PROBLEMA");
+                strategies.createRow(4).createCell(0).setCellValue("PROXIMITY");
+                strategies.getRow(4).createCell(1).setCellValue("PROXIMIDAD SOCIAL AL PROBLEMA");
+
+                Sheet scenario = workbook.getSheet("Scenario");
+                for (int rowIndex = scenario.getLastRowNum(); rowIndex >= 0; --rowIndex) {
+                    org.apache.poi.ss.usermodel.Row row = scenario.getRow(rowIndex);
+                    if (row != null) scenario.removeRow(row);
+                }
+                org.apache.poi.ss.usermodel.Row header = scenario.createRow(0);
+                header.createCell(0).setCellValue("FROM");
+                header.createCell(1).setCellValue("TO");
+                header.createCell(2).setCellValue("START_PERIOD");
+                header.createCell(3).setCellValue("END_PERIOD");
+                header.createCell(4).setCellValue("STRATEGIES");
+                header.createCell(5).setCellValue("ATTRIBUTES");
+                org.apache.poi.ss.usermodel.Row definition = scenario.createRow(1);
+                definition.createCell(0).setCellValue("FAKE_NEWS_SOURCE");
+                definition.createCell(1).setCellValue("UNKNOWN_MEDIA");
+                definition.createCell(2).setCellValue(15);
+                definition.createCell(3).setCellValue(16);
+                definition.createCell(4).setCellValue("CREDIBILITY_CAMOUFLAGE");
+                definition.createCell(5).setCellValue("SENSACIONALISMO DE LA NOTICIA");
+                workbook.write(output);
+            }
+            return result;
+        } catch (Exception exception) {
+            throw new AssertionError("header-based scenario test workbook should be created", exception);
+        }
+    }
+
+    private static void testSourceBehaviorRejectsInvalidProbabilitiesAndCoverage() {
+        File invalidProbability = createMutatedStrategyWorkbook("fakenews-invalid-probability-", workbook ->
+                workbook.getSheet("SourceBehavior").getRow(1).getCell(1).setCellValue(1.1));
+        try {
+            assertFatalWorkbookLoad("SourceBehavior should reject probabilities above one",
+                    invalidProbability, "probability must be within [0,1]");
+        } finally {
+            deleteTempWorkbook(invalidProbability);
+        }
+
+        File missingSource = createMutatedStrategyWorkbook("fakenews-missing-source-behavior-", workbook -> {
+            Sheet behavior = workbook.getSheet("SourceBehavior");
+            behavior.removeRow(behavior.getRow(behavior.getLastRowNum()));
+        });
+        try {
+            assertFatalWorkbookLoad("SourceBehavior should define every and only configured source",
+                    missingSource, "sources must exactly match NewsSources");
+        } finally {
+            deleteTempWorkbook(missingSource);
+        }
+        passed++;
+    }
+
+    private static void testStrategiesRejectInvalidDefinitionsAndReferences() {
+        File invalidAttribute = createMutatedStrategyWorkbook("fakenews-invalid-strategy-attribute-", workbook ->
+                workbook.getSheet("Strategies").getRow(1).getCell(1).setCellValue("NOT_A_SOURCE_ATTRIBUTE"));
+        try {
+            assertFatalWorkbookLoad("strategy attributes should exist in NewsSources",
+                    invalidAttribute, "attribute is not present in NewsSources");
+        } finally {
+            deleteTempWorkbook(invalidAttribute);
+        }
+
+        File duplicatePair = createMutatedStrategyWorkbook("fakenews-duplicate-strategy-", workbook -> {
+            Sheet strategies = workbook.getSheet("Strategies");
+            org.apache.poi.ss.usermodel.Row source = strategies.getRow(1);
+            org.apache.poi.ss.usermodel.Row duplicate = strategies.createRow(strategies.getLastRowNum() + 1);
+            duplicate.createCell(0).setCellValue(source.getCell(0).getStringCellValue());
+            duplicate.createCell(1).setCellValue(source.getCell(1).getStringCellValue());
+        });
+        try {
+            assertFatalWorkbookLoad("strategy definitions should reject duplicate pairs",
+                    duplicatePair, "duplicate strategy/attribute pair");
+        } finally {
+            deleteTempWorkbook(duplicatePair);
+        }
+
+        File unknownStrategy = createMutatedStrategyWorkbook("fakenews-unknown-strategy-", workbook ->
+                workbook.getSheet("Scenario").getRow(1).getCell(4).setCellValue("DOES_NOT_EXIST"));
+        try {
+            assertFatalWorkbookLoad("scenarios should reject references to undefined strategies",
+                    unknownStrategy, "unknown strategy");
+        } finally {
+            deleteTempWorkbook(unknownStrategy);
+        }
+        passed++;
+    }
+
+    private static void testHeaderScenarioRejectsInvalidEndPeriod() {
+        File invalidEnd = createMutatedStrategyWorkbook("fakenews-invalid-scenario-end-", workbook -> {
+            org.apache.poi.ss.usermodel.Row scenario = workbook.getSheet("Scenario").getRow(1);
+            scenario.getCell(2).setCellValue(10);
+            scenario.getCell(3).setCellValue(9);
+        });
+        try {
+            assertFatalWorkbookLoad("END_PERIOD should not precede START_PERIOD", invalidEnd,
+                    "END_PERIOD must be -1 or greater than or equal to START_PERIOD");
+        } finally {
+            deleteTempWorkbook(invalidEnd);
+        }
+        passed++;
+    }
+
+    private static void testHeaderScenarioCombinesMultipleStrategiesAndExplicitAttributes() {
+        File workbookFile = createMutatedStrategyWorkbook("fakenews-combined-strategies-", workbook -> {
+            org.apache.poi.ss.usermodel.Row scenario = workbook.getSheet("Scenario").getRow(1);
+            scenario.getCell(2).setCellValue(1);
+            scenario.getCell(3).setCellValue(-1);
+            scenario.getCell(4).setCellValue("PROXIMITY,CREDIBILITY_CAMOUFLAGE");
+            scenario.getCell(5).setCellValue("ENLACES");
+        });
+        try {
+            Loader.load(workbookFile.getAbsolutePath());
+            NewsSourceFactory.createFromInput();
+            Scenario scenario = ScenarioFactory.get(Configuration.SCENARIO);
+            NewsSource from = NewsSourceFactory.getNewsSource("FAKE_NEWS_SOURCE");
+            NewsSource to = NewsSourceFactory.getNewsSource("UNKNOWN_MEDIA");
+
+            assertEquals("scenario should preserve the selected strategy order",
+                    "[PROXIMITY, CREDIBILITY_CAMOUFLAGE]",
+                    scenario.getStrategySelectionDescription());
+            assertEquals("strategies and explicit attributes should form one stable selection",
+                    "[PROXIMIDAD POLÍTICA, PROXIMIDAD GEOGRÁFICA AL PROBLEMA, "
+                            + "PROXIMIDAD SOCIAL AL PROBLEMA, CREDIBILIDAD DE LA FUENTE, ENLACES]",
+                    scenario.getAttributeSelectionDescription());
+
+            scenario.apply(1);
+            for (String attribute : new String[]{"PROXIMIDAD POLÍTICA", "CREDIBILIDAD DE LA FUENTE", "ENLACES"}) {
+                assertArrayEquals("combined scenario should copy " + attribute,
+                        from.getAttributes().getValues(attribute), to.getAttributes().getValues(attribute), 0.0001);
+            }
+        } finally {
+            deleteTempWorkbook(workbookFile);
+        }
+        passed++;
+    }
+
+    private static void testSimulationResetReactivatesPermanentStrategyScenario() {
+        File workbookFile = createMutatedStrategyWorkbook("fakenews-permanent-scenario-", workbook -> {
+            org.apache.poi.ss.usermodel.Row definition = workbook.getSheet("Scenario").getRow(1);
+            definition.getCell(0).setCellValue("TRADITIONAL_MEDIA");
+            definition.getCell(1).setCellValue("FAKE_NEWS_SOURCE");
+            definition.getCell(2).setCellValue(1);
+            definition.getCell(3).setCellValue(-1);
+            definition.getCell(4).setCellValue("CREDIBILITY_CAMOUFLAGE");
+            definition.getCell(5).setCellValue("");
+        });
+        try {
+            Loader.load(workbookFile.getAbsolutePath());
+            Configuration.AGENTS = 1;
+            Configuration.CONTACTS = 0;
+            Configuration.FRIENDS = 0.0;
+            Configuration.SOURCE_REACH = false;
+            List<SNSUser> users = SNSUserFactory.createFromInput();
+            List<NewsSource> sources = NewsSourceFactory.createFromInput();
+            Simulation simulation = new Simulation(users, sources, 1);
+            Scenario scenario = ScenarioFactory.get(Configuration.SCENARIO);
+            NewsSource from = NewsSourceFactory.getNewsSource("TRADITIONAL_MEDIA");
+            NewsSource to = NewsSourceFactory.getNewsSource("FAKE_NEWS_SOURCE");
+            String attribute = "CREDIBILIDAD DE LA FUENTE";
+            Double[] original = to.getAttributes().getValues(attribute).clone();
+
+            scenario.apply(1);
+            assertArrayEquals("permanent scenario should apply during the first repetition",
+                    from.getAttributes().getValues(attribute), to.getAttributes().getValues(attribute), 0.0001);
+            simulation.reinit();
+            assertArrayEquals("simulation reset should restore the target source", original,
+                    to.getAttributes().getValues(attribute), 0.0001);
+            scenario.apply(1);
+            assertArrayEquals("scenario reset should permit activation in the next repetition",
+                    from.getAttributes().getValues(attribute), to.getAttributes().getValues(attribute), 0.0001);
+        } finally {
+            deleteTempWorkbook(workbookFile);
+        }
+        passed++;
+    }
+
+    private static void testNewScenarioReporterCopiesInputAndMetadataSheets() {
+        File inputFile = createMutatedStrategyWorkbook("fakenews-reporter-strategy-", workbook -> {
+            org.apache.poi.ss.usermodel.Row definition = workbook.getSheet("Scenario").getRow(1);
+            definition.getCell(2).setCellValue(1);
+            definition.getCell(3).setCellValue(-1);
+            definition.getCell(4).setCellValue("CREDIBILITY_CAMOUFLAGE");
+            definition.getCell(5).setCellValue("");
+        });
+        Loader.load(inputFile.getAbsolutePath());
+        Configuration.COMPRESSED_RESULTS = false;
+        NewsSourceFactory.createFromInput();
+        Reporter.clear();
+        Reporter.write();
+        File reportFile = newestWorkbookInOutputDirectory(new File(Configuration.OUTPUT_DIRECTORY));
+
+        try (Workbook report = WorkbookFactory.create(reportFile)) {
+            assertTrue("report should copy SourceBehavior", report.getSheet("SourceBehavior") != null);
+            assertTrue("report should copy Strategies", report.getSheet("Strategies") != null);
+            assertTrue("report should copy Scenario", report.getSheet("Scenario") != null);
+
+            Sheet scenario = report.getSheet("Scenario");
+            assertEquals("reported Scenario should preserve the header schema", "START_PERIOD",
+                    scenario.getRow(0).getCell(2).getStringCellValue());
+            assertEquals("reported Scenario should preserve its effective start", 1,
+                    (int) scenario.getRow(1).getCell(2).getNumericCellValue());
+            assertEquals("reported Scenario should preserve its permanent end marker", -1,
+                    (int) scenario.getRow(1).getCell(3).getNumericCellValue());
+
+            Sheet changes = report.getSheet("ScenarioChanges");
+            int strategyColumn = findHeaderColumn(changes.getRow(0), "SCENARIO_STRATEGIES");
+            int startColumn = findHeaderColumn(changes.getRow(0), "START_PERIOD");
+            int endColumn = findHeaderColumn(changes.getRow(0), "END_PERIOD");
+            assertEquals("scenario changes should identify the selected strategy", "[CREDIBILITY_CAMOUFLAGE]",
+                    changes.getRow(1).getCell(strategyColumn).getStringCellValue());
+            assertEquals("scenario changes should include START_PERIOD", 1,
+                    (int) changes.getRow(1).getCell(startColumn).getNumericCellValue());
+            assertEquals("scenario changes should include END_PERIOD", -1,
+                    (int) changes.getRow(1).getCell(endColumn).getNumericCellValue());
+        } catch (Exception exception) {
+            throw new AssertionError("new scenario metadata should be written to the report", exception);
+        } finally {
+            Reporter.clear();
+            Loader.close();
+            if (!inputFile.delete()) inputFile.deleteOnExit();
+        }
+        passed++;
+    }
+
+    private static File createMutatedStrategyWorkbook(String prefix, Consumer<Workbook> mutation) {
+        File base = createHeaderScenarioWorkbook();
+        try {
+            File result = File.createTempFile(prefix, ".xlsx");
+            try (FileInputStream input = new FileInputStream(base);
+                 Workbook workbook = WorkbookFactory.create(input);
+                 FileOutputStream output = new FileOutputStream(result)) {
+                mutation.accept(workbook);
+                workbook.write(output);
+            }
+            return result;
+        } catch (Exception exception) {
+            throw new AssertionError("mutated strategy workbook should be created", exception);
+        } finally {
+            if (!base.delete()) base.deleteOnExit();
+        }
+    }
+
+    private static void deleteTempWorkbook(File workbookFile) {
+        Loader.close();
+        if (!workbookFile.delete()) {
+            workbookFile.deleteOnExit();
+        }
+    }
+
+    private static int findHeaderColumn(org.apache.poi.ss.usermodel.Row row, String expectedHeader) {
+        for (org.apache.poi.ss.usermodel.Cell cell : row) {
+            if (expectedHeader.equals(cell.toString())) {
+                return cell.getColumnIndex();
+            }
+        }
+        throw new AssertionError("header not found: " + expectedHeader);
     }
 
     private static void testCopyAllScenarioRejectsIncompatibleTargetSchema() {
@@ -1064,6 +1571,23 @@ public class TestRunner {
         }
     }
 
+    private static void deleteTree(Path root) {
+        try {
+            if (!Files.exists(root)) return;
+            try (java.util.stream.Stream<Path> paths = Files.walk(root)) {
+                paths.sorted(Comparator.reverseOrder()).forEach(path -> {
+                    try {
+                        Files.deleteIfExists(path);
+                    } catch (Exception exception) {
+                        throw new RuntimeException(exception);
+                    }
+                });
+            }
+        } catch (Exception exception) {
+            throw new AssertionError("temporary test directory should be removable: " + root, exception);
+        }
+    }
+
     private static void assertFatalExit(String message, String probeArgument, String expectedOutput) {
         try {
             Process process = new ProcessBuilder(
@@ -1081,6 +1605,27 @@ public class TestRunner {
             throw error;
         } catch (Exception exception) {
             throw new AssertionError(message + ": could not run fatal-invariant probe", exception);
+        }
+    }
+
+    private static void assertFatalWorkbookLoad(String message, File workbookFile, String expectedOutput) {
+        try {
+            Process process = new ProcessBuilder(
+                    "java", "-cp", "build/classes:lib/*", "TestRunner",
+                    PROBE_LOAD_WORKBOOK, workbookFile.getAbsolutePath())
+                    .directory(new File("."))
+                    .redirectErrorStream(true)
+                    .start();
+            String output = new String(process.getInputStream().readAllBytes());
+            int exit = process.waitFor();
+            if (exit == 0 || !output.contains(expectedOutput)) {
+                throw new AssertionError(message + ": expected nonzero exit containing '"
+                        + expectedOutput + "' but got exit " + exit + "\n" + output);
+            }
+        } catch (AssertionError error) {
+            throw error;
+        } catch (Exception exception) {
+            throw new AssertionError(message + ": could not run workbook-load probe", exception);
         }
     }
 

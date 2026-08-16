@@ -2,6 +2,7 @@ package endorsement;
 
 import inputManager.Configuration;
 import utils.Error;
+import utils.Randomness;
 
 import java.util.function.BiFunction;
 
@@ -71,7 +72,7 @@ public class EndorsementEvalStrategies {
      * @return signed contribution produced for the sampled level
      */
     public static Double BY_PROBABILITY(Double[] attributes, Double mean) {
-        double random = Math.random();
+        double random = Randomness.nextDouble();
         double acc = 0;
         int index = -1;
 

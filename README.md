@@ -46,6 +46,7 @@ The simulator reads Excel workbooks from `input/` by default. The loader also ac
 Generated fake-news inputs:
 
 - `FAKENEWS_BASELINE.xlsx`: plural media ecosystem with WOM enabled.
+- `FAKENEWS_BASELINE_3.xlsx`: decay-oriented baseline with infinite hard memory, half-life `0.33`, five contacts, full contact listening, and fake-news-state reporting.
 - `FAKENEWS_NO_WOM.xlsx`: same source ecology with social sharing disabled.
 - `FAKENEWS_COORDINATED_PUSH.xlsx`: after period 15, unknown media adopts fake-news-source values for simple language, sensationalism, and entertainment.
 - `FAKENEWS_MEDIA_LITERACY.xlsx`: countermeasure-style input with higher quality weighting and lower sensitivity to sensationalism/negative emotion.
@@ -56,7 +57,9 @@ Workbook sheets:
 - `NewsSources`: source-type endorsement distributions.
 - `SNSUsers`: SNS-user endorsement weights.
 - `SourceReach`: source reach or visibility probability.
-- `Scenario`: optional custom intervention. Use `SCENARIO=-2` and one row with `FROM`, `TO`, `START_PERIOD`, then attribute names to copy. Omit all attribute names to copy every source attribute from `FROM` to `TO`.
+- `SourceBehavior` (new schema): one `FAKE_NEWS_PROBABILITY` in `[0,1]` per `SOURCE`. This objective publication probability is independent of perceived credibility and is never copied by a scenario. When the sheet is absent, the loader preserves the legacy rule based on the source's current low-credibility probability and logs a warning.
+- `Strategies` (new schema): normalized `STRATEGY`/`ATTRIBUTE` rows defining reusable, named attribute groups.
+- `Scenario`: optional custom intervention. The legacy one-row form (`FROM`, `TO`, `PERIOD`, then attributes) remains supported and permanent. The new header-based form uses `FROM`, `TO`, `START_PERIOD`, `END_PERIOD`, `STRATEGIES`, then optional additional attributes on the next row. Strategy names may be comma-separated; their attributes are unioned with explicit attributes. `END_PERIOD=-1` means permanent, otherwise the inclusive campaign interval is `[START_PERIOD, END_PERIOD]`. If neither strategies nor attributes are supplied, all attributes are copied.
 
 Set the optional `SAVED_FAKENEWS` configuration value to `1` to save every period's source
 publication classification, or omit it/use `0` to disable that report.
@@ -107,6 +110,38 @@ java -cp "build/classes:lib/*" Main \
 ```
 
 ## Reproducible batch experiments
+
+Studies can now be planned and executed entirely from Java while ordinary one-workbook executions
+through `Main` remain unchanged. A study lives in a separate class implementing `StudyProvider`,
+so research questions and paper-specific conditions do not become part of the generic model.
+Preview a provider's complete typed design first:
+
+```sh
+make study-plan STUDY_CLASS=your.package.YourStudyProvider
+```
+
+Run selected questions with isolated JVMs and an explicit resumable output directory:
+
+```sh
+java -cp "build/classes:lib/*" experiment.StudyMain \
+  --study-class your.package.YourStudyProvider \
+  --base input/your-study.xlsx \
+  --questions RQ1 \
+  --jobs 2 \
+  --output output/studies/rq1 \
+  --execute
+```
+
+Reusing the same `--output` skips completed runs and retries incomplete ones. `--seeds N` limits
+the common seed set and `--max-runs N` supports smoke tests. Each study writes `study.tsv`, a
+condition workbook for every treatment, isolated logs/results, and a status-aware `manifest.tsv`.
+The standalone model also accepts `--seed` and `--output-directory`, so one particular simulation
+can still be run without the study orchestrator.
+
+The generic Java study hierarchy is `StudySpecification` → `ResearchQuestionSpecification` →
+`ExperimentSpecification` → `ConditionSpecification` → `SimulationRunSpecification`. It belongs
+to the optional `experiment` package; the simulation domain does not depend on it. Concrete study
+providers and their inputs can therefore be published in separate reproducibility repositories.
 
 Batch-specific workbook changes are isolated in `experiments/`; the Java production entry point
 does not contain memory, report-flag, or scenario-timing controls created solely for one experiment.

@@ -18,9 +18,13 @@ import java.util.Arrays;
 public class Scenario {
     private final int id;
     private final int start;
+    private final int end;
     private final String from;
     private final String to;
+    private final String[] strategies;
     private final String[] atts;
+    private AttributesNewsSource originalAttributes;
+    private boolean active;
 
 
     /**
@@ -33,11 +37,25 @@ public class Scenario {
      * @param atts exact attribute names to transfer, or an empty list to transfer all attributes
      */
     public Scenario(int id, int start, String from, String to, ArrayList<String> atts) {
+        this(id, start, -1, from, to, new ArrayList<>(), atts);
+    }
+
+    /** Creates a potentially temporary intervention resolved from strategies and/or attributes. */
+    public Scenario(int id, int start, int end, String from, String to,
+                    ArrayList<String> strategies, ArrayList<String> atts) {
+        Error.setAssert(start >= 1, "Scenario: START_PERIOD must be at least 1");
+        Error.setAssert(end == -1 || end >= start,
+                "Scenario: END_PERIOD must be -1 or greater than or equal to START_PERIOD");
+        Error.setAssert(end == -1 || end <= Configuration.PERIODS,
+                "Scenario: END_PERIOD cannot exceed PERIODS");
         this.id = id;
         this.start = start;
+        this.end = end;
         this.from = from;
         this.to = to;
+        this.strategies = strategies.toArray(new String[0]);
         this.atts = atts.toArray(new String[0]);
+        reset();
     }
 
     /**
@@ -46,10 +64,23 @@ public class Scenario {
      * @param period current simulation period
      */
     public void apply(int period) {
-        if (period == this.start) {
+        if (period == this.start && !active) {
             Console.info("ScenarioManager: Applying Scenario " + Configuration.SCENARIO +"  [" + this + "]");
-            copyAttributes(NewsSourceFactory.getNewsSource(from), NewsSourceFactory.getNewsSource(to), atts);
+            NewsSource target = NewsSourceFactory.getNewsSource(to);
+            originalAttributes = target.getAttributes().copy();
+            copyAttributes(NewsSourceFactory.getNewsSource(from), target, atts);
+            active = true;
+        } else if (active && end != -1 && period == end + 1) {
+            Console.info("ScenarioManager: Ending Scenario " + Configuration.SCENARIO + "  [" + this + "]");
+            NewsSourceFactory.getNewsSource(to).setAttributes(originalAttributes);
+            reset();
         }
+    }
+
+    /** Clears per-repetition activation state after runtime sources have been restored. */
+    public void reset() {
+        originalAttributes = null;
+        active = false;
     }
 
     /**
@@ -68,6 +99,16 @@ public class Scenario {
      */
     public int getStartPeriod() {
         return start;
+    }
+
+    /** Returns the inclusive final campaign period, or {@code -1} for a permanent intervention. */
+    public int getEndPeriod() {
+        return end;
+    }
+
+    /** Returns the workbook strategy labels used to resolve the copied attributes. */
+    public String getStrategySelectionDescription() {
+        return strategies.length == 0 ? "NONE" : Arrays.toString(strategies);
     }
 
     /**
@@ -184,8 +225,10 @@ public class Scenario {
         return "Scenario{" +
                 "ID=" + this.id +
                 ", start=" + this.start +
+                ", end=" + this.end +
                 ", from=" + this.from +
                 ", to=" + this.to +
+                ", strategies={" + getStrategySelectionDescription() + "}" +
                 ", attributes={" + getAttributeSelectionDescription() + "}" +
                 '}';
     }

@@ -7,6 +7,7 @@ import gui.Chart;
 import utils.Console;
 import reporter.Reporter;
 import simulation.Simulation;
+import utils.Randomness;
 
 import java.io.File;
 import java.time.Duration;
@@ -35,11 +36,11 @@ public class Main {
             return;
         }
 
-        Loader.load(options.inputFile);
-        options.applyOverrides();
-        Reporter.clear();
-
+        options.prepareExecutionEnvironment();
         try {
+            Loader.load(options.inputFile);
+            options.applyOverrides();
+            Reporter.clear();
             Console.info("MAIN: Configuration loaded -> {" + Configuration.toStringConfiguration() + " }");
             Simulation s = new Simulation(SNSUserFactory.createFromInput(), NewsSourceFactory.createFromInput(),
                     Configuration.PERIODS);
@@ -61,6 +62,7 @@ public class Main {
             Console.end("Main: End.");
         } finally {
             Loader.close();
+            options.clearExecutionEnvironment();
         }
     }
 
@@ -77,6 +79,8 @@ public class Main {
         private WomRecommendationEffect womFakeNewsEffect;
         private WomRecommendationEffect womTrueNewsEffect;
         private Boolean gui;
+        private Long seed;
+        private String outputDirectory;
 
         /**
          * Parses supported flags, overrides, and a positional input name.
@@ -131,6 +135,12 @@ public class Main {
                     case "--no-gui":
                         options.gui = false;
                         break;
+                    case "--seed":
+                        options.seed = Long.parseLong(requireValue(args, ++i, arg));
+                        break;
+                    case "--output-directory":
+                        options.outputDirectory = requireValue(args, ++i, arg);
+                        break;
                     default:
                         if (arg.startsWith("-")) {
                             throw new IllegalArgumentException("Unknown option: " + arg + ". Use --help.");
@@ -139,6 +149,23 @@ public class Main {
                 }
             }
             return options;
+        }
+
+        /** Installs process-scoped reproducibility and output controls before workbook loading. */
+        private void prepareExecutionEnvironment() {
+            if (seed != null) Randomness.setSeed(seed);
+            if (outputDirectory != null) {
+                if (outputDirectory.trim().isEmpty()) {
+                    throw new IllegalArgumentException("--output-directory must not be blank.");
+                }
+                System.setProperty("fakenews.outputDirectory", outputDirectory);
+            }
+        }
+
+        /** Prevents repeated direct invocations of Main in one JVM from leaking CLI state. */
+        private void clearExecutionEnvironment() {
+            if (seed != null) Randomness.clearSeed();
+            if (outputDirectory != null) System.clearProperty("fakenews.outputDirectory");
         }
 
         /**
@@ -199,6 +226,9 @@ public class Main {
             System.out.println("      --wom-true-news-effect <-1|0|1>");
             System.out.println("                            Penalize, ignore, or reward a true-news recommendation.");
             System.out.println("      --gui / --no-gui     Enable or disable charts.");
+            System.out.println("      --seed <long>         Use a reproducible random seed.");
+            System.out.println("      --output-directory <path>");
+            System.out.println("                            Write this run to an explicit directory.");
             System.out.println("  -h, --help               Show this help.");
         }
 
