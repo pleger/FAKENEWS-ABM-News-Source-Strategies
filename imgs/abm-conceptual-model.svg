@@ -1,0 +1,189 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1120" viewBox="0 0 1800 1120" role="img" aria-labelledby="title desc">
+  <title id="title">Conceptual model of fake-news dissemination in X</title>
+  <desc id="desc">An editable conceptual diagram of FAKENEWS-ABM. News sources publish true or false items, social media users evaluate sources using accumulated experience, repost probabilistically, and exchange social recommendations. News-source strategies modify selected attributes of a malicious source, while outcomes quantify source selection and realised fake-news diffusion.</desc>
+  <metadata>Editable paper figure for “Evaluations of News Source Strategies to Disseminate Fake News in X”. All labels, nodes, connectors, and styles remain native SVG objects.</metadata>
+  <defs>
+    <style>
+      .canvas { fill: #f7f9fb; }
+      .title { fill: #142b3d; font: 700 42px Arial, Helvetica, sans-serif; }
+      .subtitle { fill: #526575; font: 21px Arial, Helvetica, sans-serif; }
+      .section { fill: #17324d; }
+      .sectionText { fill: #ffffff; font: 700 22px Arial, Helvetica, sans-serif; letter-spacing: .4px; }
+      .panel { fill: #ffffff; stroke: #cad4dc; stroke-width: 2; }
+      .source { fill: #eef5fa; stroke: #2c6e9b; stroke-width: 2.5; }
+      .user { fill: #edf7f4; stroke: #2a7f75; stroke-width: 2.5; }
+      .strategy { fill: #fff5e9; stroke: #c46a2b; stroke-width: 2.5; }
+      .outcome { fill: #fff0f2; stroke: #b23a48; stroke-width: 2.5; }
+      .memory { fill: #f5f1fa; stroke: #775a9e; stroke-width: 2.5; }
+      .neutral { fill: #ffffff; stroke: #607789; stroke-width: 2.3; }
+      .nodeTitle { fill: #17324d; font: 700 23px Arial, Helvetica, sans-serif; }
+      .nodeText { fill: #334a5b; font: 18px Arial, Helvetica, sans-serif; }
+      .small { fill: #526575; font: 16px Arial, Helvetica, sans-serif; }
+      .step { fill: #17324d; }
+      .stepText { fill: #ffffff; font: 700 17px Arial, Helvetica, sans-serif; text-anchor: middle; }
+      .arrow { fill: none; stroke: #41596b; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; marker-end: url(#arrow); }
+      .arrowBlue { fill: none; stroke: #2c6e9b; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; marker-end: url(#arrowBlue); }
+      .arrowOrange { fill: none; stroke: #c46a2b; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; marker-end: url(#arrowOrange); }
+      .arrowPurple { fill: none; stroke: #775a9e; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; marker-end: url(#arrowPurple); }
+      .arrowDashed { fill: none; stroke: #718494; stroke-width: 2.5; stroke-dasharray: 8 7; marker-end: url(#arrowMuted); }
+      .edgeLabel { fill: #526575; font: 700 15px Arial, Helvetica, sans-serif; }
+      .badge { fill: #e8eef2; stroke: #c5d0d8; stroke-width: 1.5; }
+      .badgeText { fill: #334a5b; font: 700 16px Arial, Helvetica, sans-serif; text-anchor: middle; }
+      .footer { fill: #42596a; font: 16px Arial, Helvetica, sans-serif; }
+    </style>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#41596b"/></marker>
+    <marker id="arrowBlue" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#2c6e9b"/></marker>
+    <marker id="arrowOrange" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#c46a2b"/></marker>
+    <marker id="arrowPurple" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#775a9e"/></marker>
+    <marker id="arrowMuted" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#718494"/></marker>
+  </defs>
+
+  <g id="background-and-heading">
+    <rect class="canvas" width="1800" height="1120"/>
+    <text class="title" x="60" y="64">FAKENEWS-ABM: conceptual dissemination model</text>
+    <text class="subtitle" x="60" y="101">News-source behaviour, user learning, and social influence interact over discrete periods on X.</text>
+  </g>
+
+  <g id="model-entities">
+    <rect class="panel" x="45" y="140" width="385" height="875" rx="18"/>
+    <rect class="section" x="45" y="140" width="385" height="56" rx="18"/>
+    <rect class="section" x="45" y="174" width="385" height="22"/>
+    <text class="sectionText" x="75" y="177">MODEL COMPONENTS</text>
+
+    <rect class="source" x="75" y="235" width="325" height="215" rx="16"/>
+    <text class="nodeTitle" x="103" y="273">News sources</text>
+    <text class="nodeText" x="103" y="309">• Source-attribute distributions</text>
+    <text class="nodeText" x="103" y="340">• Probability of publishing fake news</text>
+    <text class="nodeText" x="103" y="371">• Initial audience reach</text>
+    <text class="small" x="103" y="410">Traditional, unknown, malicious,</text>
+    <text class="small" x="103" y="434">and mixed source types</text>
+
+    <rect class="user" x="75" y="490" width="325" height="245" rx="16"/>
+    <text class="nodeTitle" x="103" y="528">Social media users</text>
+    <text class="nodeText" x="103" y="564">• Preferences for source features</text>
+    <text class="nodeText" x="103" y="595">• Sources currently known</text>
+    <text class="nodeText" x="103" y="626">• Accumulated source evaluations</text>
+    <text class="nodeText" x="103" y="657">• Social contacts</text>
+    <text class="small" x="103" y="697">Each user may know only a subset</text>
+    <text class="small" x="103" y="721">of sources at a given time.</text>
+
+    <rect class="memory" x="75" y="775" width="325" height="175" rx="16"/>
+    <text class="nodeTitle" x="103" y="813">Learning state</text>
+    <text class="nodeText" x="103" y="849">Past source experiences</text>
+    <text class="nodeText" x="103" y="880">+ social recommendations</text>
+    <text class="small" x="103" y="918">Recent evidence can receive greater</text>
+    <text class="small" x="103" y="942">weight than older evidence.</text>
+  </g>
+
+  <g id="period-cycle">
+    <rect class="panel" x="465" y="140" width="835" height="875" rx="18"/>
+    <rect class="section" x="465" y="140" width="835" height="56" rx="18"/>
+    <rect class="section" x="465" y="174" width="835" height="22"/>
+    <text class="sectionText" x="495" y="177">DISCRETE-TIME PROCESS: PERIOD t</text>
+
+    <g id="step-1-strategy">
+      <circle class="step" cx="544" cy="262" r="22"/><text class="stepText" x="544" y="268">1</text>
+      <rect class="strategy" x="580" y="220" width="300" height="125" rx="15"/>
+      <text class="nodeTitle" x="607" y="258">Apply active strategy</text>
+      <text class="nodeText" x="607" y="292">Copy selected donor attributes</text>
+      <text class="small" x="607" y="321">during the configured interval</text>
+    </g>
+
+    <g id="step-2-publish">
+      <circle class="step" cx="949" cy="262" r="22"/><text class="stepText" x="949" y="268">2</text>
+      <rect class="source" x="985" y="220" width="270" height="125" rx="15"/>
+      <text class="nodeTitle" x="1012" y="258">Generate item state</text>
+      <text class="nodeText" x="1012" y="292">Each source publishes a</text>
+      <text class="nodeText" x="1012" y="319">true or fake item</text>
+    </g>
+
+    <g id="step-3-evaluate">
+      <circle class="step" cx="949" cy="461" r="22"/><text class="stepText" x="949" y="467">3</text>
+      <rect class="neutral" x="985" y="395" width="270" height="160" rx="15"/>
+      <text class="nodeTitle" x="1012" y="433">Evaluate known sources</text>
+      <text class="nodeText" x="1012" y="467">Combine past evaluations</text>
+      <text class="nodeText" x="1012" y="498">with the user’s preferences</text>
+      <text class="small" x="1012" y="522">Older evidence may have</text>
+      <text class="small" x="1012" y="545">less influence</text>
+    </g>
+
+    <g id="step-4-repost">
+      <circle class="step" cx="949" cy="690" r="22"/><text class="stepText" x="949" y="696">4</text>
+      <rect class="outcome" x="985" y="620" width="270" height="170" rx="15"/>
+      <text class="nodeTitle" x="1012" y="658">Select and repost</text>
+      <text class="nodeText" x="1012" y="692">Stochastic source selection</text>
+      <text class="nodeText" x="1012" y="723">records one repost per user</text>
+      <text class="small" x="1012" y="756">when an eligible source is known</text>
+    </g>
+
+    <g id="step-5-experience">
+      <circle class="step" cx="544" cy="690" r="22"/><text class="stepText" x="544" y="696">5</text>
+      <rect class="memory" x="580" y="620" width="300" height="170" rx="15"/>
+      <text class="nodeTitle" x="607" y="658">Update experience</text>
+      <text class="nodeText" x="607" y="692">Record the selected source’s</text>
+      <text class="nodeText" x="607" y="723">features and evaluation</text>
+      <text class="small" x="607" y="756">available to future evaluations</text>
+    </g>
+
+    <g id="step-6-social-recommendations">
+      <circle class="step" cx="544" cy="461" r="22"/><text class="stepText" x="544" y="467">6</text>
+      <rect class="user" x="580" y="395" width="300" height="160" rx="15"/>
+      <text class="nodeTitle" x="607" y="433">Share recommendations</text>
+      <text class="nodeText" x="607" y="467">Observe contacts’ reposts and</text>
+      <text class="nodeText" x="607" y="498">retain the strongest signal</text>
+      <text class="small" x="607" y="530">the outcome influences period t + 1</text>
+    </g>
+
+    <path class="arrowOrange" d="M880 282 H980"/>
+    <path class="arrowBlue" d="M1120 345 V390"/>
+    <path class="arrow" d="M1120 555 V615"/>
+    <path class="arrowPurple" d="M985 705 H885"/>
+    <path class="arrow" d="M730 620 V560"/>
+    <path class="arrowPurple" d="M580 475 H525 V870 H905 V475 H980"/>
+    <text class="edgeLabel" x="720" y="897">experience and social recommendations shape period t + 1</text>
+
+    <path class="arrowDashed" d="M400 342 C470 342, 485 285, 575 285"/>
+    <path class="arrowDashed" d="M400 610 C490 610, 500 475, 575 475"/>
+    <path class="arrowDashed" d="M400 865 C480 865, 500 724, 575 724"/>
+  </g>
+
+  <g id="strategy-and-observables">
+    <rect class="panel" x="1335" y="140" width="420" height="875" rx="18"/>
+    <rect class="section" x="1335" y="140" width="420" height="56" rx="18"/>
+    <rect class="section" x="1335" y="174" width="420" height="22"/>
+    <text class="sectionText" x="1365" y="177">INTERVENTIONS AND OUTPUTS</text>
+
+    <rect class="strategy" x="1365" y="235" width="360" height="280" rx="16"/>
+    <text class="nodeTitle" x="1395" y="274">Malicious-source strategy</text>
+    <text class="nodeText" x="1395" y="312">Imitate selected attributes of</text>
+    <text class="nodeText" x="1395" y="341">a traditional news source:</text>
+    <text class="nodeText" x="1415" y="380">• engagement</text>
+    <text class="nodeText" x="1415" y="411">• proximity</text>
+    <text class="nodeText" x="1415" y="442">• informational quality</text>
+    <text class="nodeText" x="1415" y="473">• perceived credibility</text>
+    <text class="small" x="1395" y="500">Timing, duration, and reach are testable.</text>
+
+    <path class="arrowOrange" d="M1365 370 H925 C895 370, 880 357, 880 345"/>
+    <text class="edgeLabel" x="1320" y="358" text-anchor="end">attribute transfer</text>
+
+    <rect class="outcome" x="1365" y="570" width="360" height="365" rx="16"/>
+    <text class="nodeTitle" x="1395" y="610">Observed dissemination</text>
+    <text class="nodeText" x="1395" y="651">Primary outcome</text>
+    <text class="nodeText" x="1415" y="681">• realised fake-repost share</text>
+    <text class="nodeText" x="1395" y="725">Secondary outcomes</text>
+    <text class="nodeText" x="1415" y="755">• malicious-source selection share</text>
+    <text class="nodeText" x="1415" y="785">• cumulative fake reposts</text>
+    <text class="nodeText" x="1415" y="815">• unique reposters</text>
+    <text class="nodeText" x="1415" y="845">• temporal persistence</text>
+    <text class="small" x="1395" y="880">Fake news is defined by the item’s state,</text>
+    <text class="small" x="1395" y="902">not solely by the source label.</text>
+
+    <path class="arrow" d="M1255 705 H1360"/>
+    <text class="edgeLabel" x="1307" y="689" text-anchor="middle">aggregate</text>
+  </g>
+
+  <g id="figure-note">
+    <text class="footer" x="60" y="1067">Reading path: entities initialise the model → the six-step cycle repeats → source strategies alter the malicious source → outcomes quantify within-model dissemination.</text>
+    <text class="footer" x="60" y="1094">A recommendation observed in period t can expand source awareness and influence the receiver’s evaluation in period t + 1.</text>
+  </g>
+</svg>

@@ -1,12 +1,13 @@
-# FAKENEWS-ABM
+# Evaluations of News Source Strategies to Disseminate Fake News in X
 
-## Paper reproducibility package
+## Public paper reproducibility package
 
 This repository is the executable companion for the study **“Evaluations of News Source
 Strategies to Disseminate Fake News in X.”** It preserves the history of the generic
 [FAKENEWS-ABM framework](https://github.com/pleger/FAKENEWS-ABM/tree/feature/generic-study-framework)
-and adds only the paper-specific provider, input workbook, research-question design, manuscript
-materials, and result archive structure.
+and adds the paper-specific provider, input workbook, research-question design, manuscript,
+run-level processed data, statistical analysis, and figures. The public repository is
+<https://github.com/pleger/FAKENEWS-ABM-News-Source-Strategies>.
 
 The Java definition in
 [`NewsSourceStrategiesStudy`](src/experiment/NewsSourceStrategiesStudy.java) contains four research
@@ -37,11 +38,35 @@ make study-run ARGS="--questions RQ1 --seeds 1 --max-runs 2 --jobs 1 --output re
 | RQ3: reach mitigation | E3 | 30 | 30 | 900 |
 | RQ4: sensitivity and robustness | E4 | 24 | 15 | 360 |
 
-The `results/RQ*/` directories document the expected raw and analyzed artifacts. The complete raw
-archives will be attached to versioned GitHub Releases after each research question finishes;
-their manifests and checksums will remain tracked in this repository. This avoids placing several
-gigabytes of logs and generated workbooks directly in Git history while retaining public,
-downloadable raw data.
+All four research questions have been completed. The publication-safe dataset in
+[`analysis/final-study/run-metrics.csv`](analysis/final-study/run-metrics.csv) contains one row for
+each seeded run. It is accompanied by condition summaries, paired effects, figures, tables, a data
+dictionary, a 2,010-row manifest, validation metadata, and SHA-256 checksums. These processed
+artefacts total less than 2 MB and reproduce every numerical result in the manuscript.
+
+Rebuild the statistics, tables, and figures from the public processed dataset:
+
+```sh
+python3 -m venv /tmp/fakenews-analysis-venv
+/tmp/fakenews-analysis-venv/bin/pip install -r experiments/requirements.txt
+/tmp/fakenews-analysis-venv/bin/python experiments/analyze_final_study.py \
+  --processed analysis/final-study/run-metrics.csv \
+  --output /tmp/fakenews-reproduced
+```
+
+For a full computational replication, execute the study with the published condition matrix and
+seeds, then extract the processed dataset from the generated workbooks:
+
+```sh
+make study-run ARGS="--jobs 6 --output output/final-study"
+/tmp/fakenews-analysis-venv/bin/python experiments/analyze_final_study.py \
+  output/final-study --output /tmp/fakenews-from-raw
+```
+
+The final raw workbooks and execution logs occupy approximately 583 MB and are intentionally not
+tracked. They are programmatically generated artefacts rather than survey microdata; the public
+code, input workbook, condition definitions, seeds, and processed run-level metrics permit both
+complete reruns and immediate reproduction of the reported analysis.
 
 `prior-analysis/` contains preliminary material produced before the final RQ1–RQ4 design. It is
 retained for provenance and must not be confused with the final paper results.

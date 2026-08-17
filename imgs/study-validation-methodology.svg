@@ -1,0 +1,190 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1240" viewBox="0 0 1800 1240" role="img" aria-labelledby="title desc">
+  <title id="title">Model validation and experimental methodology</title>
+  <desc id="desc">An editable workflow diagram for the study Evaluations of News Source Strategies to Disseminate Fake News in X. Survey-informed inputs and source definitions support conceptual validation and computational verification, four research-question experiments, reproducible Monte Carlo simulations, output quality control, paired analysis, and an open research package.</desc>
+  <metadata>Editable paper figure. All labels, nodes, connectors, and styles remain native SVG objects.</metadata>
+  <defs>
+    <style>
+      .canvas { fill: #f7f9fb; }
+      .title { fill: #142b3d; font: 700 42px Arial, Helvetica, sans-serif; }
+      .subtitle { fill: #526575; font: 21px Arial, Helvetica, sans-serif; }
+      .panel { fill: #ffffff; stroke: #cad4dc; stroke-width: 2.2; }
+      .evidence { fill: #eef5fa; stroke: #2c6e9b; stroke-width: 2.5; }
+      .verify { fill: #edf7f4; stroke: #2a7f75; stroke-width: 2.5; }
+      .design { fill: #fff5e9; stroke: #c46a2b; stroke-width: 2.5; }
+      .execute { fill: #f5f1fa; stroke: #775a9e; stroke-width: 2.5; }
+      .quality { fill: #fff0f2; stroke: #b23a48; stroke-width: 2.5; }
+      .report { fill: #f0f4f6; stroke: #607789; stroke-width: 2.5; }
+      .phaseNumber { fill: #17324d; }
+      .phaseNumberText { fill: #ffffff; font: 700 20px Arial, Helvetica, sans-serif; text-anchor: middle; }
+      .nodeTitle { fill: #17324d; font: 700 24px Arial, Helvetica, sans-serif; }
+      .nodeText { fill: #334a5b; font: 18px Arial, Helvetica, sans-serif; }
+      .small { fill: #526575; font: 16px Arial, Helvetica, sans-serif; }
+      .rqTitle { fill: #17324d; font: 700 18px Arial, Helvetica, sans-serif; }
+      .rqText { fill: #3e5363; font: 16px Arial, Helvetica, sans-serif; }
+      .arrow { fill: none; stroke: #41596b; stroke-width: 3.2; stroke-linecap: round; stroke-linejoin: round; marker-end: url(#arrow); }
+      .arrowDashed { fill: none; stroke: #718494; stroke-width: 2.5; stroke-dasharray: 9 7; marker-end: url(#arrowMuted); }
+      .gate { fill: #ffffff; stroke: #b23a48; stroke-width: 2.3; }
+      .gateText { fill: #8e2e3a; font: 700 15px Arial, Helvetica, sans-serif; text-anchor: middle; }
+      .badge { fill: #e8eef2; stroke: #c5d0d8; stroke-width: 1.5; }
+      .badgeText { fill: #334a5b; font: 700 16px Arial, Helvetica, sans-serif; text-anchor: middle; }
+      .scope { fill: #fffdf5; stroke: #c4a24f; stroke-width: 2; }
+      .scopeTitle { fill: #735d23; font: 700 18px Arial, Helvetica, sans-serif; }
+      .scopeText { fill: #594f35; font: 16px Arial, Helvetica, sans-serif; }
+      .footer { fill: #42596a; font: 16px Arial, Helvetica, sans-serif; }
+    </style>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#41596b"/></marker>
+    <marker id="arrowMuted" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#718494"/></marker>
+  </defs>
+
+  <g id="heading">
+    <rect class="canvas" width="1800" height="1240"/>
+    <text class="title" x="60" y="64">Model validation and experimental methodology</text>
+    <text class="subtitle" x="60" y="101">From survey-informed assumptions to reproducible evidence on malicious news-source strategies.</text>
+    <rect class="badge" x="1320" y="43" width="190" height="38" rx="19"/><text class="badgeText" x="1415" y="68">79 conditions</text>
+    <rect class="badge" x="1525" y="43" width="215" height="38" rx="19"/><text class="badgeText" x="1632" y="68">2,010 seeded runs</text>
+  </g>
+
+  <g id="phase-1-model-specification">
+    <rect class="evidence" x="55" y="155" width="390" height="405" rx="18"/>
+    <circle class="phaseNumber" cx="92" cy="195" r="23"/><text class="phaseNumberText" x="92" y="202">1</text>
+    <text class="nodeTitle" x="128" y="203">Model specification</text>
+    <text class="nodeText" x="85" y="250">Survey-informed user preferences</text>
+    <text class="small" x="85" y="278">Chile; 500 X users</text>
+    <text class="nodeText" x="85" y="320">Source definitions</text>
+    <text class="small" x="85" y="348">attributes, reach, and objective</text>
+    <text class="small" x="85" y="371">fake-news probabilities</text>
+    <text class="nodeText" x="85" y="413">Behavioural mechanisms</text>
+    <text class="small" x="85" y="441">endorsement-based evaluation,</text>
+    <text class="small" x="85" y="464">memory, stochastic selection, social influence</text>
+    <rect class="badge" x="85" y="497" width="300" height="38" rx="19"/>
+    <text class="badgeText" x="235" y="522">Documented model assumptions</text>
+  </g>
+
+  <g id="phase-2-verification-validation">
+    <rect class="verify" x="480" y="155" width="390" height="405" rx="18"/>
+    <circle class="phaseNumber" cx="517" cy="195" r="23"/><text class="phaseNumberText" x="517" y="202">2</text>
+    <text class="nodeTitle" x="553" y="203">Verification and validation</text>
+    <text class="nodeText" x="510" y="250">Conceptual validity</text>
+    <text class="small" x="510" y="278">entities, assumptions, causal logic,</text>
+    <text class="small" x="510" y="301">and expert review</text>
+    <text class="nodeText" x="510" y="343">Computational verification</text>
+    <text class="small" x="510" y="371">automated tests, invariants, timing,</text>
+    <text class="small" x="510" y="394">and backward compatibility</text>
+    <text class="nodeText" x="510" y="436">Behavioural plausibility</text>
+    <text class="small" x="510" y="464">baseline patterns, social-influence</text>
+    <text class="small" x="510" y="487">direction, publication rates</text>
+    <rect class="badge" x="510" y="510" width="300" height="28" rx="14"/>
+    <text class="badgeText" x="660" y="530">Predefined acceptance criteria</text>
+  </g>
+
+  <g id="phase-3-study-design">
+    <rect class="design" x="905" y="155" width="390" height="405" rx="18"/>
+    <circle class="phaseNumber" cx="942" cy="195" r="23"/><text class="phaseNumberText" x="942" y="202">3</text>
+    <text class="nodeTitle" x="978" y="203">Predefined study design</text>
+    <text class="rqTitle" x="935" y="250">RQ1 · Strategy comparison</text>
+    <text class="rqText" x="935" y="275">6 conditions × 30 seeds = 180 runs</text>
+    <text class="rqTitle" x="935" y="319">RQ2 · Timing and duration</text>
+    <text class="rqText" x="935" y="344">19 conditions × 30 seeds = 570 runs</text>
+    <text class="rqTitle" x="935" y="380">RQ3 · Reach mitigation</text>
+    <text class="rqText" x="935" y="404">reach restrictions × social recommendations</text>
+    <text class="rqText" x="935" y="427">30 conditions × 30 seeds = 900 runs</text>
+    <text class="rqTitle" x="935" y="465">RQ4 · Sensitivity and robustness</text>
+    <text class="rqText" x="935" y="490">24 conditions × 15 seeds = 360 runs</text>
+    <rect class="badge" x="935" y="510" width="300" height="28" rx="14"/>
+    <text class="badgeText" x="1085" y="530">Treatment–control pairing</text>
+  </g>
+
+  <g id="phase-4-execution">
+    <rect class="execute" x="1330" y="155" width="415" height="405" rx="18"/>
+    <circle class="phaseNumber" cx="1367" cy="195" r="23"/><text class="phaseNumberText" x="1367" y="202">4</text>
+    <text class="nodeTitle" x="1403" y="203">Monte Carlo simulation</text>
+    <text class="nodeText" x="1360" y="250">Independent replications</text>
+    <text class="small" x="1360" y="278">each condition is evaluated across</text>
+    <text class="small" x="1360" y="301">multiple stochastic realisations</text>
+    <text class="nodeText" x="1360" y="343">Common random numbers</text>
+    <text class="small" x="1360" y="371">matched treatment and control runs</text>
+    <text class="nodeText" x="1360" y="413">Traceable execution</text>
+    <text class="small" x="1360" y="441">conditions, seeds, completion status,</text>
+    <text class="small" x="1360" y="464">and outputs are recorded for every run</text>
+    <rect class="badge" x="1360" y="497" width="325" height="38" rx="19"/>
+    <text class="badgeText" x="1522" y="522">Complete raw output for every run</text>
+  </g>
+
+  <path class="arrow" d="M445 358 H475"/>
+  <path class="arrow" d="M870 358 H900"/>
+  <path class="arrow" d="M1295 358 H1325"/>
+
+  <g id="quality-gate">
+    <path class="arrow" d="M1538 560 V615"/>
+    <polygon class="gate" points="1538,615 1600,665 1538,715 1476,665"/>
+    <text class="gateText" x="1538" y="660">OUTPUT</text>
+    <text class="gateText" x="1538" y="679">VALID?</text>
+  </g>
+
+  <g id="phase-5-quality-control">
+    <rect class="quality" x="1330" y="760" width="415" height="330" rx="18"/>
+    <circle class="phaseNumber" cx="1367" cy="800" r="23"/><text class="phaseNumberText" x="1367" y="807">5</text>
+    <text class="nodeTitle" x="1403" y="808">Run-level quality control</text>
+    <text class="nodeText" x="1360" y="855">• complete time series for every run</text>
+    <text class="nodeText" x="1360" y="888">• unique time and source identifiers</text>
+    <text class="nodeText" x="1360" y="921">• valid true/fake item states</text>
+    <text class="nodeText" x="1360" y="954">• internally consistent repost totals</text>
+    <text class="nodeText" x="1360" y="987">• balanced condition/seed coverage</text>
+    <text class="small" x="1360" y="1031">Incomplete runs are retried; invalid</text>
+    <text class="small" x="1360" y="1054">outputs do not enter the analysis.</text>
+  </g>
+
+  <g id="phase-6-analysis">
+    <rect class="report" x="905" y="760" width="390" height="330" rx="18"/>
+    <circle class="phaseNumber" cx="942" cy="800" r="23"/><text class="phaseNumberText" x="942" y="807">6</text>
+    <text class="nodeTitle" x="978" y="808">Metrics and paired analysis</text>
+    <text class="nodeText" x="935" y="855">Primary metric</text>
+    <text class="small" x="955" y="883">realised fake-repost share</text>
+    <text class="nodeText" x="935" y="925">Secondary metrics</text>
+    <text class="small" x="955" y="953">target selection, cumulative burden,</text>
+    <text class="small" x="955" y="976">unique reposters, persistence</text>
+    <text class="nodeText" x="935" y="1018">Within-seed treatment effects</text>
+    <text class="small" x="955" y="1046">effect estimates, intervals, rankings</text>
+  </g>
+
+  <g id="phase-7-rq-evidence">
+    <rect class="design" x="480" y="760" width="390" height="330" rx="18"/>
+    <circle class="phaseNumber" cx="517" cy="800" r="23"/><text class="phaseNumberText" x="517" y="807">7</text>
+    <text class="nodeTitle" x="553" y="808">Evidence organised by RQ</text>
+    <text class="nodeText" x="510" y="855">RQ1 · relative strategy efficacy</text>
+    <text class="nodeText" x="510" y="893">RQ2 · onset, duration, persistence</text>
+    <text class="nodeText" x="510" y="931">RQ3 · reach-policy effectiveness</text>
+    <text class="nodeText" x="510" y="969">RQ4 · sensitivity of conclusions</text>
+    <text class="small" x="510" y="1018">Interpretation concerns controllable</text>
+    <text class="small" x="510" y="1041">news-source strategies and mitigation.</text>
+  </g>
+
+  <g id="phase-8-reproducibility">
+    <rect class="verify" x="55" y="760" width="390" height="330" rx="18"/>
+    <circle class="phaseNumber" cx="92" cy="800" r="23"/><text class="phaseNumberText" x="92" y="807">8</text>
+    <text class="nodeTitle" x="128" y="808">Reproducibility package</text>
+    <text class="nodeText" x="85" y="855">• model and study specification</text>
+    <text class="nodeText" x="85" y="893">• scenario definitions and parameters</text>
+    <text class="nodeText" x="85" y="931">• random seeds and provenance records</text>
+    <text class="nodeText" x="85" y="969">• raw results by research question</text>
+    <text class="nodeText" x="85" y="1007">• analysis code and publication figures</text>
+    <rect class="badge" x="85" y="1034" width="300" height="32" rx="16"/>
+    <text class="badgeText" x="235" y="1056">Public versioned release</text>
+  </g>
+
+  <path class="arrow" d="M1538 715 V755"/>
+  <path class="arrow" d="M1330 925 H1300"/>
+  <path class="arrow" d="M905 925 H875"/>
+  <path class="arrow" d="M480 925 H450"/>
+  <path class="arrowDashed" d="M1476 665 H1335 V635 H675 V560"/>
+  <text class="small" x="1125" y="621">No: diagnose, correct, and rerun</text>
+
+  <g id="validation-scope-note">
+    <rect class="scope" x="55" y="1130" width="1690" height="72" rx="14"/>
+    <text class="scopeTitle" x="82" y="1159">Validation scope</text>
+    <text class="scopeText" x="225" y="1159">The current evidence supports software verification, structural output validation, and mechanism-oriented experiments.</text>
+    <text class="scopeText" x="82" y="1185">External predictive validation would additionally require observed exposure and repost data from X; the study should not be described as empirically calibrated.</text>
+  </g>
+
+  <text class="footer" x="60" y="1225">Arrows show the primary reading path. Common random seeds support paired within-model comparisons; they do not represent uncertainty about a real population.</text>
+</svg>

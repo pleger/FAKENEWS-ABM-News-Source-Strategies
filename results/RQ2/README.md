@@ -1,6 +1,7 @@
 # RQ2 — Timing and duration
 
-Status: **not executed under the final design**.
+Status: **complete and validated**.
 
-Expected runs: 19 conditions × 30 common seeds = 570. Raw archive URL, checksum, commit, and analysis
-outputs will be recorded here after completion.
+Runs: 19 conditions × 30 common seeds = 570. RQ2 evaluates campaign start time and duration for
+informational and credibility strategies. Results are available in
+[`../../analysis/final-study`](../../analysis/final-study).

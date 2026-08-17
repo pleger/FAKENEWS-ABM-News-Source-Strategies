@@ -1,4 +1,5 @@
 build/
+paper/build*/
 dist/
 node_modules/
 output/

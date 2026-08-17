@@ -1,6 +1,7 @@
 # RQ3 — Reach mitigation
 
-Status: **not executed under the final design**.
+Status: **complete and validated**.
 
-Expected runs: 30 conditions × 30 common seeds = 900. Raw archive URL, checksum, commit, and analysis
-outputs will be recorded here after completion.
+Runs: 30 conditions × 30 common seeds = 900. RQ3 crosses strategy type, malicious-source reach,
+and social-recommendation policy. Results are available in
+[`../../analysis/final-study`](../../analysis/final-study).

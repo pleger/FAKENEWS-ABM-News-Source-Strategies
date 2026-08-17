@@ -1,0 +1,47 @@
+\section{Scenario analysis}
+
+\subsection{RQ1: source-imitation strategies}
+
+Figure~\ref{fig:rq1} shows that increasing the malicious source's audience did not automatically increase overall false-news exposure. Informational and credibility camouflage increased malicious-source share by 0.087 pp (95\% CI 0.065--0.109) and 0.048 pp (0.020--0.076), respectively. Combining all attribute groups produced the largest audience effect, 0.471 pp (0.399--0.543), and 17.17 additional unique malicious-source reposters at period 400 (13.74--20.59).
+
+The corresponding average false-repost-share effects were small. The combined strategy added 0.157 pp, but its interval included zero ($-0.017$ to 0.331 pp; Holm $p=0.301$). Proximity alone reduced false-repost share by 0.033 pp ($-0.055$ to $-0.012$; Holm $p=0.017$). In the last 100 periods, however, the combined strategy increased false-repost share by 0.199 pp (0.121--0.277). Thus RQ1 supports audience capture through imitation, particularly combined imitation, but does not support a general one-to-one conversion from source reach to total false-news exposure.
+
+\begin{figure}[ht]\centering
+\includegraphics[width=.86\linewidth]{rq1-strategy-effects.png}
+\caption{Paired effects of permanent source strategies on average fake-news repost share. Error bars are 95\% $t$ intervals across 30 common seeds.}\label{fig:rq1}
+\end{figure}
+
+\subsection{RQ2: timing, duration, and persistence}
+
+Timing and duration mainly changed malicious-source participation. Early permanent informational camouflage produced the largest average source-share gain, 0.087 pp (0.065--0.109), followed by the same strategy beginning at period 101 (0.051 pp) and period 201 (0.038 pp). The pattern is consistent with mechanical exposure time: earlier and longer campaigns provide more periods in which changed attributes can affect choices. A 100-period informational campaign beginning at period 1 added 0.035 pp to average source share, whereas a 25-period campaign added 0.015 pp.
+
+These differences did not translate into robust average false-repost-share effects. Across the 18 treatment cells, all Holm-adjusted intervals for the full-run false-repost outcome included zero. Final-100-period effects were also small, and temporary strategies showed little persistence after removal. The evidence therefore answers RQ2 asymmetrically: timing and duration govern audience opportunity, but under rapid memory decay and truth-sensitive recommendations they do not reliably govern system-wide false-news share.
+
+\begin{figure}[ht]\centering
+\includegraphics[width=.92\linewidth]{rq2-timing-duration.png}
+\caption{Average false-repost-share effects by strategy start and duration. Values are paired against the no-strategy control.}\label{fig:rq2}
+\end{figure}
+
+\subsection{RQ3: reach restrictions and social recommendations}
+
+Direct reach restrictions reduced both the malicious source's participation and the incremental effect of camouflage. With social recommendations disabled, informational camouflage added 0.510 pp to false-repost share at 14.7\% reach, 0.355 pp at 10\%, 0.192 pp at 5\%, and 0.047 pp at 1\%; at zero reach its effect was exactly zero. Credibility camouflage followed the same monotonic pattern with smaller effects.
+
+Truth-sensitive social recommendations changed the scale of these effects. At 14.7\% reach, the informational effect fell from 0.510 pp without recommendations to 0.019 pp with recommendations; the credibility effect fell from 0.313 to 0.010 pp. The recommendation mechanism can reveal previously unknown sources, but it also penalises recommendations associated with false publications. In this model the truth-sensitive component dominates, so social interaction does not simply bypass a reach restriction.
+
+The absolute level of false reposts also declined when recommendations were active. For example, the no-strategy condition at 14.7\% reach averaged 14.483\% false reposts without recommendations and 9.820\% with them. Because the recommendation rule explicitly uses publication truth state, this comparison should be interpreted as a modelled policy mechanism rather than evidence about the current algorithm of X.
+
+\begin{figure}[ht]\centering
+\includegraphics[width=.92\linewidth]{rq3-reach-mitigation.png}
+\caption{Strategy effects across malicious-source reach limits, separated by the social-recommendation rule.}\label{fig:rq3}
+\end{figure}
+
+\subsection{RQ4: sensitivity and robustness}
+
+Credibility camouflage increased malicious-source share across all twelve memory-connectivity combinations. Effects ranged from 0.043 to 0.295 pp, although the interval for 10 contacts and half-life 0.33 included zero. This supports a qualitatively robust audience-capture conclusion.
+
+The false-repost conclusion was more sensitive. Under a 25-period hard window, credibility camouflage added 0.127--0.145 pp to average false-repost share. With a five-period half-life, effects remained positive at 0.073--0.104 pp. They became smaller with a one-period half-life and indistinguishable from zero under the 0.33-period half-life. Contact count changed magnitude less consistently than memory persistence. RQ4 therefore rejects an unconditional robustness claim for misinformation exposure: whether source camouflage accumulates into additional false reposts depends strongly on how long user evaluations remain influential.
+
+\begin{figure}[ht]\centering
+\includegraphics[width=.88\linewidth]{rq4-sensitivity.png}
+\caption{Sensitivity of the credibility-camouflage effect on average fake-news repost share to contact count and memory.}\label{fig:rq4}
+\end{figure}

@@ -9,7 +9,7 @@ STUDY_BASE ?= input/FAKENEWS_BASELINE_4_STRATEGIES.xlsx
 DIST_DIR := dist/$(APP_NAME)-$(VERSION)
 DIST_ZIP := dist/$(APP_NAME)-$(VERSION).zip
 
-.PHONY: build test jar dist run study-plan study-run clean
+.PHONY: build test jar dist run study-plan study-run analysis-processed analysis-raw clean
 
 build:
 	mkdir -p build/classes
@@ -38,6 +38,12 @@ study-plan: build
 
 study-run: build
 	$(JAVA) -cp "$(CLASSPATH)" experiment.StudyMain --study-class "$(STUDY_CLASS)" --base "$(STUDY_BASE)" $(ARGS) --execute
+
+analysis-processed:
+	python3 experiments/analyze_final_study.py --processed analysis/final-study/run-metrics.csv $(ARGS)
+
+analysis-raw:
+	python3 experiments/analyze_final_study.py output/final-study $(ARGS)
 
 clean:
 	rm -rf build dist output

@@ -1,0 +1,19 @@
+\section{Background}
+
+\subsection{Fake news and source-mediated dissemination}
+
+Fake news is not merely erroneous information; it is fabricated content presented in a news-like form and connected to incentives, attention, and institutional trust \citep{lazer2018,allcott2017}. Social platforms alter the route by which people encounter this content. Users select from sources, observe peers, and react to signals such as credibility, emotional tone, familiarity, and proximity. Homophilous communities can reinforce selective exposure \citep{delvicario2016}, and social influence can change evaluations independently of intrinsic quality \citep{muchnik2013}.
+
+Source identity matters because users often lack the time or information needed to verify each claim. Aggregated judgments of source quality can support misinformation interventions \citep{pennycook2019}, whereas low-credibility content may receive coordinated amplification from automated accounts \citep{shao2018}. These mechanisms make source-level policies---visibility limits, recommendation rules, labels, and sanctions---plausible levers. They also create adaptation incentives: a malicious source may modify visible attributes to resemble a trusted source.
+
+\subsection{Agent-based models as simulation models}
+
+ABMs describe system outcomes as the emergent result of local decisions and interactions. They are useful when agents differ, remember past events, learn from contacts, and respond to interventions over time. A credible ABM must make its entities, processes, scheduling, stochasticity, inputs, and outputs explicit. We follow the ODD protocol \citep{grimm2020}, which separates an overview of purpose and process from design concepts and implementation details.
+
+Simulation evidence has a different status from observational or experimental evidence about people. A simulation supports conditional statements: given the encoded mechanisms and parameter ranges, a strategy produces a measured change. Verification asks whether the software implements that specification; validation asks whether the representation is sufficiently credible for its intended purpose. Neither process turns an exploratory model into a direct prediction of platform behaviour.
+
+\subsection{Simulation models of misinformation}
+
+Misinformation models range from epidemic analogies to network, opinion-dynamics, and cognitively richer agent systems. Recent work has modelled source and user interactions, moderation, content sensitivity, and cross-platform diffusion. For example, digital-cloning work compares simulated propagation with known online networks \citep{puri2024}, while cross-platform ABMs examine moderation in interconnected social systems \citep{murdock2024}. Other models study governance mechanisms using empirically informed agent-based experiments \citep{malgonde2025}.
+
+Our model occupies a complementary niche. It does not reconstruct a particular X network or classify text. Instead, it isolates how a malicious source's configurable presentation strategy interacts with accumulated user evaluations, reach, and contact-based recommendation. This makes it suitable for controlled scenario analysis and for distinguishing source-level success from system-level false-news exposure.

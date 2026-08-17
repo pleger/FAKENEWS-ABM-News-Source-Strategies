@@ -1,6 +1,7 @@
 # RQ4 — Sensitivity and robustness
 
-Status: **not executed under the final design**.
+Status: **complete and validated**.
 
-Expected runs: 24 conditions × 15 common seeds = 360. Raw archive URL, checksum, commit, and analysis
-outputs will be recorded here after completion.
+Runs: 24 conditions × 15 common seeds = 360. RQ4 is the sensitivity analysis over contacts and
+memory representations. Results are available in
+[`../../analysis/final-study`](../../analysis/final-study).

@@ -1,0 +1,61 @@
+\section{Methodology}
+
+\subsection{Overview: purpose, entities, state variables and scales}
+
+The model's purpose is to compare strategies by which a malicious news source changes observable attributes and policies that restrict its dissemination. A run contains 500 social-network users and four source types: traditional media, unknown media, a malicious fake-news source, and mixed media. Each run lasts 400 discrete periods. A user decision in a period selects one known source; the selected publication is counted as a repost. The principal outcomes are malicious-source selection share, the share and cumulative number of reposts attached to false publications, and cumulative unique reposters.
+
+News sources carry two distinct state groups. Perceived attributes include evoked emotion, simple language, political, geographic and social proximity, sensationalism, information quality, entertainment, audiovisual content, links, hashtags, and credibility. Objective publication behaviour is represented by a separate fake-news probability. The respective probabilities for traditional, unknown, malicious, and mixed sources are 0.092, 0.206, 0.667, and 0.416. A scenario may copy perceived attributes but never copies fake-news probability.
+
+\begin{figure}[ht]\centering
+\includegraphics[width=.96\linewidth]{abm-conceptual-model.pdf}
+\caption{Conceptual structure of the agent-based model and the feedback from source selection, publication state, and social recommendation.}\label{fig:conceptual}
+\end{figure}
+
+Users carry weights indicating the importance assigned to each perceived attribute and to social recommendation. They also retain endorsement events for known sources and have a random set of contacts. Source reach determines whether a source is initially known. With unrestricted reach, all four sources are available; reach-policy experiments vary the malicious source's direct visibility.
+
+\subsection{Process overview and scheduling}
+
+At reset, the simulator constructs users, assigns contacts and visible sources, and generates initial endorsement evidence. During each period: (1) any scheduled source strategy starts or ends; (2) every user aggregates remembered endorsements for known sources; (3) the user probabilistically selects and reposts one source; (4) the selected source independently realizes a true or false publication according to its fixed probability; (5) aggregate and unique-reposter statistics are recorded; and (6) users receive the strongest source recommendation observed among their contacts for use in the following period.
+
+Endorsement contributions are signed and transformed by an exponential base before aggregation. In the principal design, the hard memory window is disabled and each endorsement of age $a$ receives weight
+\begin{equation}
+w(a)=2^{-a/h},
+\end{equation}
+where $h=0.33$ periods is the half-life. Truth-sensitive social recommendation penalises a recommendation attached to a false publication and rewards one attached to a true publication. The receiver magnitude is the user's social-recommendation weight multiplied by 0.5. RQ4 replaces these settings with a 25-period hard window or half-lives of 0.33, 1, and 5 periods.
+
+\subsection{Design concepts}
+
+\textit{Heterogeneity} arises from stochastic source attributes, individual evaluation histories, source visibility, and contact networks. \textit{Interaction} occurs through contact-based recommendations. \textit{Adaptation} is represented by probabilistic source choice based on accumulated evidence; malicious sources adapt exogenously through scheduled strategies. \textit{Learning} is path dependent because choices and recommendations add endorsement events. \textit{Stochasticity} enters source visibility, attribute realizations, publication veracity, network construction and source selection. \textit{Observation} records source selections, false-publication states and unique reposters at every period.
+
+Emergence is assessed at the population level: source shares and false-repost exposure are not assigned targets but arise from user-level decisions. Prediction is conditional rather than point forecasting. Sensing is restricted to known sources, personal histories, and contact recommendations. No agent has global network information.
+
+\subsection{Details: initialisation and input parameterisation}
+
+The workbook parameters are informed by aggregated responses from a Chilean survey of 500 X users. The source distributions and mean user weights translate survey constructs into model inputs; source reach values are 81.2\%, 46.7\%, 14.7\%, and 17.5\% for the four source types. We describe this as survey-informed parameterisation, not predictive calibration: the repository does not contain respondent-level microdata or an observed X cascade target against which output parameters were fitted. Consequently, the model supports comparative scenario reasoning but not claims of national representativeness or individual prediction. Survey instrument, sampling dates, recruitment, transformation rules, and ethics information remain author-verification items before submission.
+
+Named strategies group attributes as follows. Engagement copies positive and negative emotion, simple language, sensationalism, entertainment, audiovisual content, and hashtags. Proximity copies political, geographic, and social proximity. Informational camouflage copies information quality and links. Credibility camouflage copies source credibility. The combined strategy copies all four groups from traditional media to the malicious source. Campaign intervals are inclusive; temporary changes are reverted after their final period.
+
+\subsection{Experimental design and statistical analysis}
+
+Table~\ref{tab:design} summarises the study. Every treatment and its control use common seeds. RQ1 compares five permanent strategies with no strategy. RQ2 crosses credibility and informational camouflage with starts at periods 1, 101, and 201 and durations of 25, 100, or the remainder of the run. RQ3 crosses no strategy, credibility, and informational camouflage with reach levels 14.7\%, 10\%, 5\%, 1\%, and 0\%, both with and without social recommendations. RQ4 crosses three contact counts with four memory settings and compares permanent credibility camouflage with control.
+
+\begin{table}[ht]
+\centering
+\caption{Experimental design.}\label{tab:design}
+\begin{tabular}{lrrp{7.4cm}}
+\toprule RQ & Conditions & Seeds & Factors \\
+\midrule
+RQ1 & 6 & 30 & Five source strategies and control \\
+RQ2 & 19 & 30 & Strategy, start period, and duration \\
+RQ3 & 30 & 30 & Strategy, malicious-source reach, and social recommendation \\
+RQ4 & 24 & 15 & Credibility strategy, contacts, and memory \\
+\midrule Total & 79 & & 2,010 independent run files \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+For each seed, treatment minus matched control defines the effect. We report means, Student-$t$ 95\% confidence intervals, paired standardised effects ($d_z$), and Holm-adjusted $p$ values within each RQ and outcome family. Effect sizes on shares are expressed in percentage points (pp). Because this is a stochastic simulation experiment, intervals quantify Monte Carlo variability under the encoded model; they do not estimate sampling error for the population of X users.
+
+\subsection{Software execution and reproducibility}
+
+The Java reference implementation, study specification, processed run-level metrics and analysis scripts are open source. The study was run with six concurrent Java processes on a MacBook Pro with an Apple M2 Max processor (12 CPU cores: eight performance and four efficiency), 32 GB RAM, macOS 26.6.1, and OpenJDK 25.0.1. Timestamped study artefacts show an elapsed execution time of approximately 10 h 29 min, from 16 August 2026 at 13:48 to 17 August 2026 at 00:17 (America/Santiago). The public processed dataset reproduces all reported statistics, tables, and figures without the generated workbooks; the code, condition definitions and seeds permit a complete rerun. These materials are available from \ifdefined\ANONYMOUS a public reproducibility repository whose identifying address is omitted here to preserve double-anonymous review\else\url{https://github.com/pleger/FAKENEWS-ABM-News-Source-Strategies}\fi.

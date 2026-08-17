@@ -1,0 +1,18 @@
+\section{Introduction}
+
+Online social networks allow news sources to reach large audiences with low publication and redistribution costs. The same infrastructure supports legitimate journalism, uncertain information, deliberately deceptive content, and mixtures of these forms. False news has been shown to diffuse farther and faster than true news in large Twitter cascades \citep{vosoughi2018}, while exposure and sharing are concentrated among subsets of users \citep{grinberg2019,guess2019}. These findings motivate interventions, but they do not by themselves reveal how a malicious source may adapt its observable presentation when platforms or users become more selective.
+
+This paper focuses on strategies controlled by a malicious news source. Such a source may imitate attributes associated with established media: emotional engagement, political or social proximity, apparent information quality, or source credibility. We distinguish these perceived attributes from the objective probability that a publication is false. This separation is essential. A camouflage strategy can make a source more attractive without making its output more accurate.
+
+Observed social-media data are indispensable but make controlled counterfactuals difficult. Agent-based modelling (ABM) complements observation by representing heterogeneous users, repeated decisions and feedback, and by changing one policy or strategy while holding the remaining design constant \citep{macal2010,grimm2020}. Our model therefore serves as a computational laboratory for source strategies and mitigation policies; it is not intended to forecast X at the individual-user level.
+
+We address four research questions:
+
+\begin{description}
+\item[RQ1.] How do source-imitation strategies affect malicious-source reach and fake-news dissemination? This establishes whether copying individual or combined attribute groups benefits a malicious source.
+\item[RQ2.] How do campaign timing and duration affect efficacy and persistence? This tests whether early or long-running camouflage produces stronger or longer-lived effects.
+\item[RQ3.] How effectively does limiting malicious-source reach mitigate dissemination, and how do social recommendations modify this relationship? This connects source behaviour to platform-controllable exposure.
+\item[RQ4.] Are conclusions robust to memory and connectivity assumptions? This treats behavioural parameters as uncertainty factors rather than policy levers.
+\end{description}
+
+The contribution is threefold. First, we provide a modular ABM in which named source strategies selectively copy observable attributes while publication veracity remains unchanged. Second, we use common random-number seeds in 2,010 runs to compare source strategy, timing, reach, social recommendation, memory, and connectivity conditions. Third, we identify a consequential difference between a malicious source gaining audience share and the network experiencing more false reposts. The remainder of the paper reviews related work, describes the model using the ODD protocol, reports the four scenario analyses, documents verification and validation, discusses policy implications and limitations, and concludes.

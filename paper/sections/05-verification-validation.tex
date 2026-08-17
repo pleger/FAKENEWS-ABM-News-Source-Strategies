@@ -1,0 +1,22 @@
+\section{Verification and validation}
+
+\subsection{Software verification}
+
+The software separates input loading, agent behaviour, source behaviour, scenario transformation, experiment orchestration, and reporting into components with explicit interfaces. Configuration errors are fatal, including invalid memory combinations, probabilities outside $[0,1]$, unknown strategies, incompatible campaign periods, and missing source attributes. Legacy workbooks remain executable when the new strategy sheet is absent, while the new schema separates perceived credibility from objective fake-news probability.
+
+Automated tests cover configuration defaults and failures, memory decay, truth-sensitive recommendation, strategy resolution, temporary scenario restoration, seeded reproducibility, study planning, and backward compatibility. The final-study analyser adds independent checks at the output boundary. It verified exactly 2,010 unique completed workbooks, 400 ordered periods per analytical sheet, binary publication states, valid population totals, unique condition-seed combinations, and the expected number of conditions per RQ. The analysis itself has unit tests confirming seed-based pairing and confidence-interval calculation.
+
+\subsection{Conceptual and behavioural validation}
+
+The conceptual structure was reviewed against the intended causal narrative: users compare sources, past and social evaluations influence later selection, sources generate publications independently of perceived credibility, and strategies change presentation rather than truthfulness. ODD documentation exposes these assumptions for inspection. The separation of source selection and fake-publication state is also validated in the outputs: strategies can increase source share without proportionally increasing false-repost share.
+
+Input validation is survey-informed. Aggregated responses from 500 Chilean X users provide user weights and source-attribute distributions. Range, probability-sum, source-coverage and schema checks are enforced when the workbook loads. This gives the model an empirical anchor, but it is not external predictive validation because respondent-level data and observed X cascade outcomes were not used to fit and test the simulated diffusion curves.
+
+Behavioural checks include boundary and directional cases. Zero malicious-source reach produces zero direct malicious-source selections and zero strategy effect. Longer memory allows source changes to accumulate more strongly. Truth-sensitive recommendations reduce false-repost exposure relative to recommendation-disabled conditions. RQ4 deliberately varies uncertain memory and connectivity parameters and therefore functions as sensitivity analysis rather than policy evaluation.
+
+The overall validation judgement is \textit{fit for comparative scenario analysis with caveats}. The model can compare mechanisms consistently under controlled conditions. It should not be used to predict the number of false reposts on X, infer causal effects in the platform, or generalise the Chilean survey parameters to other populations without further external validation.
+
+\begin{figure}[ht]\centering
+\includegraphics[width=.96\linewidth]{study-validation-methodology.pdf}
+\caption{Methodological chain connecting conceptual specification, survey-informed inputs, software verification, scenario experiments, sensitivity analysis, and qualified inference.}\label{fig:validation}
+\end{figure}

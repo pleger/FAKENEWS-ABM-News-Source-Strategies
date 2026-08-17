@@ -1,6 +1,7 @@
 # RQ1 — Strategy comparison
 
-Status: **not executed under the final design**.
+Status: **complete and validated**.
 
-Expected runs: 6 conditions × 30 common seeds = 180. Raw archive URL, checksum, commit, and analysis
-outputs will be recorded here after completion.
+Runs: 6 conditions × 30 common seeds = 180. RQ1 compares five malicious-source imitation
+strategies with a no-strategy control. Run-level metrics, condition summaries, paired effects,
+tables, and figures are available in [`../../analysis/final-study`](../../analysis/final-study).

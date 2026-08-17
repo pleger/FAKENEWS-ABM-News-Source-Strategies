@@ -1,16 +1,19 @@
 # Reproducible results
 
-Each research question has an independent directory. Run outputs contain condition workbooks,
-seeded raw result workbooks, logs, `study.tsv`, and `manifest.tsv`.
+Status: **complete**. All 2,010 seeded runs passed the final-study validation.
 
-The final publication workflow is:
+Each research question has an independent documentation directory. The publication-safe,
+run-level results are tracked in [`../analysis/final-study`](../analysis/final-study); generated
+condition workbooks and execution logs remain ignored because they can be recreated from the
+published study definition and seeds.
 
-1. Execute the question with `make study-run ARGS="--questions RQn ... --output results/RQn/raw"`.
+The publication workflow is:
+
+1. Inspect or rerun a question with the Java study runner.
 2. Verify that every manifest row has status `COMPLETE`.
-3. Generate analysis CSV files, figures, and checksums.
-4. Package the raw directory as a versioned GitHub Release asset.
-5. Record the release URL, archive SHA-256, software commit, and analysis commit in the question's
-   README.
+3. Extract one publication-safe metrics row per seed.
+4. Recompute paired contrasts, confidence intervals, tables, and figures.
+5. Verify the tracked `SHA256SUMS` file.
 
-Large generated workbooks and logs should be published as release assets rather than committed
-directly to Git. Manifests, checksums, analysis tables, scripts, and figures should remain tracked.
+Large generated workbooks and logs are not committed. Processed data, a path-free manifest,
+checksums, analysis tables, scripts, and figures are tracked directly in Git.

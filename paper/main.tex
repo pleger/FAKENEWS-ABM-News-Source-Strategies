@@ -1,0 +1,46 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{newtxtext,newtxmath}
+\usepackage{graphicx,booktabs,array,multirow,amsmath,siunitx,xcolor}
+\usepackage[authoryear,round]{natbib}
+\usepackage[hidelinks]{hyperref}
+\usepackage{microtype}
+\usepackage{lineno}
+\usepackage{setspace}
+\graphicspath{{images/}}
+\setlength{\emergencystretch}{3em}
+\linenumbers
+
+\title{Evaluations of News Source Strategies to Disseminate Fake News in X}
+\ifdefined\ANONYMOUS
+  \author{Anonymous authors}
+\else
+  \author{Paul Leger\textsuperscript{a}\thanks{Corresponding author: \href{mailto:pleger@ucn.cl}{pleger@ucn.cl}; ORCID: \href{https://orcid.org/0000-0003-0969-5139}{0000-0003-0969-5139}} \and
+  Agustín Olivares\textsuperscript{b} \and Oswaldo Teran\textsuperscript{c,d} \and
+  Manuela Lopez\textsuperscript{e} \and Francis Espinoza\textsuperscript{b} \and
+  Carolina Rodríguez\textsuperscript{f}\\[0.8em]
+  \small \textsuperscript{a}Escuela de Ingeniería, Universidad Católica del Norte, Chile\\
+  \small \textsuperscript{b}Universidad Católica del Norte, Chile\\
+  \small \textsuperscript{c}Escuela de Ciencias Empresariales, Universidad Católica del Norte, Chile\\
+  \small \textsuperscript{d}Centro de Simulación y Modelos (CESIMO), Universidad de Los Andes, Venezuela\\
+  \small \textsuperscript{e}University of Murcia, Spain\\
+  \small \textsuperscript{f}Universidad de La Serena, Chile}
+\fi
+\date{}
+
+\begin{document}
+\maketitle
+\input{sections/00-abstract}
+\input{sections/01-introduction}
+\input{sections/02-background}
+\input{sections/03-methodology}
+\input{sections/04-scenario-analysis}
+\input{sections/05-verification-validation}
+\input{sections/06-discussion-implications}
+\input{sections/07-conclusions}
+\input{sections/08-declarations}
+\bibliographystyle{plainnat}
+\bibliography{reference}
+\end{document}
