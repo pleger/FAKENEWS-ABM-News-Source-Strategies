@@ -372,6 +372,12 @@ def figures(recommendation: pd.DataFrame, structural: pd.DataFrame,
             (metric, "False share among decisions"),
             ("participation_rate", "Participation rate"))):
         plot = structural[structural.metric == row_metric].copy()
+        # Activity is imposed symmetrically in each matched pair.  Floating-point
+        # subtraction leaves residuals around 1e-17 even though the estimand is
+        # exactly zero; plotting those residuals would falsely suggest variation.
+        if row_metric == "participation_rate":
+            for column in ("effect", "ci95_low", "ci95_high"):
+                plot.loc[plot[column].abs() < 1e-12, column] = 0.0
         for column_index, topology in enumerate((0, 1)):
             ax = axes[row_index, column_index]
             group = plot[plot.network_topology == topology]
@@ -387,6 +393,9 @@ def figures(recommendation: pd.DataFrame, structural: pd.DataFrame,
                          if row_index == 0 else row_title)
             ax.set_xlabel("User activity probability")
             ax.set_ylabel(row_title + " effect (pp)")
+            if row_metric == "participation_rate":
+                ax.set_ylim(-0.05, 0.05)
+                ax.ticklabel_format(axis="y", style="plain", useOffset=False)
     axes[0, 1].legend(fontsize=8)
     fig.suptitle("Structural sensitivity of strategy and participation effects")
     fig.tight_layout(); fig.savefig(directory / "structural-sensitivity.svg")

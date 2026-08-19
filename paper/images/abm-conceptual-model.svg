@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1120" viewBox="0 0 1800 1120" role="img" aria-labelledby="title desc">
   <title id="title">Conceptual model of fake-news dissemination in X</title>
   <desc id="desc">An editable conceptual diagram of FAKENEWS-ABM. News sources publish true or false items, social media users evaluate sources using accumulated experience, repost probabilistically, and exchange social recommendations. News-source strategies modify selected attributes of a malicious source, while outcomes quantify source selection and realised fake-news diffusion.</desc>
-  <metadata>Editable paper figure for “Evaluations of News Source Strategies to Disseminate Fake News in X”. All labels, nodes, connectors, and styles remain native SVG objects.</metadata>
+  <metadata>Editable paper figure for “Evaluations of News Source Strategies for Disseminating Fake News on X”. All labels, nodes, connectors, and styles remain native SVG objects.</metadata>
   <defs>
     <style>
       .canvas { fill: #f7f9fb; }
