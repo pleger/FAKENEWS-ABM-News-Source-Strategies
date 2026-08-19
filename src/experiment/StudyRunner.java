@@ -194,7 +194,12 @@ public final class StudyRunner {
         StringBuilder manifest = new StringBuilder();
         manifest.append("study\tresearch_question\texperiment\tcondition\tseed\tstrategy\tfrom\tto")
                 .append("\tstart_period\tend_period\ttarget_reach\tmemory\tmemory_half_life")
-                .append("\twom\tcontacts\tfriends\tstatus\tinput_workbook\tresult_workbook\tlog\n");
+                .append("\twom\twom_receiver_scale\twom_fake_effect\twom_true_effect")
+                .append("\twom_label_delay\twom_label_coverage\twom_label_sensitivity\twom_label_specificity")
+                .append("\tcontacts\tfriends\tuser_activity\tnetwork_topology\tnetwork_rewiring")
+                .append("\tbase\tsource_attribute_contrast\ttraditional_fake_probability")
+                .append("\tunknown_fake_probability\ttarget_fake_probability\tmixed_fake_probability")
+                .append("\tstatus\tinput_workbook\tresult_workbook\tlog\n");
         for (SimulationRunSpecification run : runs) {
             ConditionSpecification condition = run.getCondition();
             ScenarioSpecification scenario = condition.getScenario();
@@ -210,7 +215,17 @@ public final class StudyRunner {
                     scenario == null ? "" : Integer.toString(scenario.getEndPeriod()),
                     number(condition.getTargetReachPercentage()), number(configuration.get("MEMORY")),
                     number(configuration.get("MEMORY_HALF_LIFE")), number(configuration.get("WOM")),
-                    number(configuration.get("CONTACTS")), number(configuration.get("FRIENDS")), status,
+                    number(configuration.get("WOM_RECEIVER_SCALE")), number(configuration.get("WOM_FAKE_NEWS_EFFECT")),
+                    number(configuration.get("WOM_TRUE_NEWS_EFFECT")), number(configuration.get("WOM_LABEL_DELAY")),
+                    number(configuration.get("WOM_LABEL_COVERAGE")), number(configuration.get("WOM_LABEL_SENSITIVITY")),
+                    number(configuration.get("WOM_LABEL_SPECIFICITY")), number(configuration.get("CONTACTS")),
+                    number(configuration.get("FRIENDS")), number(configuration.get("USER_ACTIVITY_PROBABILITY")),
+                    number(configuration.get("NETWORK_TOPOLOGY")), number(configuration.get("NETWORK_REWIRING_PROBABILITY")),
+                    number(configuration.get("BASE")), number(configuration.get("SOURCE_ATTRIBUTE_CONTRAST")),
+                    number(condition.getSourceBehaviorOverrides().get("TRADITIONAL_MEDIA")),
+                    number(condition.getSourceBehaviorOverrides().get("UNKNOWN_MEDIA")),
+                    number(condition.getSourceBehaviorOverrides().get("FAKE_NEWS_SOURCE")),
+                    number(condition.getSourceBehaviorOverrides().get("MIXED_SOURCE")), status,
                     run.getWorkbook().toAbsolutePath().toString(), result == null ? "" : result.toString(),
                     run.getOutputDirectory().resolve("run.log").toAbsolutePath().toString());
         }

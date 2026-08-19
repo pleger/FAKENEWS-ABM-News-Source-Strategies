@@ -46,6 +46,10 @@ public final class WorkbookConditionBuilder {
                 writeSourceReach(requiredSheet(workbook, "SourceReach"), target,
                         condition.getTargetReachPercentage());
             }
+            if (!condition.getSourceBehaviorOverrides().isEmpty()) {
+                writeSourceBehavior(requiredSheet(workbook, "SourceBehavior"),
+                        condition.getSourceBehaviorOverrides());
+            }
             try (FileOutputStream output = new FileOutputStream(temporary.toFile())) {
                 workbook.write(output);
             }
@@ -140,6 +144,20 @@ public final class WorkbookConditionBuilder {
             }
         }
         throw new IllegalArgumentException("SourceReach does not contain source: " + source);
+    }
+
+    private static void writeSourceBehavior(Sheet sheet, Map<String, Double> overrides) {
+        Set<String> remaining = new HashSet<>(overrides.keySet());
+        for (Row row : sheet) {
+            String source = text(row.getCell(0)).toUpperCase();
+            if (overrides.containsKey(source)) {
+                cell(row, 1).setCellValue(overrides.get(source));
+                remaining.remove(source);
+            }
+        }
+        if (!remaining.isEmpty()) {
+            throw new IllegalArgumentException("SourceBehavior does not contain sources: " + remaining);
+        }
     }
 
     private static Cell cell(Row row, int column) {

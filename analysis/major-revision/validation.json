@@ -1,0 +1,14 @@
+{
+  "status": "PASS",
+  "workbooks": 4680,
+  "runs_by_rq": {
+    "RQ3": 1860,
+    "RQ4": 2820
+  },
+  "conditions_by_rq": {
+    "RQ3": 62,
+    "RQ4": 282
+  },
+  "paired_seeds": true,
+  "global_sensitivity": "Morris elementary effects, 8 trajectories, 10 factors"
+}

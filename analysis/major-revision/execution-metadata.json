@@ -1,0 +1,16 @@
+{
+  "resumed_at": "2026-08-18T11:18:43-04:00",
+  "finished_at": "2026-08-19T01:28:56-04:00",
+  "elapsed_seconds_since_resume": 51012.163,
+  "simulation_jobs": 10,
+  "completed_runs": 4680,
+  "preexisting_completed_runs": 2130,
+  "completed_since_resume": 2550,
+  "raw_generated_bytes": 3666202054,
+  "operating_system": "macOS-26.6.1-x86_64-i386-64bit-Mach-O",
+  "architecture": "x86_64",
+  "logical_cpu_count": 12,
+  "java_version": "openjdk version \"25.0.1\" 2025-10-21",
+  "git_head_at_analysis": "362334962ae25a40022681f309959a0f448cbceb",
+  "git_worktree_clean_at_analysis": false
+}

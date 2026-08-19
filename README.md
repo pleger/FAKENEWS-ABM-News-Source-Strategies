@@ -9,10 +9,10 @@ and adds the paper-specific provider, input workbook, research-question design, 
 run-level processed data, statistical analysis, and figures. The public repository is
 <https://github.com/pleger/FAKENEWS-ABM-News-Source-Strategies>.
 
-The Java definition in
-[`NewsSourceStrategiesStudy`](src/experiment/NewsSourceStrategiesStudy.java) contains four research
-questions, four experiments, 79 conditions, and 2,010 seeded simulation runs. The safe default is
-to inspect the plan:
+The staged primary design contains 423 conditions and 6,690 seeded simulation runs. The original
+provider [`NewsSourceStrategiesStudy`](src/experiment/NewsSourceStrategiesStudy.java) supplies
+79 conditions/2,010 runs. [`MajorRevisionStudy`](src/experiment/MajorRevisionStudy.java) adds
+344 conditions/4,680 runs. The safe default is to inspect the plan:
 
 ```sh
 make study-plan
@@ -31,42 +31,89 @@ full matrix, use a smoke execution:
 make study-run ARGS="--questions RQ1 --seeds 1 --max-runs 2 --jobs 1 --output results/smoke"
 ```
 
-| Research question | Experiment | Conditions | Seeds | Runs |
-|---|---|---:|---:|---:|
-| RQ1: strategy comparison | E1 | 6 | 30 | 180 |
-| RQ2: timing and duration | E2 | 19 | 30 | 570 |
-| RQ3: reach mitigation | E3 | 30 | 30 | 900 |
-| RQ4: sensitivity and robustness | E4 | 24 | 15 | 360 |
+| Stage | Conditions | Runs |
+|---|---:|---:|
+| Original RQ1--RQ4 design | 79 | 2,010 |
+| RQ3 recommendation revision | 62 | 1,860 |
+| RQ4 global and structural revision | 282 | 2,820 |
+| **Primary total** | **423** | **6,690** |
 
-All four research questions have been completed. The publication-safe dataset in
-[`analysis/final-study/run-metrics.csv`](analysis/final-study/run-metrics.csv) contains one row for
-each seeded run. It is accompanied by condition summaries, paired effects, figures, tables, a data
-dictionary, a 2,010-row manifest, validation metadata, and SHA-256 checksums. These processed
-artefacts total less than 2 MB and reproduce every numerical result in the manuscript.
+The major-revision provider
+[`MajorRevisionStudy`](src/experiment/MajorRevisionStudy.java) adds realistic recommendation
+policies, corrected activity-aware outcomes, global parameter screening, and structural
+sensitivity. It contains 344 additional conditions and 4,680 runs:
+
+| Research question | Experiment | Conditions | Seeds per condition | Runs |
+|---|---|---:|---:|---:|
+| RQ3 | E3b recommendation realism | 56 | 30 | 1,680 |
+| RQ3 | E3c combined legacy policies | 6 | 30 | 180 |
+| RQ4 | E4b Morris global sensitivity | 264 | 10 | 2,640 |
+| RQ4 | E4c activity/topology sensitivity | 18 | 10 | 180 |
+
+Preview or resume that suite with ten workers:
+
+```sh
+make study-plan STUDY_CLASS=experiment.MajorRevisionStudy
+make study-run STUDY_CLASS=experiment.MajorRevisionStudy \
+  ARGS="--jobs 10 --output output/major-revision"
+```
+
+After the generated workbooks complete, create the compact publication dataset with:
+
+```sh
+PYTHON=.venv-analysis/bin/python make analysis-major-revision
+```
+
+The revision analysis validates the full 4,680-run matrix and writes compressed run-level data,
+paired recommendation-policy effects, Morris elementary effects, structural contrasts, SVG/PNG
+figures, a human-readable result digest, execution metadata, and SHA-256 checksums. The execution
+metadata record contains elapsed time, concurrency, software versions, source revision and raw-data
+size, but no device serial number or other private machine identifier.
+
+The structural component is re-executed after enforcing the intended fixed outdegree in the
+directed small-world generator; those 180 files replace rather than add to the primary-run total.
+An additional 360 observational re-executions across 12 RQ3 cells expose recommendation coverage,
+classification, discovery, delay, effect direction, duplicate recommendations and ties:
+
+```sh
+make study-diagnostics ARGS="--jobs 10 --output output/rq3-diagnostics"
+make study-structural-correction ARGS="--jobs 10 --output output/structural-correction"
+PYTHON=.venv-analysis/bin/python make analysis-major-revision
+PYTHON=.venv-analysis/bin/python make analysis-diagnostics
+```
+
+All four research questions have been completed. `analysis/major-revision-existing/` contains the
+reprocessed original 2,010 runs; `analysis/major-revision/` contains the compact revision runs,
+contrasts, Morris elementary effects and stability analysis, corrected structural results,
+diagnostic re-executions, figures, data dictionaries, validation metadata and SHA-256 checksums.
+Together these publication-safe artefacts reproduce every numerical result in the manuscript.
 
 Rebuild the statistics, tables, and figures from the public processed dataset:
 
 ```sh
 python3 -m venv /tmp/fakenews-analysis-venv
 /tmp/fakenews-analysis-venv/bin/pip install -r experiments/requirements.txt
-/tmp/fakenews-analysis-venv/bin/python experiments/analyze_final_study.py \
-  --processed analysis/final-study/run-metrics.csv \
-  --output /tmp/fakenews-reproduced
+/tmp/fakenews-analysis-venv/bin/python -m unittest \
+  experiments/test_analyze_major_revision.py \
+  experiments/test_analyze_recommendation_diagnostics.py
 ```
 
 For a full computational replication, execute the study with the published condition matrix and
 seeds, then extract the processed dataset from the generated workbooks:
 
 ```sh
-make study-run ARGS="--jobs 6 --output output/final-study"
-/tmp/fakenews-analysis-venv/bin/python experiments/analyze_final_study.py \
-  output/final-study --output /tmp/fakenews-from-raw
+make study-run STUDY_CLASS=experiment.NewsSourceStrategiesStudy \
+  ARGS="--jobs 10 --output output/final-study"
+make study-run STUDY_CLASS=experiment.MajorRevisionStudy \
+  ARGS="--jobs 10 --output output/major-revision"
+make study-structural-correction ARGS="--jobs 10 --output output/structural-correction"
+make study-diagnostics ARGS="--jobs 10 --output output/rq3-diagnostics"
 ```
 
-The final raw workbooks and execution logs occupy approximately 583 MB and are intentionally not
-tracked. They are programmatically generated artefacts rather than survey microdata; the public
-code, input workbook, condition definitions, seeds, and processed run-level metrics permit both
-complete reruns and immediate reproduction of the reported analysis.
+Generated workbooks and execution logs occupy gigabytes and are intentionally not tracked. They
+are programmatically generated artefacts rather than survey microdata; the public code, input
+workbook, condition definitions, seeds and processed run-level metrics permit both complete reruns
+and immediate reproduction of the reported analysis.
 
 `prior-analysis/` contains preliminary material produced before the final RQ1–RQ4 design. It is
 retained for provenance and must not be confused with the final paper results.

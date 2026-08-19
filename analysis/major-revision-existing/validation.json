@@ -1,0 +1,19 @@
+{
+  "status": "PASS",
+  "workbooks": 2010,
+  "agents": 500,
+  "periods": 400,
+  "runs_by_rq": {
+    "RQ1": 180,
+    "RQ2": 570,
+    "RQ3": 900,
+    "RQ4": 360
+  },
+  "conditions_by_rq": {
+    "RQ1": 6,
+    "RQ2": 19,
+    "RQ3": 30,
+    "RQ4": 24
+  },
+  "method": "paired by seed; Student-t 95% confidence intervals; Holm adjustment within RQ and metric"
+}

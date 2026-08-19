@@ -132,6 +132,7 @@ public class Simulation implements FlyWeight, Step, ReportRegister {
             ScenarioManager.apply(period);
             doStep(period);
             report(period);
+            Reporter.ensureWomDiagnosticPeriod(ID, period);
 
             int recommendations = 0;
             if (Configuration.WOM) {

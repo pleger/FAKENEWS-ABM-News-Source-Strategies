@@ -25,6 +25,7 @@ import reporter.Reporter;
 import reporter.EndorsementData;
 import reporter.FakeNewsPerSourceData;
 import reporter.RepostsPerSourceData;
+import reporter.WomDiagnosticData;
 import scenarios.Scenario;
 import scenarios.ScenarioFactory;
 import simulation.Simulation;
@@ -73,8 +74,10 @@ public class TestRunner {
         testEndorsementFormulaForHighBinaryLevel();
         testConfigurationAppliesPluralSavedEndorsementsKey();
         testConfigurationSupportsSavedFakeNews();
+        testConfigurationSupportsWomDiagnostics();
         testConfigurationSupportsWomRecommendationEffects();
         testConfigurationSupportsMemoryDecayAndWomScale();
+        testConfigurationSupportsMajorRevisionScenarios();
         testConfigurationOutputOrderIsStable();
         testConfigurationRejectsInvalidValues();
         testConfigurationAcceptsExcelDisabledScenario();
@@ -82,6 +85,7 @@ public class TestRunner {
         testConfigurationRejectsInvalidMemoryValues();
         testLargeConfigurationWithDetailedSavingIsAcceptedWithWarning();
         testLoaderReadsFakeNewsBaseline();
+        testSourceAttributeContrastSurvivesInitializationAndReset();
         testSeededRandomnessIsReproducible();
         testStudyDefinitionPlansExpectedRuns();
         testJavaStudyRunnerExecutesIsolatedSmokeRun();
@@ -109,6 +113,7 @@ public class TestRunner {
         testNewsSourceUsesGreatestProcessedPeriodAsLast();
         testRecommendationsUseStrongestEvaluationAndRememberSourceOnce();
         testWomRecommendationOutcomePolicies();
+        testWomLabelCoverageDelayAndMisclassification();
         testZeroEndorsementHasNeutralEvaluation();
         testExponentialMemoryDecay();
         testUserWithNoKnownSourcesCanStep();
@@ -118,6 +123,8 @@ public class TestRunner {
         testEndorsementsInfiniteMemoryKeepsAllPeriods();
         testNewsSourceSelectionByMax();
         testFactoriesResetIdsAcrossCreations();
+        testSmallWorldNetworkPreservesConfiguredOutdegree();
+        testWomDiagnosticsAreObservational();
         testSimulationResetRestoresSourcesBeforeInitialEndorsements();
         testAggregateRepostSeriesCalculatesSampleDeviation();
         testRepostChartsUseStableOutputNames();
@@ -159,6 +166,27 @@ public class TestRunner {
         assertThrows("SAVED_FAKENEWS should reject values other than 0 or 1", () -> {
             HashMap<String, Double> invalid = validConfiguration();
             invalid.put("SAVED_FAKENEWS", 2.0);
+            Configuration.set(invalid);
+        });
+        passed++;
+    }
+
+    private static void testConfigurationSupportsWomDiagnostics() {
+        HashMap<String, Double> absent = validConfiguration();
+        Configuration.set(absent);
+        assertTrue("SAVED_WOM_DIAGNOSTICS should default to false", !Configuration.SAVED_WOM_DIAGNOSTICS);
+
+        HashMap<String, Double> enabled = validConfiguration();
+        enabled.put("SAVED_WOM_DIAGNOSTICS", 1.0);
+        Configuration.set(enabled);
+        assertTrue("SAVED_WOM_DIAGNOSTICS=1 should enable diagnostic reporting",
+                Configuration.SAVED_WOM_DIAGNOSTICS);
+        assertEquals("configuration output should include SAVED_WOM_DIAGNOSTICS", 1.0,
+                Configuration.toMap().get("SAVED_WOM_DIAGNOSTICS"), 0.0001);
+
+        assertThrows("SAVED_WOM_DIAGNOSTICS should reject values other than 0 or 1", () -> {
+            HashMap<String, Double> invalid = validConfiguration();
+            invalid.put("SAVED_WOM_DIAGNOSTICS", 2.0);
             Configuration.set(invalid);
         });
         passed++;
@@ -239,13 +267,42 @@ public class TestRunner {
         passed++;
     }
 
+    private static void testConfigurationSupportsMajorRevisionScenarios() {
+        HashMap<String, Double> configured = validConfiguration();
+        configured.put("WOM_LABEL_DELAY", 5.0);
+        configured.put("WOM_LABEL_COVERAGE", 0.8);
+        configured.put("WOM_LABEL_SENSITIVITY", 0.9);
+        configured.put("WOM_LABEL_SPECIFICITY", 0.95);
+        configured.put("USER_ACTIVITY_PROBABILITY", 0.5);
+        configured.put("NETWORK_TOPOLOGY", 1.0);
+        configured.put("NETWORK_REWIRING_PROBABILITY", 0.1);
+        configured.put("SOURCE_ATTRIBUTE_CONTRAST", 1.25);
+        Configuration.set(configured);
+        assertEquals("label delay", 5.0, Configuration.WOM_LABEL_DELAY, 0.0001);
+        assertEquals("label coverage", 0.8, Configuration.WOM_LABEL_COVERAGE, 0.0001);
+        assertEquals("activity probability", 0.5, Configuration.USER_ACTIVITY_PROBABILITY, 0.0001);
+        assertEquals("small-world topology", 1.0, Configuration.NETWORK_TOPOLOGY, 0.0001);
+        assertEquals("attribute contrast", 1.25, Configuration.SOURCE_ATTRIBUTE_CONTRAST, 0.0001);
+        assertThrows("coverage above one should fail", () -> {
+            HashMap<String, Double> invalid = validConfiguration();
+            invalid.put("WOM_LABEL_COVERAGE", 1.1);
+            Configuration.set(invalid);
+        });
+        assertThrows("unknown topology should fail", () -> {
+            HashMap<String, Double> invalid = validConfiguration();
+            invalid.put("NETWORK_TOPOLOGY", 2.0);
+            Configuration.set(invalid);
+        });
+        passed++;
+    }
+
     private static void testConfigurationOutputOrderIsStable() {
         Configuration.set(validConfiguration());
         List<String> keys = new ArrayList<>(Configuration.toMap().keySet());
 
         assertEquals("first configuration key", "PERIODS", keys.get(0));
         assertEquals("second configuration key", "AGENTS", keys.get(1));
-        assertEquals("last configuration key", "SAVED_FAKENEWS", keys.get(keys.size() - 1));
+        assertEquals("last configuration key", "SAVED_WOM_DIAGNOSTICS", keys.get(keys.size() - 1));
         passed++;
     }
 
@@ -361,6 +418,24 @@ public class TestRunner {
         source.doStep(2);
         assertTrue("legacy low credibility of zero should deterministically publish true news",
                 !source.isFakeNews(2));
+        passed++;
+    }
+
+    private static void testSourceAttributeContrastSurvivesInitializationAndReset() {
+        Loader.load("FAKENEWS_BASELINE");
+        Configuration.SOURCE_ATTRIBUTE_CONTRAST = 1.25;
+        NewsSource source = NewsSourceFactory.createFromInput().get(0);
+        String credibility = "CREDIBILIDAD DE LA FUENTE";
+        Double[] original = new Double[]{0.092, 0.908};
+        Double[] expected = new Double[]{0.0, 1.0};
+
+        assertArrayEquals("contrast should be applied during source creation", expected,
+                source.getAttributes().getValues(credibility), 0.0001);
+        source.setAttributes(source.getAttributes().replace(credibility, original));
+        source.reinit();
+        assertArrayEquals("contrast should be restored during source reset", expected,
+                source.getAttributes().getValues(credibility), 0.0001);
+        Configuration.SOURCE_ATTRIBUTE_CONTRAST = 1.0;
         passed++;
     }
 
@@ -1193,6 +1268,126 @@ public class TestRunner {
         assertRecommendationEffect(true, WomRecommendationEffect.IGNORE, 0, 0.0);
         assertRecommendationEffect(false, WomRecommendationEffect.REWARD, 1, 1.0);
         assertRecommendationEffect(false, WomRecommendationEffect.IGNORE, 0, 0.0);
+        passed++;
+    }
+
+    private static void testSmallWorldNetworkPreservesConfiguredOutdegree() {
+        Loader.load("FAKENEWS_BASELINE");
+        Configuration.AGENTS = 20;
+        Configuration.CONTACTS = 5;
+        Configuration.FRIENDS = 1.0;
+        Configuration.NETWORK_TOPOLOGY = 1;
+        Configuration.NETWORK_REWIRING_PROBABILITY = 0.8;
+        for (long seed = 20260817L; seed < 20260837L; ++seed) {
+            Randomness.setSeed(seed);
+            List<SNSUser> users = SNSUserFactory.createFromInput();
+            for (SNSUser user : users) {
+                user.setFriends(users);
+                assertEquals("small-world construction should preserve fixed outdegree", 5,
+                        user.getFriendCount());
+            }
+        }
+        Configuration.NETWORK_TOPOLOGY = 0;
+        passed++;
+    }
+
+    private static void testWomDiagnosticsAreObservational() {
+        Configuration.SAVED_WOM_DIAGNOSTICS = true;
+        Reporter.clear();
+        Reporter.ensureWomDiagnosticPeriod(7, 1);
+        Reporter.recordWomSelection(7, 1, 5, 2, true, true);
+        Reporter.recordWomLabel(7, 1, true, true, WomRecommendationEffect.PENALIZE);
+        Reporter.recordWomScheduled(7, 1);
+        Reporter.recordWomDelivered(7, 2);
+        Reporter.recordWomUncovered(7, 2);
+        List<WomDiagnosticData> rows = Reporter.getWomDiagnosticData();
+        assertEquals("diagnostics should contain one row per touched period", 2, rows.size());
+        assertEquals("diagnostics should count candidate contact recommendations", 5,
+                rows.get(0).contactRecommendations);
+        assertEquals("diagnostics should count duplicate-source recommendations", 2,
+                rows.get(0).duplicateSourceRecommendations);
+        assertEquals("diagnostics should count exact maximum ties", 1, rows.get(0).exactMaximumTies);
+        assertEquals("diagnostics should count discoveries", 1, rows.get(0).newSourceDiscoveries);
+        assertEquals("diagnostics should classify true-positive false labels", 1,
+                rows.get(0).truePositiveLabels);
+        assertEquals("diagnostics should count penalty outcomes", 1,
+                rows.get(0).penalizedRecommendations);
+        assertEquals("diagnostics should count scheduled endorsements", 1,
+                rows.get(0).endorsementsScheduled);
+        assertEquals("diagnostics should count later deliveries", 1,
+                rows.get(1).endorsementsDelivered);
+        assertEquals("diagnostics should count uncovered recommendations", 1,
+                rows.get(1).labelsUncovered);
+
+        Randomness.setSeed(99117L);
+        Configuration.SAVED_WOM_DIAGNOSTICS = false;
+        Reporter.recordWomSelection(1, 1, 4, 1, false, false);
+        double withoutDiagnostics = Randomness.nextDouble();
+        Randomness.setSeed(99117L);
+        Configuration.SAVED_WOM_DIAGNOSTICS = true;
+        Reporter.recordWomSelection(1, 1, 4, 1, false, false);
+        double withDiagnostics = Randomness.nextDouble();
+        assertEquals("diagnostic recording must not consume random draws",
+                withoutDiagnostics, withDiagnostics, 0.0);
+        Reporter.clear();
+        Configuration.SAVED_WOM_DIAGNOSTICS = false;
+        passed++;
+    }
+
+    private static void testWomLabelCoverageDelayAndMisclassification() {
+        Loader.load("FAKENEWS_BASELINE");
+        Configuration.AGENTS = 2;
+        Configuration.CONTACTS = 1;
+        Configuration.FRIENDS = 1.0;
+        Configuration.WOM_LABEL_DELAY = 2;
+        List<SNSUser> users = SNSUserFactory.createFromInput();
+        List<NewsSource> sources = NewsSourceFactory.createFromInput();
+        SNSUser target = users.get(0);
+        SNSUser friend = users.get(1);
+        target.setFriends(users);
+        target.setKnowNewsSources(new ArrayList<>());
+        NewsSource source = sources.get(0);
+        source.setAttributes(source.getAttributes().replace(
+                "CREDIBILIDAD DE LA FUENTE", new Double[]{1.0, 0.0}));
+        source.doStep(1);
+        friend.getEndorsements().add(new Endorsement(1, source, "QUALITY", 1.0));
+        friend.setCurrentEvaluation(1.0);
+
+        assertTrue("delayed recommendation should be accepted", target.receiveRecommendation(1));
+        assertEquals("delayed label should not arrive in the default next period", 0,
+                target.getEndorsementData(2).size());
+        try {
+            Method deliver = SNSUser.class.getDeclaredMethod("deliverPendingWom", int.class);
+            deliver.setAccessible(true);
+            deliver.invoke(target, 3);
+            assertEquals("delayed label should remain pending before its delivery period", 0,
+                    target.getEndorsementData(3).size());
+            deliver.invoke(target, 4);
+        } catch (ReflectiveOperationException exception) {
+            throw new AssertionError("delayed WOM delivery should be testable", exception);
+        }
+        assertEquals("delay two should deliver at recommendation period plus three", 1,
+                target.getEndorsementData(4).size());
+
+        Loader.load("FAKENEWS_BASELINE");
+        Configuration.AGENTS = 2;
+        Configuration.CONTACTS = 1;
+        Configuration.FRIENDS = 1.0;
+        Configuration.WOM_LABEL_COVERAGE = 0.0;
+        users = SNSUserFactory.createFromInput();
+        sources = NewsSourceFactory.createFromInput();
+        target = users.get(0);
+        friend = users.get(1);
+        target.setFriends(users);
+        target.setKnowNewsSources(new ArrayList<>());
+        source = sources.get(0);
+        source.doStep(1);
+        friend.getEndorsements().add(new Endorsement(1, source, "QUALITY", 1.0));
+        friend.setCurrentEvaluation(1.0);
+        assertTrue("unlabelled recommendation should still reveal the source", target.receiveRecommendation(1));
+        assertEquals("zero label coverage should create no WOM endorsement", 0,
+                target.getEndorsementData(2).size());
+        assertEquals("coverage failure should not undo discovery", 1, target.getKnownNewsSourceCount());
         passed++;
     }
 

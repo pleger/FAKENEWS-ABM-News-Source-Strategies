@@ -35,6 +35,7 @@ public class SNSUser implements Step, FlyWeight, ReportRegister {
     private final AttributesSNSUser attribute;
     private final List<SNSUser> friends;
     private final Endorsements endors;
+    private final List<PendingWomEndorsement> pendingWom;
     private List<NewsSource> knownNewsSources;
 
     private final DataChart data;
@@ -50,6 +51,7 @@ public class SNSUser implements Step, FlyWeight, ReportRegister {
         this.friends = new ArrayList<>();
         this.knownNewsSources = new ArrayList<>();
         this.endors = new Endorsements();
+        this.pendingWom = new ArrayList<>();
 
         ArrayList<Double[]> values = new ArrayList<>();
         for (Double value : ib.attributeValues) {
@@ -69,6 +71,10 @@ public class SNSUser implements Step, FlyWeight, ReportRegister {
      * @param snsUsers complete population from which contacts are sampled
      */
     public void setFriends(List<SNSUser> snsUsers) {
+        if (Configuration.NETWORK_TOPOLOGY == 1) {
+            setSmallWorldFriends(snsUsers);
+            return;
+        }
         int friendCounter = 0;
         int friendSize = Math.min((int) (Configuration.CONTACTS * Configuration.FRIENDS), Math.max(0, snsUsers.size() - 1));
 
@@ -77,6 +83,21 @@ public class SNSUser implements Step, FlyWeight, ReportRegister {
             if (addFriend(potentialContact)) {
                 ++friendCounter;
             }
+        }
+    }
+
+    private void setSmallWorldFriends(List<SNSUser> snsUsers) {
+        int friendSize = Math.min((int) (Configuration.CONTACTS * Configuration.FRIENDS),
+                Math.max(0, snsUsers.size() - 1));
+        for (int offset = 1; offset <= friendSize; ++offset) {
+            SNSUser candidate = snsUsers.get((ID + offset) % snsUsers.size());
+            if (Randomness.nextDouble() < Configuration.NETWORK_REWIRING_PROBABILITY) {
+                candidate = null;
+            }
+            while (candidate == null || candidate == this || friends.contains(candidate)) {
+                candidate = snsUsers.get((int) (Randomness.nextDouble() * snsUsers.size()));
+            }
+            addFriend(candidate);
         }
     }
 
@@ -187,6 +208,11 @@ public class SNSUser implements Step, FlyWeight, ReportRegister {
      */
     @Override
     public void doStep(int period) {
+        deliverPendingWom(period);
+        if (Configuration.USER_ACTIVITY_PROBABILITY < 1.0 &&
+                Randomness.nextDouble() >= Configuration.USER_ACTIVITY_PROBABILITY) {
+            return;
+        }
         if (!knownNewsSources.isEmpty()) { //snsUser could not ignore all newsSources
             endors.addAll(Interaction.interact(period, this, knownNewsSources));
             report(period);
@@ -229,13 +255,18 @@ public class SNSUser implements Step, FlyWeight, ReportRegister {
      * @return {@code true} if a recommendation was available and processed
      */
     public boolean receiveRecommendation(int period) {
-        Map<Integer, Double> currentEvaluations = collectRecommendationEvaluations(period);
+        int[] candidateCounts = new int[2];
+        Map<Integer, Double> currentEvaluations = collectRecommendationEvaluations(period, candidateCounts);
 
         if (currentEvaluations.isEmpty()) {
             return false;
         }
 
+        boolean exactMaximumTie = hasExactMaximumTie(currentEvaluations);
         int selectedId = selectRecommendedSource(currentEvaluations);
+        boolean newlyDiscovered = NewsSourceFactory.getNewsSource(knownNewsSources, selectedId) == null;
+        Reporter.recordWomSelection(Simulation.ID, period, candidateCounts[0], candidateCounts[1],
+                exactMaximumTie, newlyDiscovered);
         NewsSource recommendedSource = resolveAndRememberSource(selectedId);
         addWordOfMouthEndorsement(period, recommendedSource);
         return true;
@@ -248,17 +279,34 @@ public class SNSUser implements Step, FlyWeight, ReportRegister {
      * @param period period whose friend decisions are observed
      * @return source identifiers mapped to their strongest recommendation evaluation
      */
-    private Map<Integer, Double> collectRecommendationEvaluations(int period) {
+    private Map<Integer, Double> collectRecommendationEvaluations(int period, int[] counts) {
         Map<Integer, Double> evaluations = new HashMap<>();
 
         for (SNSUser friend : friends) {
             NewsSource selectedSource = friend.getLastSelectMarked(period);
             if (selectedSource != null) {
+                ++counts[0];
+                if (evaluations.containsKey(selectedSource.getID())) ++counts[1];
                 evaluations.merge(selectedSource.getID(), friend.getCurrentNewsSourceEvaluation(), Math::max);
             }
         }
 
         return evaluations;
+    }
+
+    private boolean hasExactMaximumTie(Map<Integer, Double> evaluations) {
+        double maximum = Double.NEGATIVE_INFINITY;
+        int matches = 0;
+        for (double value : evaluations.values()) {
+            int comparison = Double.compare(value, maximum);
+            if (comparison > 0) {
+                maximum = value;
+                matches = 1;
+            } else if (comparison == 0) {
+                ++matches;
+            }
+        }
+        return matches > 1;
     }
 
     /**
@@ -299,9 +347,21 @@ public class SNSUser implements Step, FlyWeight, ReportRegister {
      */
     private void addWordOfMouthEndorsement(int period, NewsSource recommendedSource) {
         boolean fakeNews = recommendedSource.isFakeNews(period);
-        WomRecommendationEffect effect = fakeNews
+        if (Configuration.WOM_LABEL_COVERAGE < 1.0 &&
+                Randomness.nextDouble() >= Configuration.WOM_LABEL_COVERAGE) {
+            Reporter.recordWomUncovered(Simulation.ID, period);
+            return;
+        }
+        boolean observedFake = fakeNews;
+        if (fakeNews && Configuration.WOM_LABEL_SENSITIVITY < 1.0) {
+            observedFake = Randomness.nextDouble() < Configuration.WOM_LABEL_SENSITIVITY;
+        } else if (!fakeNews && Configuration.WOM_LABEL_SPECIFICITY < 1.0) {
+            observedFake = Randomness.nextDouble() >= Configuration.WOM_LABEL_SPECIFICITY;
+        }
+        WomRecommendationEffect effect = observedFake
                 ? Configuration.WOM_FAKE_NEWS_EFFECT
                 : Configuration.WOM_TRUE_NEWS_EFFECT;
+        Reporter.recordWomLabel(Simulation.ID, period, fakeNews, observedFake, effect);
         if (effect == WomRecommendationEffect.IGNORE) {
             return;
         }
@@ -310,7 +370,27 @@ public class SNSUser implements Step, FlyWeight, ReportRegister {
                 * Configuration.WOM_RECEIVER_SCALE;
         double value = magnitude * effect.getConfigurationValue();
 
-        endors.add(new Endorsement(period + 1, recommendedSource, WORD_OF_MOUTH_ATTRIBUTE, value));
+        int deliveryPeriod = period + 1 + Configuration.WOM_LABEL_DELAY;
+        Reporter.recordWomScheduled(Simulation.ID, period);
+        if (Configuration.WOM_LABEL_DELAY == 0) {
+            endors.add(new Endorsement(deliveryPeriod, recommendedSource, WORD_OF_MOUTH_ATTRIBUTE, value));
+            if (deliveryPeriod <= Configuration.PERIODS) {
+                Reporter.recordWomDelivered(Simulation.ID, deliveryPeriod);
+            }
+        } else {
+            pendingWom.add(new PendingWomEndorsement(deliveryPeriod, recommendedSource, value));
+        }
+    }
+
+    private void deliverPendingWom(int period) {
+        for (int index = pendingWom.size() - 1; index >= 0; --index) {
+            PendingWomEndorsement pending = pendingWom.get(index);
+            if (pending.period == period) {
+                endors.add(new Endorsement(period, pending.source, WORD_OF_MOUTH_ATTRIBUTE, pending.value));
+                Reporter.recordWomDelivered(Simulation.ID, period);
+                pendingWom.remove(index);
+            }
+        }
     }
 
     /**
@@ -330,6 +410,7 @@ public class SNSUser implements Step, FlyWeight, ReportRegister {
     public void reinit() {
         currentNewsSourceEvaluation = Double.MAX_VALUE * -1;
         endors.clear();
+        pendingWom.clear();
         friends.clear();
         knownNewsSources.clear();
     }
@@ -368,5 +449,17 @@ public class SNSUser implements Step, FlyWeight, ReportRegister {
                 ", knownNewsSources={" + knowMks + "}" +
                 ", currentEvaluation={" + currentNewsSourceEvaluation + "}" +
                 '}';
+    }
+
+    private static final class PendingWomEndorsement {
+        private final int period;
+        private final NewsSource source;
+        private final double value;
+
+        private PendingWomEndorsement(int period, NewsSource source, double value) {
+            this.period = period;
+            this.source = source;
+            this.value = value;
+        }
     }
 }

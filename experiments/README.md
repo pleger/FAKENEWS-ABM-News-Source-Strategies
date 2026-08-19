@@ -15,6 +15,32 @@ Planning is the safe default. Execution requires `--execute`; supplying the same
 resumes the study and skips runs marked complete. Python remains useful for statistical analysis,
 figures, and the legacy batch scripts documented below.
 
+The paper-specific major-revision provider is planned and resumed with:
+
+```sh
+make study-plan STUDY_CLASS=experiment.MajorRevisionStudy
+make study-run STUDY_CLASS=experiment.MajorRevisionStudy \
+  ARGS="--jobs 10 --output output/major-revision"
+```
+
+It adds 4,680 runs: 1,860 for recommendation realism, 2,640 for a ten-factor Morris
+screen, and 180 for activity/topology sensitivity. Progress can be audited without
+touching the run process:
+
+```sh
+python3 experiments/study_progress.py output/major-revision --total 4680
+```
+
+After completion, the publication-safe analysis is:
+
+```sh
+PYTHON=.venv-analysis/bin/python make analysis-major-revision
+```
+
+The resulting `RESULTS_SUMMARY.md` is a compact audit aid for manuscript drafting;
+`execution-metadata.json` records measured elapsed time and the analysis-time Git state.
+`validation.json` must report `PASS` before any result is cited.
+
 This directory keeps batch-experiment concerns outside the Java simulation core. The runner creates
 temporary copies of an input workbook, changes configuration and scenario cells in those copies,
 and invokes the existing generic Java CLI.

@@ -1,6 +1,7 @@
 package agent;
 
 import endorsement.AttributesNewsSource;
+import inputManager.Configuration;
 import inputManager.InnerNewsSource;
 import simulation.Step;
 import utils.Console;
@@ -37,12 +38,27 @@ public class NewsSource implements FlyWeight, Step {
         this.name = innerNewsSource.name;
         this.reach = innerNewsSource.reach;
         this.fakeNewsProbability = innerNewsSource.fakeNewsProbability;
-        this.attributes = new AttributesNewsSource(innerNewsSource.attributeNames, innerNewsSource.attributeValues);
+        this.attributes = contrastedAttributes(innerNewsSource);
         this.innerNewsSource = innerNewsSource;
         this.fakenews = new HashMap<Integer,Boolean>();
 
         reinit();
         Console.info("NewsSource: " + this);
+    }
+
+    private static AttributesNewsSource contrastedAttributes(InnerNewsSource source) {
+        ArrayList<Double[]> transformed = new ArrayList<>();
+        for (Double[] distribution : source.attributeValues) {
+            Double[] values = distribution.clone();
+            if (values.length == 2 && Configuration.SOURCE_ATTRIBUTE_CONTRAST != 1.0) {
+                double high = 0.5 + Configuration.SOURCE_ATTRIBUTE_CONTRAST * (values[1] - 0.5);
+                high = Math.max(0.0, Math.min(1.0, high));
+                values[1] = high;
+                values[0] = 1.0 - high;
+            }
+            transformed.add(values);
+        }
+        return new AttributesNewsSource(new ArrayList<>(source.attributeNames), transformed);
     }
 
     /**
@@ -166,7 +182,7 @@ public class NewsSource implements FlyWeight, Step {
     @Override
     public void reinit() {
         this.uniqueSNSUsers = new HashSet<>();
-        this.attributes = new AttributesNewsSource(innerNewsSource.attributeNames, innerNewsSource.attributeValues);
+        this.attributes = contrastedAttributes(innerNewsSource);
         this.fakenews.clear();
     }
 

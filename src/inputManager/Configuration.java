@@ -47,6 +47,14 @@ public class Configuration {
     private final static double D_WOM_RECEIVER_SCALE = 0.5;
     private final static WomRecommendationEffect D_WOM_FAKE_NEWS_EFFECT = WomRecommendationEffect.PENALIZE;
     private final static WomRecommendationEffect D_WOM_TRUE_NEWS_EFFECT = WomRecommendationEffect.REWARD;
+    private final static int D_WOM_LABEL_DELAY = 0;
+    private final static double D_WOM_LABEL_COVERAGE = 1.0;
+    private final static double D_WOM_LABEL_SENSITIVITY = 1.0;
+    private final static double D_WOM_LABEL_SPECIFICITY = 1.0;
+    private final static double D_USER_ACTIVITY_PROBABILITY = 1.0;
+    private final static int D_NETWORK_TOPOLOGY = 0;
+    private final static double D_NETWORK_REWIRING_PROBABILITY = 0.1;
+    private final static double D_SOURCE_ATTRIBUTE_CONTRAST = 1.0;
     private final static int D_SCENARIO = DISABLED;
 
     private final static boolean D_COMPRESSED_RESULTS = false;
@@ -55,6 +63,7 @@ public class Configuration {
     private final static boolean D_SAVED_DETAILED_AGENT_DECISIONS = false;
     private final static boolean D_SAVED_REPOSTS_PER_SOURCE = false;
     private final static boolean D_SAVED_FAKENEWS = false;
+    private final static boolean D_SAVED_WOM_DIAGNOSTICS = false;
     private final static long LARGE_EXPERIMENT_OPERATIONS_WARNING_THRESHOLD = 1_000_000L;
 
     private final static String PERIODS_KEY = "PERIODS";
@@ -72,6 +81,14 @@ public class Configuration {
     private final static String WOM_RECEIVER_SCALE_KEY = "WOM_RECEIVER_SCALE";
     private final static String WOM_FAKE_NEWS_EFFECT_KEY = "WOM_FAKE_NEWS_EFFECT";
     private final static String WOM_TRUE_NEWS_EFFECT_KEY = "WOM_TRUE_NEWS_EFFECT";
+    private final static String WOM_LABEL_DELAY_KEY = "WOM_LABEL_DELAY";
+    private final static String WOM_LABEL_COVERAGE_KEY = "WOM_LABEL_COVERAGE";
+    private final static String WOM_LABEL_SENSITIVITY_KEY = "WOM_LABEL_SENSITIVITY";
+    private final static String WOM_LABEL_SPECIFICITY_KEY = "WOM_LABEL_SPECIFICITY";
+    private final static String USER_ACTIVITY_PROBABILITY_KEY = "USER_ACTIVITY_PROBABILITY";
+    private final static String NETWORK_TOPOLOGY_KEY = "NETWORK_TOPOLOGY";
+    private final static String NETWORK_REWIRING_PROBABILITY_KEY = "NETWORK_REWIRING_PROBABILITY";
+    private final static String SOURCE_ATTRIBUTE_CONTRAST_KEY = "SOURCE_ATTRIBUTE_CONTRAST";
     private final static String SCENARIO_KEY = "SCENARIO";
     private final static String LEARNING_PERIODS_KEY = "LEARNING_PERIODS";
     private final static String COMPRESSED_RESULTS_KEY = "COMPRESSED_RESULTS";
@@ -80,6 +97,7 @@ public class Configuration {
     private final static String SAVED_DETAILED_AGENT_DECISIONS_KEY = "SAVED_DETAILED_AGENT_DECISIONS";
     private final static String SAVED_REPOSTS_PER_SOURCE_KEY = "SAVED_REPOSTS_PER_SOURCE";
     private final static String SAVED_FAKENEWS_KEY = "SAVED_FAKENEWS";
+    private final static String SAVED_WOM_DIAGNOSTICS_KEY = "SAVED_WOM_DIAGNOSTICS";
 
     private final static String[] REQUIRED_PARAMETERS = new String[]{
             PERIODS_KEY, AGENTS_KEY, CONTACTS_KEY, FRIENDS_KEY, LEVELS_KEY, REPETITIONS_KEY, GUI_KEY,
@@ -93,10 +111,19 @@ public class Configuration {
 
     static {
         SUPPORTED_PARAMETER_SET.add(SAVED_FAKENEWS_KEY);
+        SUPPORTED_PARAMETER_SET.add(SAVED_WOM_DIAGNOSTICS_KEY);
         SUPPORTED_PARAMETER_SET.add(MEMORY_HALF_LIFE_KEY);
         SUPPORTED_PARAMETER_SET.add(WOM_RECEIVER_SCALE_KEY);
         SUPPORTED_PARAMETER_SET.add(WOM_FAKE_NEWS_EFFECT_KEY);
         SUPPORTED_PARAMETER_SET.add(WOM_TRUE_NEWS_EFFECT_KEY);
+        SUPPORTED_PARAMETER_SET.add(WOM_LABEL_DELAY_KEY);
+        SUPPORTED_PARAMETER_SET.add(WOM_LABEL_COVERAGE_KEY);
+        SUPPORTED_PARAMETER_SET.add(WOM_LABEL_SENSITIVITY_KEY);
+        SUPPORTED_PARAMETER_SET.add(WOM_LABEL_SPECIFICITY_KEY);
+        SUPPORTED_PARAMETER_SET.add(USER_ACTIVITY_PROBABILITY_KEY);
+        SUPPORTED_PARAMETER_SET.add(NETWORK_TOPOLOGY_KEY);
+        SUPPORTED_PARAMETER_SET.add(NETWORK_REWIRING_PROBABILITY_KEY);
+        SUPPORTED_PARAMETER_SET.add(SOURCE_ATTRIBUTE_CONTRAST_KEY);
     }
 
     public static String FILE_NAME;
@@ -121,6 +148,15 @@ public class Configuration {
     public static double WOM_RECEIVER_SCALE = D_WOM_RECEIVER_SCALE;
     public static WomRecommendationEffect WOM_FAKE_NEWS_EFFECT = D_WOM_FAKE_NEWS_EFFECT;
     public static WomRecommendationEffect WOM_TRUE_NEWS_EFFECT = D_WOM_TRUE_NEWS_EFFECT;
+    public static int WOM_LABEL_DELAY = D_WOM_LABEL_DELAY;
+    public static double WOM_LABEL_COVERAGE = D_WOM_LABEL_COVERAGE;
+    public static double WOM_LABEL_SENSITIVITY = D_WOM_LABEL_SENSITIVITY;
+    public static double WOM_LABEL_SPECIFICITY = D_WOM_LABEL_SPECIFICITY;
+    public static double USER_ACTIVITY_PROBABILITY = D_USER_ACTIVITY_PROBABILITY;
+    /** 0=random fixed outdegree; 1=directed small-world. */
+    public static int NETWORK_TOPOLOGY = D_NETWORK_TOPOLOGY;
+    public static double NETWORK_REWIRING_PROBABILITY = D_NETWORK_REWIRING_PROBABILITY;
+    public static double SOURCE_ATTRIBUTE_CONTRAST = D_SOURCE_ATTRIBUTE_CONTRAST;
     public static int SCENARIO = D_SCENARIO;
     public static int LEARNING_PERIODS = D_LEARNING_PERIODS;
 
@@ -131,6 +167,7 @@ public class Configuration {
     public static boolean SAVED_AGENT_DECISIONS = D_SAVED_AGENT_DECISIONS;
     public static boolean SAVED_ENDORSEMENTS = D_SAVED_ENDORSEMENTS;
     public static boolean SAVED_FAKENEWS = D_SAVED_FAKENEWS;
+    public static boolean SAVED_WOM_DIAGNOSTICS = D_SAVED_WOM_DIAGNOSTICS;
 
     /**
      * Validates workbook configuration and installs every supported value or its default.
@@ -164,6 +201,22 @@ public class Configuration {
         WOM_TRUE_NEWS_EFFECT = conf.get(WOM_TRUE_NEWS_EFFECT_KEY) != null
                 ? WomRecommendationEffect.fromConfigurationValue(conf.get(WOM_TRUE_NEWS_EFFECT_KEY).intValue())
                 : D_WOM_TRUE_NEWS_EFFECT;
+        WOM_LABEL_DELAY = conf.get(WOM_LABEL_DELAY_KEY) != null
+                ? conf.get(WOM_LABEL_DELAY_KEY).intValue() : D_WOM_LABEL_DELAY;
+        WOM_LABEL_COVERAGE = conf.get(WOM_LABEL_COVERAGE_KEY) != null
+                ? conf.get(WOM_LABEL_COVERAGE_KEY) : D_WOM_LABEL_COVERAGE;
+        WOM_LABEL_SENSITIVITY = conf.get(WOM_LABEL_SENSITIVITY_KEY) != null
+                ? conf.get(WOM_LABEL_SENSITIVITY_KEY) : D_WOM_LABEL_SENSITIVITY;
+        WOM_LABEL_SPECIFICITY = conf.get(WOM_LABEL_SPECIFICITY_KEY) != null
+                ? conf.get(WOM_LABEL_SPECIFICITY_KEY) : D_WOM_LABEL_SPECIFICITY;
+        USER_ACTIVITY_PROBABILITY = conf.get(USER_ACTIVITY_PROBABILITY_KEY) != null
+                ? conf.get(USER_ACTIVITY_PROBABILITY_KEY) : D_USER_ACTIVITY_PROBABILITY;
+        NETWORK_TOPOLOGY = conf.get(NETWORK_TOPOLOGY_KEY) != null
+                ? conf.get(NETWORK_TOPOLOGY_KEY).intValue() : D_NETWORK_TOPOLOGY;
+        NETWORK_REWIRING_PROBABILITY = conf.get(NETWORK_REWIRING_PROBABILITY_KEY) != null
+                ? conf.get(NETWORK_REWIRING_PROBABILITY_KEY) : D_NETWORK_REWIRING_PROBABILITY;
+        SOURCE_ATTRIBUTE_CONTRAST = conf.get(SOURCE_ATTRIBUTE_CONTRAST_KEY) != null
+                ? conf.get(SOURCE_ATTRIBUTE_CONTRAST_KEY) : D_SOURCE_ATTRIBUTE_CONTRAST;
         SCENARIO = conf.get(SCENARIO_KEY) != null ? normalizeScenario(conf.get(SCENARIO_KEY).intValue()) : D_SCENARIO;
         LEARNING_PERIODS = conf.get(LEARNING_PERIODS_KEY) != null ? conf.get(LEARNING_PERIODS_KEY).intValue() : D_LEARNING_PERIODS;
 
@@ -173,6 +226,8 @@ public class Configuration {
         SAVED_DETAILED_AGENT_DECISIONS = conf.get(SAVED_DETAILED_AGENT_DECISIONS_KEY) != null ? conf.get(SAVED_DETAILED_AGENT_DECISIONS_KEY) == 1 : D_SAVED_DETAILED_AGENT_DECISIONS;
         SAVED_REPOSTS_PER_SOURCE = conf.get(SAVED_REPOSTS_PER_SOURCE_KEY) != null ? conf.get(SAVED_REPOSTS_PER_SOURCE_KEY) == 1 : D_SAVED_REPOSTS_PER_SOURCE;
         SAVED_FAKENEWS = conf.get(SAVED_FAKENEWS_KEY) != null ? conf.get(SAVED_FAKENEWS_KEY) == 1 : D_SAVED_FAKENEWS;
+        SAVED_WOM_DIAGNOSTICS = conf.get(SAVED_WOM_DIAGNOSTICS_KEY) != null
+                ? conf.get(SAVED_WOM_DIAGNOSTICS_KEY) == 1 : D_SAVED_WOM_DIAGNOSTICS;
 
         warnIfLearningPeriodsCoverSimulation();
         warnIfMemoryModesOverlap();
@@ -378,11 +433,20 @@ public class Configuration {
         validateNonNegative(conf, WOM_RECEIVER_SCALE_KEY);
         validateWomRecommendationEffect(conf, WOM_FAKE_NEWS_EFFECT_KEY);
         validateWomRecommendationEffect(conf, WOM_TRUE_NEWS_EFFECT_KEY);
+        validateNonNegativeInt(conf, WOM_LABEL_DELAY_KEY);
+        validateRange(conf, WOM_LABEL_COVERAGE_KEY, 0.0, 1.0);
+        validateRange(conf, WOM_LABEL_SENSITIVITY_KEY, 0.0, 1.0);
+        validateRange(conf, WOM_LABEL_SPECIFICITY_KEY, 0.0, 1.0);
+        validateRange(conf, USER_ACTIVITY_PROBABILITY_KEY, 0.0, 1.0);
+        validateNetworkTopology(conf);
+        validateRange(conf, NETWORK_REWIRING_PROBABILITY_KEY, 0.0, 1.0);
+        validateGreaterThan(conf, SOURCE_ATTRIBUTE_CONTRAST_KEY, 0.0);
         validateScenario(conf);
         validateNonNegativeInt(conf, LEARNING_PERIODS_KEY);
         validateBoolean(conf, SAVED_ENDORSEMENTS_KEY);
         validateBoolean(conf, SAVED_REPOSTS_PER_SOURCE_KEY);
         validateBoolean(conf, SAVED_FAKENEWS_KEY);
+        validateBoolean(conf, SAVED_WOM_DIAGNOSTICS_KEY);
         validateBoolean(conf, SAVED_DETAILED_AGENT_DECISIONS_KEY);
         validateBoolean(conf, SAVED_AGENT_DECISIONS_KEY);
         validateBoolean(conf, COMPRESSED_RESULTS_KEY);
@@ -573,6 +637,15 @@ public class Configuration {
         }
     }
 
+    private static void validateNetworkTopology(HashMap<String, Double> conf) {
+        if (!conf.containsKey(NETWORK_TOPOLOGY_KEY)) return;
+        validateInteger(conf, NETWORK_TOPOLOGY_KEY);
+        int topology = conf.get(NETWORK_TOPOLOGY_KEY).intValue();
+        if (topology != 0 && topology != 1) {
+            failConfiguration(NETWORK_TOPOLOGY_KEY + " must be 0 (random) or 1 (small-world).");
+        }
+    }
+
     /**
      * Produces the consistent exception used to abort invalid configuration loading.
      *
@@ -680,6 +753,14 @@ public class Configuration {
         conf.put(WOM_RECEIVER_SCALE_KEY, WOM_RECEIVER_SCALE);
         conf.put(WOM_FAKE_NEWS_EFFECT_KEY, (double) WOM_FAKE_NEWS_EFFECT.getConfigurationValue());
         conf.put(WOM_TRUE_NEWS_EFFECT_KEY, (double) WOM_TRUE_NEWS_EFFECT.getConfigurationValue());
+        conf.put(WOM_LABEL_DELAY_KEY, (double) WOM_LABEL_DELAY);
+        conf.put(WOM_LABEL_COVERAGE_KEY, WOM_LABEL_COVERAGE);
+        conf.put(WOM_LABEL_SENSITIVITY_KEY, WOM_LABEL_SENSITIVITY);
+        conf.put(WOM_LABEL_SPECIFICITY_KEY, WOM_LABEL_SPECIFICITY);
+        conf.put(USER_ACTIVITY_PROBABILITY_KEY, USER_ACTIVITY_PROBABILITY);
+        conf.put(NETWORK_TOPOLOGY_KEY, (double) NETWORK_TOPOLOGY);
+        conf.put(NETWORK_REWIRING_PROBABILITY_KEY, NETWORK_REWIRING_PROBABILITY);
+        conf.put(SOURCE_ATTRIBUTE_CONTRAST_KEY, SOURCE_ATTRIBUTE_CONTRAST);
         conf.put(SCENARIO_KEY, (double) SCENARIO);
         conf.put(LEARNING_PERIODS_KEY, (double) LEARNING_PERIODS);
 
@@ -689,6 +770,7 @@ public class Configuration {
         conf.put(SAVED_AGENT_DECISIONS_KEY, SAVED_AGENT_DECISIONS ? 1.0 : 0.0);
         conf.put(SAVED_REPOSTS_PER_SOURCE_KEY, SAVED_REPOSTS_PER_SOURCE ? 1.0 : 0.0);
         conf.put(SAVED_FAKENEWS_KEY, SAVED_FAKENEWS ? 1.0 : 0.0);
+        conf.put(SAVED_WOM_DIAGNOSTICS_KEY, SAVED_WOM_DIAGNOSTICS ? 1.0 : 0.0);
 
         return conf;
     }

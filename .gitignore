@@ -1,8 +1,16 @@
 build/
 paper/build*/
+paper/.texpadtmp/
+paper/qa-*/
+paper/main.pdf
+paper/main-anonymous.pdf
 dist/
 node_modules/
 output/
+paper/reviews/
+paper/AUTHOR_ACTIONS_BEFORE_SUBMISSION.md
+report/
+tmp/
 *.class
 *.log
 .DS_Store

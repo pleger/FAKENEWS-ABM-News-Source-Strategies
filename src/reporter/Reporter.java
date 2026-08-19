@@ -12,6 +12,7 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import endorsement.AttributesNewsSource;
+import endorsement.WomRecommendationEffect;
 import scenarios.Scenario;
 import scenarios.ScenarioFactory;
 
@@ -25,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.zip.ZipEntry;
@@ -44,6 +46,7 @@ public class Reporter {
     private static final List<RepostsPerSourceData> repostsPerNewsSourceData = new ArrayList<>();
     private static final List<UniqueRepostersPerSourceData> repostsUniquePerNewsSourceData = new ArrayList<>();
     private static final List<FakeNewsPerSourceData> fakeNewsPerSourceData = new ArrayList<>();
+    private static final Map<String, WomDiagnosticData> womDiagnosticData = new LinkedHashMap<>();
 
     /**
      * Builds the final workbook from loaded inputs and accumulated records, writes it to the current
@@ -65,6 +68,7 @@ public class Reporter {
             writeRepostsPerNewsSource(workbook, "RepostsPerSource", repostsPerNewsSourceData);
             writeRepostsPerNewsSource(workbook, "UniqueRepostersPerSource", repostsUniquePerNewsSourceData);
             if (Configuration.SAVED_FAKENEWS) writeFakeNewsPerSource(workbook);
+            if (Configuration.SAVED_WOM_DIAGNOSTICS) writeWomDiagnostics(workbook);
             writeAgentDecision(workbook);
             writeDetailedAgentDecision(workbook);
             writeEndorsements(workbook);
@@ -104,6 +108,65 @@ public class Reporter {
         repostsPerNewsSourceData.clear();
         repostsUniquePerNewsSourceData.clear();
         fakeNewsPerSourceData.clear();
+        womDiagnosticData.clear();
+    }
+
+    private static WomDiagnosticData womDiagnostic(int simulationId, int period) {
+        String key = simulationId + ":" + period;
+        return womDiagnosticData.computeIfAbsent(key, ignored -> new WomDiagnosticData(simulationId, period));
+    }
+
+    public static void ensureWomDiagnosticPeriod(int simulationId, int period) {
+        if (Configuration.SAVED_WOM_DIAGNOSTICS) womDiagnostic(simulationId, period);
+    }
+
+    public static void recordWomSelection(int simulationId, int period, int contactRecommendations,
+                                          int duplicates, boolean exactMaximumTie, boolean newlyDiscovered) {
+        if (!Configuration.SAVED_WOM_DIAGNOSTICS) return;
+        WomDiagnosticData row = womDiagnostic(simulationId, period);
+        ++row.receiversWithRecommendation;
+        row.contactRecommendations += contactRecommendations;
+        row.duplicateSourceRecommendations += duplicates;
+        if (exactMaximumTie) ++row.exactMaximumTies;
+        if (newlyDiscovered) ++row.newSourceDiscoveries;
+    }
+
+    public static void recordWomUncovered(int simulationId, int period) {
+        if (Configuration.SAVED_WOM_DIAGNOSTICS) ++womDiagnostic(simulationId, period).labelsUncovered;
+    }
+
+    public static void recordWomLabel(int simulationId, int period, boolean actuallyFalse,
+                                      boolean observedFalse, WomRecommendationEffect effect) {
+        if (!Configuration.SAVED_WOM_DIAGNOSTICS) return;
+        WomDiagnosticData row = womDiagnostic(simulationId, period);
+        ++row.labelsCovered;
+        if (actuallyFalse && observedFalse) ++row.truePositiveLabels;
+        else if (actuallyFalse) ++row.falseNegativeLabels;
+        else if (observedFalse) ++row.falsePositiveLabels;
+        else ++row.trueNegativeLabels;
+        switch (effect) {
+            case REWARD: ++row.rewardedRecommendations; break;
+            case PENALIZE: ++row.penalizedRecommendations; break;
+            case IGNORE: ++row.ignoredRecommendations; break;
+            default: throw new IllegalStateException("Unknown WOM recommendation effect: " + effect);
+        }
+    }
+
+    public static void recordWomScheduled(int simulationId, int period) {
+        if (Configuration.SAVED_WOM_DIAGNOSTICS) ++womDiagnostic(simulationId, period).endorsementsScheduled;
+    }
+
+    public static void recordWomDelivered(int simulationId, int period) {
+        if (Configuration.SAVED_WOM_DIAGNOSTICS) ++womDiagnostic(simulationId, period).endorsementsDelivered;
+    }
+
+    public static List<WomDiagnosticData> getWomDiagnosticData() {
+        ArrayList<WomDiagnosticData> rows = new ArrayList<>(womDiagnosticData.values());
+        rows.sort((left, right) -> {
+            int simulation = Integer.compare(left.simulationId, right.simulationId);
+            return simulation != 0 ? simulation : Integer.compare(left.period, right.period);
+        });
+        return rows;
     }
 
     /**
@@ -253,6 +316,22 @@ public class Reporter {
                         dataRow.createCell(2 + i).setCellValue(oneRow.fakeNews[i] ? 1 : 0);
                     }
                 });
+    }
+
+    private static void writeWomDiagnostics(XSSFWorkbook workbook) {
+        List<WomDiagnosticData> rows = getWomDiagnosticData();
+        Console.info("Reporter: Adding WOM diagnostics: " + rows.size());
+        writePagedRows(workbook, "WomDiagnostics", WomDiagnosticData.getHeader(), rows, (dataRow, row) -> {
+            int[] values = {row.simulationId, row.period, row.receiversWithRecommendation,
+                    row.contactRecommendations, row.duplicateSourceRecommendations, row.exactMaximumTies,
+                    row.newSourceDiscoveries, row.labelsCovered, row.labelsUncovered,
+                    row.truePositiveLabels, row.falseNegativeLabels, row.trueNegativeLabels,
+                    row.falsePositiveLabels, row.rewardedRecommendations, row.penalizedRecommendations,
+                    row.ignoredRecommendations, row.endorsementsScheduled, row.endorsementsDelivered};
+            for (int column = 0; column < values.length; ++column) {
+                dataRow.createCell(column).setCellValue(values[column]);
+            }
+        });
     }
 
     /**

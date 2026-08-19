@@ -1,0 +1,8 @@
+{
+  "status": "PASS",
+  "diagnostic_reexecutions": 360,
+  "conditions": 12,
+  "periods_per_run": 400,
+  "outcome_mismatches": 0,
+  "accounting_checks": "PASS"
+}
