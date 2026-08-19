@@ -9,13 +9,15 @@ and adds the paper-specific provider, input workbook, research-question design, 
 run-level processed data, statistical analysis, and figures. The public repository is
 <https://github.com/pleger/FAKENEWS-ABM-News-Source-Strategies>.
 
-The staged primary design contains 423 conditions and 6,690 seeded simulation runs. The original
-provider [`NewsSourceStrategiesStudy`](src/experiment/NewsSourceStrategiesStudy.java) supplies
-79 conditions/2,010 runs. [`MajorRevisionStudy`](src/experiment/MajorRevisionStudy.java) adds
-344 conditions/4,680 runs. The safe default is to inspect the plan:
+The staged primary design contains 423 conditions and 6,690 seeded simulation runs. It combines
+the original paper-specific provider
+[`NewsSourceStrategiesStudy`](src/experiment/NewsSourceStrategiesStudy.java) with the
+[`MajorRevisionStudy`](src/experiment/MajorRevisionStudy.java) extension. Inspect both published
+primary components before execution:
 
 ```sh
-make study-plan
+make study-plan STUDY_CLASS=experiment.NewsSourceStrategiesStudy
+make study-plan STUDY_CLASS=experiment.MajorRevisionStudy
 ```
 
 Run one research question into its permanent reproducibility directory:
@@ -31,17 +33,17 @@ full matrix, use a smoke execution:
 make study-run ARGS="--questions RQ1 --seeds 1 --max-runs 2 --jobs 1 --output results/smoke"
 ```
 
-| Stage | Conditions | Runs |
-|---|---:|---:|
-| Original RQ1--RQ4 design | 79 | 2,010 |
-| RQ3 recommendation revision | 62 | 1,860 |
-| RQ4 global and structural revision | 282 | 2,820 |
-| **Primary total** | **423** | **6,690** |
+| Stage | Scope | Conditions | Runs |
+|---|---|---:|---:|
+| Original RQ1--RQ4 provider | Paper-specific primary component | -- | -- |
+| RQ3 recommendation revision | Major-revision component | 62 | 1,860 |
+| RQ4 global and structural revision | Major-revision component | 282 | 2,820 |
+| **Primary total** | **Combined staged design** | **423** | **6,690** |
 
 The major-revision provider
 [`MajorRevisionStudy`](src/experiment/MajorRevisionStudy.java) adds realistic recommendation
 policies, corrected activity-aware outcomes, global parameter screening, and structural
-sensitivity. It contains 344 additional conditions and 4,680 runs:
+sensitivity. It contains the additional RQ3 and RQ4 primary conditions:
 
 | Research question | Experiment | Conditions | Seeds per condition | Runs |
 |---|---|---:|---:|---:|
@@ -84,7 +86,7 @@ PYTHON=.venv-analysis/bin/python make analysis-supplements
 ```
 
 All four research questions have been completed. `analysis/major-revision-existing/` contains the
-reprocessed original 2,010 runs; `analysis/major-revision/` contains the compact revision runs,
+reprocessed original runs; `analysis/major-revision/` contains the compact revision runs,
 contrasts, Morris elementary effects and stability analysis, corrected structural results,
 diagnostic re-executions, figures, data dictionaries, validation metadata and SHA-256 checksums.
 Together these publication-safe artefacts reproduce every numerical result in the manuscript.
