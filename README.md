@@ -1,9 +1,9 @@
-# Evaluations of News Source Strategies to Disseminate Fake News in X
+# Evaluations of News Source Strategies for Disseminating Fake News on X
 
 ## Public paper reproducibility package
 
 This repository is the executable companion for the study **“Evaluations of News Source
-Strategies to Disseminate Fake News in X.”** It preserves the history of the generic
+Strategies for Disseminating Fake News on X.”** It preserves the history of the generic
 [FAKENEWS-ABM framework](https://github.com/pleger/FAKENEWS-ABM/tree/feature/generic-study-framework)
 and adds the paper-specific provider, input workbook, research-question design, manuscript,
 run-level processed data, statistical analysis, and figures. The public repository is
@@ -80,6 +80,7 @@ make study-diagnostics ARGS="--jobs 10 --output output/rq3-diagnostics"
 make study-structural-correction ARGS="--jobs 10 --output output/structural-correction"
 PYTHON=.venv-analysis/bin/python make analysis-major-revision
 PYTHON=.venv-analysis/bin/python make analysis-diagnostics
+PYTHON=.venv-analysis/bin/python make analysis-supplements
 ```
 
 All four research questions have been completed. `analysis/major-revision-existing/` contains the
@@ -87,6 +88,13 @@ reprocessed original 2,010 runs; `analysis/major-revision/` contains the compact
 contrasts, Morris elementary effects and stability analysis, corrected structural results,
 diagnostic re-executions, figures, data dictionaries, validation metadata and SHA-256 checksums.
 Together these publication-safe artefacts reproduce every numerical result in the manuscript.
+
+The two supporting artifacts promised by the analysis documentation can be rebuilt directly from
+public processed data, without raw workbooks:
+
+```sh
+PYTHON=.venv-analysis/bin/python make analysis-supplements
+```
 
 Rebuild the statistics, tables, and figures from the public processed dataset:
 

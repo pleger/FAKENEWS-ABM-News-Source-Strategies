@@ -25,7 +25,7 @@ public final class NewsSourceStrategiesStudy implements StudyProvider {
                 rq1(), rq2(), rq3(), rq4());
         return new StudySpecification(
                 "news-source-strategies",
-                "Evaluations of News Source Strategies to Disseminate Fake News in X",
+                "Evaluations of News Source Strategies for Disseminating Fake News on X",
                 baseWorkbook,
                 questions);
     }

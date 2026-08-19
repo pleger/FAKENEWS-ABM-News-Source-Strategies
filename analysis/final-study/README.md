@@ -1,7 +1,7 @@
 # Final-study processed data
 
 This directory is the public analytical record for *Evaluations of News Source Strategies to
-Disseminate Fake News in X*. It contains no survey microdata and no machine-specific paths.
+Disseminating Fake News on X*. It contains no survey microdata and no machine-specific paths.
 
 ## Contents
 

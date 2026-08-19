@@ -19,6 +19,7 @@ import analyze_major_revision as revision
 
 EXPECTED_RUNS = 360
 EXPECTED_CONDITIONS = 12
+NON_INTERFERENCE_ATOL = 1e-15
 COUNT_COLUMNS = [
     "receivers_with_recommendation", "contact_recommendations",
     "duplicate_source_recommendations", "exact_maximum_ties", "new_source_discoveries",
@@ -122,7 +123,8 @@ def verify_non_interference(runs: pd.DataFrame, existing: pd.DataFrame,
             raise ValueError(f"No unique reference run for {row.condition}/{row.seed}")
         reference_row = match.iloc[0]
         for metric in metrics:
-            if not np.isclose(float(row[metric]), float(reference_row[metric]), rtol=0, atol=1e-15):
+            if not np.isclose(float(row[metric]), float(reference_row[metric]), rtol=0,
+                              atol=NON_INTERFERENCE_ATOL):
                 mismatches.append({"condition": row.condition, "seed": row.seed,
                                    "metric": metric, "diagnostic": row[metric],
                                    "reference": reference_row[metric]})
@@ -193,6 +195,7 @@ def main() -> None:
     configurations.to_csv(args.output / "rq3-policy-configurations.csv", index=False)
     audit = {"status": "PASS", "diagnostic_reexecutions": len(runs),
              "conditions": int(runs.condition.nunique()), "periods_per_run": core.PERIODS,
+             "outcome_tolerance_absolute": NON_INTERFERENCE_ATOL,
              "outcome_mismatches": 0, "accounting_checks": "PASS"}
     (args.output / "diagnostic-validation.json").write_text(json.dumps(audit, indent=2) + "\n",
                                                               encoding="utf-8")

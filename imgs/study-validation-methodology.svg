@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1240" viewBox="0 0 1800 1240" role="img" aria-labelledby="title desc">
   <title id="title">Model validation and experimental methodology</title>
-  <desc id="desc">An editable workflow diagram for the study Evaluations of News Source Strategies to Disseminate Fake News in X. Survey-informed inputs and source definitions support conceptual validation and computational verification, four research-question experiments, reproducible Monte Carlo simulations, output quality control, paired analysis, and an open research package.</desc>
+  <desc id="desc">An editable workflow diagram for the study Evaluations of News Source Strategies for Disseminating Fake News on X. Survey-informed inputs and source definitions support conceptual validation and computational verification, four research-question experiments, reproducible Monte Carlo simulations, output quality control, paired analysis, and an open research package.</desc>
   <metadata>Editable paper figure. All labels, nodes, connectors, and styles remain native SVG objects.</metadata>
   <defs>
     <style>

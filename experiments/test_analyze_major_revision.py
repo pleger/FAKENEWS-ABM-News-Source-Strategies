@@ -117,6 +117,34 @@ class MajorRevisionAnalysisTests(unittest.TestCase):
                         (result.source == "FAKE_NEWS_SOURCE")].iloc[0]
         self.assertAlmostEqual(5 / revision.core.AGENTS, target.effect)
 
+    def test_public_supplements_rebuild_from_processed_inputs(self):
+        elementary = pd.DataFrame([
+            {"strategy": "combined", "metric": "m", "factor": factor,
+             "trajectory": trajectory, "elementary_effect": effect}
+            for trajectory in (1, 2) for factor, effect in (("strong", 2.0), ("weak", 0.1))
+        ])
+        periods = []
+        for condition, increment in (("control", 0), ("campaign", 5)):
+            for seed in (1, 2):
+                for period in range(1, 3):
+                    row = {"research_question": "RQ2", "condition": condition,
+                           "seed": seed, "period": period}
+                    for source in revision.core.SOURCES:
+                        row[f"selections_{source.lower()}"] = 10
+                    row["selections_fake_news_source"] += increment
+                    periods.append(row)
+        runs = pd.DataFrame([{"research_question": "RQ2", "condition": "campaign",
+                              "strategy": "COMBINED", "start_period": 1, "end_period": 2}])
+        old_periods = revision.core.PERIODS
+        revision.core.PERIODS = 2
+        try:
+            stability, source_windows = revision.rebuild_public_supplements(
+                elementary, pd.DataFrame(periods), runs)
+        finally:
+            revision.core.PERIODS = old_periods
+        self.assertFalse(stability.empty)
+        self.assertFalse(source_windows.empty)
+
 
 if __name__ == "__main__":
     unittest.main()

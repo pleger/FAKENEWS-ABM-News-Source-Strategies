@@ -32,6 +32,7 @@ class RecommendationDiagnosticAnalysisTests(unittest.TestCase):
         existing = pd.DataFrame([{"condition": "control_reach14_7_wom0", "seed": 1001, **metrics}])
         revised = pd.DataFrame(columns=existing.columns)
         self.assertEqual([], diagnostics.verify_non_interference(runs, existing, revised))
+        self.assertEqual(1e-15, diagnostics.NON_INTERFERENCE_ATOL)
 
 
 if __name__ == "__main__":

@@ -10,7 +10,7 @@ STUDY_BASE ?= input/FAKENEWS_BASELINE_4_STRATEGIES.xlsx
 DIST_DIR := dist/$(APP_NAME)-$(VERSION)
 DIST_ZIP := dist/$(APP_NAME)-$(VERSION).zip
 
-.PHONY: build test analysis-test jar dist run study-plan study-run study-progress study-diagnostics study-structural-correction analysis-processed analysis-raw analysis-major-revision analysis-diagnostics clean
+.PHONY: build test analysis-test jar dist run study-plan study-run study-progress study-diagnostics study-structural-correction analysis-processed analysis-raw analysis-major-revision analysis-diagnostics analysis-supplements clean
 
 build:
 	mkdir -p build/classes
@@ -72,6 +72,9 @@ analysis-diagnostics:
 		--existing analysis/major-revision-existing/run-metrics.csv \
 		--revision analysis/major-revision/run-metrics.csv.gz \
 		--output analysis/major-revision $(ARGS)
+
+analysis-supplements:
+	$(PYTHON) experiments/rebuild_major_revision_supplements.py --output analysis/major-revision $(ARGS)
 
 clean:
 	rm -rf build dist output

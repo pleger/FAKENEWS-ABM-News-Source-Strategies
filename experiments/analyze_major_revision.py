@@ -232,26 +232,19 @@ def morris_stability(effects: pd.DataFrame, resamples: int = 10_000,
     for (strategy, metric), group in effects.groupby(["strategy", "metric"], sort=False):
         trajectories = np.array(sorted(group.trajectory.unique()))
         factors = sorted(group.factor.unique())
-        bootstrap_ranks = {factor: [] for factor in factors}
-        for _ in range(resamples):
-            sampled = rng.choice(trajectories, size=len(trajectories), replace=True)
-            values = {}
-            for factor in factors:
-                samples = [group[(group.trajectory == trajectory) & (group.factor == factor)].elementary_effect
-                           for trajectory in sampled]
-                values[factor] = float(pd.concat(samples).abs().mean())
-            ranking = pd.Series(values).rank(method="min", ascending=False)
-            for factor in factors:
-                bootstrap_ranks[factor].append(int(ranking[factor]))
-        loo_ranks = {factor: [] for factor in factors}
-        for omitted in trajectories:
-            subset = group[group.trajectory != omitted]
-            values = subset.groupby("factor").elementary_effect.apply(lambda x: x.abs().mean())
-            ranking = values.rank(method="min", ascending=False)
-            for factor in factors:
-                loo_ranks[factor].append(int(ranking[factor]))
-        for factor in factors:
-            ranks = np.asarray(bootstrap_ranks[factor])
+        trajectory_means = (group.assign(abs_effect=group.elementary_effect.abs())
+                            .groupby(["factor", "trajectory"]).abs_effect.mean())
+        matrix = trajectory_means.unstack().loc[factors, trajectories].to_numpy()
+        sampled = rng.choice(len(trajectories), size=(resamples, len(trajectories)), replace=True)
+        bootstrap_values = matrix[:, sampled].mean(axis=2)
+        bootstrap_ranks = 1 + (bootstrap_values[:, None, :] < bootstrap_values[None, :, :]).sum(axis=1)
+        loo_ranks = []
+        for omitted in range(len(trajectories)):
+            values = np.delete(matrix, omitted, axis=1).mean(axis=1)
+            loo_ranks.append(1 + (values[:, None] < values[None, :]).sum(axis=1))
+        loo_ranks = np.asarray(loo_ranks).T
+        for factor_index, factor in enumerate(factors):
+            ranks = bootstrap_ranks[factor_index]
             rows.append({
                 "strategy": strategy, "metric": metric, "factor": factor,
                 "bootstrap_resamples": resamples,
@@ -259,8 +252,8 @@ def morris_stability(effects: pd.DataFrame, resamples: int = 10_000,
                 "median_rank": float(np.median(ranks)),
                 "rank_95_low": float(np.quantile(ranks, 0.025)),
                 "rank_95_high": float(np.quantile(ranks, 0.975)),
-                "loo_rank_min": min(loo_ranks[factor]),
-                "loo_rank_max": max(loo_ranks[factor]),
+                "loo_rank_min": int(loo_ranks[factor_index].min()),
+                "loo_rank_max": int(loo_ranks[factor_index].max()),
             })
     return pd.DataFrame(rows)
 
@@ -314,6 +307,16 @@ def rq2_source_window_effects(periods: pd.DataFrame, runs: pd.DataFrame) -> pd.D
     return pd.DataFrame(rows)
 
 
+def rebuild_public_supplements(elementary: pd.DataFrame, existing_periods: pd.DataFrame,
+                               existing_runs: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Recreate supporting artifacts using only publication-safe processed data."""
+    stability = morris_stability(elementary)
+    source_windows = rq2_source_window_effects(existing_periods, existing_runs)
+    if stability.empty or source_windows.empty:
+        raise ValueError("Processed inputs did not produce the promised supporting artifacts")
+    return stability, source_windows
+
+
 def validate(runs: pd.DataFrame) -> dict[str, object]:
     actual_runs = runs.groupby("research_question").size().to_dict()
     actual_conditions = runs.groupby("research_question").condition.nunique().to_dict()
@@ -337,6 +340,14 @@ def figures(recommendation: pd.DataFrame, structural: pd.DataFrame,
     directory = output / "figures"; directory.mkdir(parents=True, exist_ok=True)
     metric = "fake_repost_share_decisions"
     policies = ["disabled", "discovery", "flag_only", "oracle", "imperfect_fast", "imperfect_delayed"]
+    policy_labels = {
+        "disabled": "Disabled",
+        "discovery": "Discovery only",
+        "flag_only": "False-only flag",
+        "oracle": "Perfect immediate (oracle)",
+        "imperfect_fast": "Fast imperfect",
+        "imperfect_delayed": "Delayed imperfect",
+    }
     plot = recommendation[(recommendation.metric == metric) & recommendation.policy.isin(policies)]
     fig, axes = plt.subplots(2, 3, figsize=(10.5, 6.6), sharex=True, sharey=True)
     colors = {"credibility": "#2b6f92", "informational": "#d07a2d", "combined": "#6a4c93"}
@@ -349,7 +360,7 @@ def figures(recommendation: pd.DataFrame, structural: pd.DataFrame,
             high = part.ci95_high.to_numpy() * 100
             ax.errorbar(part.target_reach, effect, yerr=[effect-low, high-effect], marker="o",
                         linewidth=1.1, capsize=2, color=colors[strategy], label=strategy.title())
-        ax.axhline(0, color="black", linewidth=.7); ax.set_title(policy.replace("_", " ").title())
+        ax.axhline(0, color="black", linewidth=.7); ax.set_title(policy_labels[policy])
         ax.set_xlabel("Direct reach (%)"); ax.set_ylabel("Effect (percentage points)")
     axes[0, 2].legend(fontsize=8)
     fig.suptitle("Recommendation realism: strategy effects on false share among decisions")
@@ -432,13 +443,15 @@ configuration in `manifest.tsv`. Outcome definitions are:
 policies, reach and receiver scale. `global-strategy-effects.csv` contains treatment-control effects
 at each Morris point. `morris-elementary-effects.csv.gz` and `morris-summary.csv` contain seed-level
 and aggregated elementary effects. `morris-stability.csv` reports trajectory-cluster bootstrap and
-leave-one-trajectory-out rank stability. `structural-effects.csv` contains activity/topology contrasts.
+leave-one-trajectory-out rank stability and can be rebuilt from elementary effects.
+`structural-effects.csv` contains activity/topology contrasts.
 Intervals are unadjusted 95% Student-t Monte Carlo intervals; `p_holm` is a Holm-adjusted p value.
 `validation.json` and `SHA256SUMS` record design checks and file integrity.
 `execution-metadata.json` records the measured execution interval, concurrency,
 software environment, source revision and generated raw-data size without any
 device serial number or other machine identifier.
-`rq2-source-window-effects.csv` decomposes matched campaign and post-removal effects by source.
+`rq2-source-window-effects.csv` decomposes matched campaign and post-removal effects by source and
+can be rebuilt from original processed run and period metrics.
 """
     (output / "DATA_DICTIONARY.md").write_text(text, encoding="utf-8")
 

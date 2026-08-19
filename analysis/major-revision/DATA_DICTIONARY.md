@@ -15,9 +15,13 @@ configuration in `manifest.tsv`. Outcome definitions are:
 `recommendation-policy-effects.csv` contains paired RQ3 strategy effects across recommendation
 policies, reach and receiver scale. `global-strategy-effects.csv` contains treatment-control effects
 at each Morris point. `morris-elementary-effects.csv.gz` and `morris-summary.csv` contain seed-level
-and aggregated elementary effects. `structural-effects.csv` contains activity/topology contrasts.
+and aggregated elementary effects. `morris-stability.csv` reports trajectory-cluster bootstrap and
+leave-one-trajectory-out rank stability and can be rebuilt from elementary effects.
+`structural-effects.csv` contains activity/topology contrasts.
 Intervals are unadjusted 95% Student-t Monte Carlo intervals; `p_holm` is a Holm-adjusted p value.
 `validation.json` and `SHA256SUMS` record design checks and file integrity.
 `execution-metadata.json` records the measured execution interval, concurrency,
 software environment, source revision and generated raw-data size without any
 device serial number or other machine identifier.
+`rq2-source-window-effects.csv` decomposes matched campaign and post-removal effects by source and
+can be rebuilt from original processed run and period metrics.
