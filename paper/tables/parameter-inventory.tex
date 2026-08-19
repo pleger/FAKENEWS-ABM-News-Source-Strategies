@@ -1,0 +1,28 @@
+\begin{table*}[ht]
+\centering
+\caption{Principal parameters and uncertainty ranges. A dash means the value is not varied in that experiment.}
+\label{tab:parameters}
+\small
+\begin{tabular}{p{3.4cm}p{2.1cm}p{3.2cm}p{6.2cm}}
+\toprule
+Parameter & Principal value & Revision range/levels & Interpretation \\
+\midrule
+Users; periods; source objects & 500; 400; 4 & fixed & Population, dimensionless horizon and category representatives \\
+Choice base $B$ & 1.2 & 1.10--1.40 & Exponential transform of signed endorsements \\
+Memory specification & exponential $h=0.33$ & hard window 25 or $h=0.33$--5 & Alternative specifications in each run: a hard cutoff, or infinite hard memory with exponential decay \\
+Contacts; friend fraction & 5; 1 & contacts 3--10 & Outdegree is $\lfloor\texttt{CONTACTS}\times\texttt{FRIENDS}\rfloor$ \\
+Activity probability & 1 & 0.25, 0.50, 1 & Probability that an agent makes its available decision \\
+Topology; rewiring & random; 0.10 & random or directed small-world & Fixed outdegree, no self-links/duplicates; variable indegree \\
+WOM receiver scale $\lambda$ & 0.5 & 0.25, 0.5, 1 & Multiplier applied to the common receiver WOM preference \\
+Label delay $d$ & 0 & 0, 5, 25 & Additional periods beyond next-period delivery \\
+Coverage $c$ & 1 & 0.5, 0.8, 1 & Probability that a recommendation receives a label \\
+Sensitivity; specificity & 1; 1 & 0.75--1; 0.90--1 & Classification of false and true source-period states \\
+Source-attribute contrast & 1 & 0.75--1.25 & Scales binary probabilities away from 0.5, clipped to $[0,1]$ \\
+Experimental-source reach & 14.7\% & 0--14.7\% & Probability of initial direct visibility \\
+Traditional false-publication probability & .092 & [.05,.15] & Objective source-period probability \\
+Unknown-source false-publication probability & .206 & [.15,.30] & Objective source-period probability \\
+Experimental-source false-publication probability & .667 & [.55,.80] & Objective source-period probability \\
+Mixed-source false-publication probability & .416 & [.30,.55] & Objective source-period probability \\
+\bottomrule
+\end{tabular}
+\end{table*}

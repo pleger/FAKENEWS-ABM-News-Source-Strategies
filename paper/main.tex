@@ -9,29 +9,49 @@
 \usepackage{microtype}
 \usepackage{lineno}
 \usepackage{setspace}
+
+
 \graphicspath{{images/}}
 \setlength{\emergencystretch}{3em}
 \linenumbers
 
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
+\begin{document}
+
 \title{Evaluations of News Source Strategies to Disseminate Fake News in X}
+\begin{center}
+{\LARGE\bfseries Evaluations of News Source Strategies to Disseminate Fake News in X\par}
+\end{center}
 \ifdefined\ANONYMOUS
   \author{Anonymous authors}
 \else
-  \author{Paul Leger\textsuperscript{a}\thanks{Corresponding author: \href{mailto:pleger@ucn.cl}{pleger@ucn.cl}; ORCID: \href{https://orcid.org/0000-0003-0969-5139}{0000-0003-0969-5139}} \and
-  Agustín Olivares\textsuperscript{b} \and Oswaldo Teran\textsuperscript{c,d} \and
-  Manuela Lopez\textsuperscript{e} \and Francis Espinoza\textsuperscript{b} \and
-  Carolina Rodríguez\textsuperscript{f}\\[0.8em]
-  \small \textsuperscript{a}Escuela de Ingeniería, Universidad Católica del Norte, Chile\\
-  \small \textsuperscript{b}Universidad Católica del Norte, Chile\\
-  \small \textsuperscript{c}Escuela de Ciencias Empresariales, Universidad Católica del Norte, Chile\\
-  \small \textsuperscript{d}Centro de Simulación y Modelos (CESIMO), Universidad de Los Andes, Venezuela\\
-  \small \textsuperscript{e}University of Murcia, Spain\\
-  \small \textsuperscript{f}Universidad de La Serena, Chile}
+\begin{center}
+{\large
+Paul Leger\textsuperscript{1,*}, Agust\'in Olivares\textsuperscript{1}, Oswaldo Teran\textsuperscript{2}, Manuela Lopez\textsuperscript{3}, Francis Espinoza\textsuperscript{4}, and Carolina Rodr\'iguez\textsuperscript{5}\par}
+\vspace{0.8em}
+
+\begin{small}
+\textsuperscript{1} Escuela de Ingenier\'ia, Universidad Cat\'olica del Norte, Chile\\
+\textsuperscript{2} Escuela de Ciencias Empresariales, Universidad Cat\'olica del Norte, Chile\\
+\textsuperscript{3} Marketing Department, University of Murcia, Spain\\
+\textsuperscript{4} Escuela de Periodismo, Universidad Cat\'olica del Norte, Chile\\
+\textsuperscript{5} Departamento de Ciencias Sociales, Universidad de La Serena, Chile
+
+\vspace{0.4em}
+
+\textsuperscript{*}Corresponding author: \href{mailto:pleger@ucn.cl}{pleger@ucn.cl}
+\end{small}
+
+\vspace{0.8em}
+\emph{The authors declare no competing interests.}
+\end{center}
+
 \fi
 \date{}
 
-\begin{document}
-\maketitle
+%\maketitle
 \input{sections/00-abstract}
 \input{sections/01-introduction}
 \input{sections/02-background}
@@ -41,6 +61,8 @@
 \input{sections/06-discussion-implications}
 \input{sections/07-conclusions}
 \input{sections/08-declarations}
+\appendix
+\input{sections/09-odd-specification}
 \bibliographystyle{plainnat}
 \bibliography{reference}
 \end{document}

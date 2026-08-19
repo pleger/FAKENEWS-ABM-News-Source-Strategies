@@ -1,4 +1,6 @@
-\section{Background}
+\section{Background: fake news and simulation models for analysing its dissemination}
+
+This section establishes the conceptual and methodological foundations of the study. It first explains why fake-news dissemination is mediated by source identity and social interaction, then introduces ABM and the ODD reporting protocol, and finally positions the proposed model relative to existing misinformation simulations.
 
 \subsection{Fake news and source-mediated dissemination}
 
@@ -8,12 +10,23 @@ Source identity matters because users often lack the time or information needed 
 
 \subsection{Agent-based models as simulation models}
 
-ABMs describe system outcomes as the emergent result of local decisions and interactions. They are useful when agents differ, remember past events, learn from contacts, and respond to interventions over time. A credible ABM must make its entities, processes, scheduling, stochasticity, inputs, and outputs explicit. We follow the ODD protocol \citep{grimm2020}, which separates an overview of purpose and process from design concepts and implementation details.
+ABMs describe system outcomes as the emergent result of local decisions and interactions. They are useful when agents differ, remember past events, learn from contacts, and respond to interventions over time. In social-network research, ABMs have evaluated word-of-mouth (WOM) campaigns and participant selection \citep{leger2016,plaza2019}, message repetition on Twitter \citep{lopez2023}, and extensible architectures for social-network simulation \citep{leger2026}. These applications illustrate how an executable mechanism can connect individual exposure and choice to population-level diffusion while retaining a controlled experimental design.
+
+A credible ABM must make its entities, processes, scheduling, stochasticity, inputs, and outputs explicit. We follow the ODD protocol \citep{grimm2020}, which organises a model description into Overview, Design concepts, and Details. Figure~\ref{fig:odd} summarises how those components move from the scientific purpose and system boundary to behavioural assumptions and executable submodels. ODD supports inspection and replication, but does not itself establish that a model is valid for every use.
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=.98\linewidth]{odd-protocol-abm.pdf}
+\caption{Original synthesis of the ODD protocol for documenting an agent-based model. The three descriptive components support replication, software verification, and qualified validation.}
+\label{fig:odd}
+\end{figure}
 
 Simulation evidence has a different status from observational or experimental evidence about people. A simulation supports conditional statements: given the encoded mechanisms and parameter ranges, a strategy produces a measured change. Verification asks whether the software implements that specification; validation asks whether the representation is sufficiently credible for its intended purpose. Neither process turns an exploratory model into a direct prediction of platform behaviour.
 
 \subsection{Simulation models of misinformation}
 
-Misinformation models range from epidemic analogies to network, opinion-dynamics, and cognitively richer agent systems. Recent work has modelled source and user interactions, moderation, content sensitivity, and cross-platform diffusion. For example, digital-cloning work compares simulated propagation with known online networks \citep{puri2024}, while cross-platform ABMs examine moderation in interconnected social systems \citep{murdock2024}. Other models study governance mechanisms using empirically informed agent-based experiments \citep{malgonde2025}.
+Misinformation models range from epidemic analogies to network, opinion-dynamics, and cognitively richer agent systems. Table~\ref{tab:related-models} compares representative models by their behavioural focus, empirical input, intervention and validation. Competing-rumour models represent misinformation and fact-checking as diffusion processes \citep{sulis2020}; game-theoretic models examine deception and cooperation \citep{hills2018}; curation models connect belief, recommendation objectives and empirically observed Twitter data \citep{gausen2022}; and bot models study how network position changes indirect influence \citep{keijzer2021}. Recent work also reconstructs language and network histories through digital cloning \citep{puri2024}, examines moderation across platforms \citep{murdock2024}, and evaluates governance in decentralised systems \citep{malgonde2025}.
 
-Our model occupies a complementary niche. It does not reconstruct a particular X network or classify text. Instead, it isolates how a malicious source's configurable presentation strategy interacts with accumulated user evaluations, reach, and contact-based recommendation. This makes it suitable for controlled scenario analysis and for distinguishing source-level success from system-level false-news exposure.
+\input{tables/related-models}
+
+Our model occupies a complementary niche. It does not reconstruct a particular X network or classify text. Instead, it makes a source---rather than a message or belief state---the adaptive experimental actor, keeps objective false-publication behaviour separate from perceived attributes, and evaluates selective and combined source imitation. This makes it suitable for controlled scenario analysis and for distinguishing source-level success from system-level false-news exposure. Its novelty is therefore the experimental treatment of source presentation and platform-controllable reach, not higher-fidelity reconstruction of X.

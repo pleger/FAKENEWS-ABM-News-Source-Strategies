@@ -1,61 +1,103 @@
 \section{Methodology}
 
-\subsection{Overview: purpose, entities, state variables and scales}
+This section specifies the model using the ODD protocol, defines the outcomes and experimental contrasts, and documents the computational workflow. Appendix~\ref{app:odd} provides the complete executable-level ODD specification and parameter inventory; the present section concentrates on decisions needed to interpret the experiments.
 
-The model's purpose is to compare strategies by which a malicious news source changes observable attributes and policies that restrict its dissemination. A run contains 500 social-network users and four source types: traditional media, unknown media, a malicious fake-news source, and mixed media. Each run lasts 400 discrete periods. A user decision in a period selects one known source; the selected publication is counted as a repost. The principal outcomes are malicious-source selection share, the share and cumulative number of reposts attached to false publications, and cumulative unique reposters.
+\subsection{Overview: purpose, entities, state variables and scale}
 
-News sources carry two distinct state groups. Perceived attributes include evoked emotion, simple language, political, geographic and social proximity, sensationalism, information quality, entertainment, audiovisual content, links, hashtags, and credibility. Objective publication behaviour is represented by a separate fake-news probability. The respective probabilities for traditional, unknown, malicious, and mixed sources are 0.092, 0.206, 0.667, and 0.416. A scenario may copy perceived attributes but never copies fake-news probability.
+The model is a comparative laboratory for strategies by which an experimental false-news source changes observable attributes and for platform policies that alter its dissemination. A run contains 500 user agents and four individual source objects representing categories: traditional media, an emerging or unfamiliar online outlet (``unknown media''), the experimental false-news source, and a mixed source that combines comparatively credible and non-credible characteristics. The model does not contain multiple outlets within each category.
+
+Each run lasts 400 discrete decision periods. A period is an ordering device and has no fixed mapping to minutes, days or numbers of posts. The horizon permits transient, campaign and post-removal windows to be observed while remaining computationally tractable. There is no discarded warm-up period. Initial evidence is an explicit part of the model and early-horizon outcomes are reported to expose, rather than conceal, transient effects.
+
+The four source objects carry perceived attribute distributions and an objective false-publication probability. Perceived attributes cover evoked emotion, simple language, political, geographic and social proximity, sensationalism, information quality, entertainment, audiovisual content, links, hashtags and source credibility. The respective false-publication probabilities are 0.092, 0.206, 0.667 and 0.416. These values reproduce the low-credibility probabilities in the survey-informed workbook and are modelling inputs, not observed estimates of each category's factual error rate. A strategy may copy perceived attributes but never copies objective publication behaviour.
+
+All 500 agents share one vector of survey-derived mean preference weights. Claims of preference heterogeneity would therefore be incorrect. Agents become state-heterogeneous through initial source visibility, directed contacts, stochastic attribute histories, publication exposure and source choices. The structural sensitivity experiment additionally varies activity and network construction. This distinction between homogeneous preference parameters and heterogeneous realised states is maintained throughout the paper.
 
 \begin{figure}[ht]\centering
 \includegraphics[width=.96\linewidth]{abm-conceptual-model.pdf}
-\caption{Conceptual structure of the agent-based model and the feedback from source selection, publication state, and social recommendation.}\label{fig:conceptual}
+\caption{Conceptual structure of the ABM. One source-period publication state is generated before user decisions and is shared by all users who select that source in the period.}
+\label{fig:conceptual}
 \end{figure}
-
-Users carry weights indicating the importance assigned to each perceived attribute and to social recommendation. They also retain endorsement events for known sources and have a random set of contacts. Source reach determines whether a source is initially known. With unrestricted reach, all four sources are available; reach-policy experiments vary the malicious source's direct visibility.
 
 \subsection{Process overview and scheduling}
 
-At reset, the simulator constructs users, assigns contacts and visible sources, and generates initial endorsement evidence. During each period: (1) any scheduled source strategy starts or ends; (2) every user aggregates remembered endorsements for known sources; (3) the user probabilistically selects and reposts one source; (4) the selected source independently realizes a true or false publication according to its fixed probability; (5) aggregate and unique-reposter statistics are recorded; and (6) users receive the strongest source recommendation observed among their contacts for use in the following period.
+At reset, the simulator constructs sources and users, samples initial source visibility, builds a directed contact network and creates deterministic endorsement events at period $-1$. For each initially known source and attribute, initialization chooses the more probable attribute level and converts it to a signed endorsement. This provides a defined first-period choice distribution; it represents prior familiarity and is not an empirically observed interaction history.
 
-Endorsement contributions are signed and transformed by an exponential base before aggregation. In the principal design, the hard memory window is disabled and each endorsement of age $a$ receives weight
+During period $t$: (1) scheduled strategies are activated or restored; (2) each source draws one binary publication state $Z_{st}\sim\mathrm{Bernoulli}(p_s)$; (3) pending recommendation evidence is delivered; (4) active users evaluate known sources and select at most one; (5) selection, false-publication and unique-reposter outcomes are recorded; and (6) each user observes the strongest current recommendation among directed contacts. Every user who selects source $s$ in period $t$ reposts the same source-period state $Z_{st}$. In the principal experiments, an agent with a known source makes exactly one decision and voluntary abstention is absent. Reach restriction can leave an agent with no known source, and the structural experiment introduces an explicit activity probability.
+
+For an endorsement event $e$ with signed value $v_e$, source score is
 \begin{equation}
-w(a)=2^{-a/h},
+E_{is}(t)=\sum_{e\in\mathcal{M}_{is}(t)} \operatorname{sgn}(v_e)B^{|v_e|}w_e(t),
 \end{equation}
-where $h=0.33$ periods is the half-life. Truth-sensitive social recommendation penalises a recommendation attached to a false publication and rewards one attached to a true publication. The receiver magnitude is the user's social-recommendation weight multiplied by 0.5. RQ4 replaces these settings with a 25-period hard window or half-lives of 0.33, 1, and 5 periods.
+where $B$ is the choice-function base and $\mathcal{M}_{is}(t)$ is the retained memory. With a hard window of $M$ periods, retained events receive constant weight. With infinite memory and exponential decay,
+\begin{equation}
+w_e(t)=2^{-(t-\max\{1,t_e\})/h},
+\end{equation}
+where $h$ is the half-life. The principal $h=0.33$ is a legacy scenario anchor, not an empirical estimate: an event retains approximately 12.2\% of its transformed contribution after one full period. Its extremity motivates the wider half-life and hard-window sensitivity experiments; the two memory representations are not claimed to be behaviourally equivalent.
 
-\subsection{Design concepts}
+Here $i$ indexes users, $s$ sources, $e$ endorsement events, $t_e$ the event period, $v_e$ the signed event value, and $\operatorname{sgn}(v_e)\in\{-1,0,1\}$ its sign. The term $\max\{1,t_e\}$ assigns the deterministic initialization events dated $-1$ age zero at the first decision; ordinary events retain their recorded period.
 
-\textit{Heterogeneity} arises from stochastic source attributes, individual evaluation histories, source visibility, and contact networks. \textit{Interaction} occurs through contact-based recommendations. \textit{Adaptation} is represented by probabilistic source choice based on accumulated evidence; malicious sources adapt exogenously through scheduled strategies. \textit{Learning} is path dependent because choices and recommendations add endorsement events. \textit{Stochasticity} enters source visibility, attribute realizations, publication veracity, network construction and source selection. \textit{Observation} records source selections, false-publication states and unique reposters at every period.
+If every $E_{is}(t)\geq0$ and their sum is positive, source-choice probability is $E_{is}/\sum_{r}E_{ir}$. Otherwise the implementation shifts every candidate by the minimum score and adds one:
+\begin{equation}
+P_i(s,t)=\frac{E_{is}(t)-\min_{r}E_{ir}(t)+1}
+{\sum_{q}[E_{iq}(t)-\min_{r}E_{ir}(t)+1]}.
+\end{equation}
+This makes every known source selectable even when evaluations are non-positive.
 
-Emergence is assessed at the population level: source shares and false-repost exposure are not assigned targets but arise from user-level decisions. Prediction is conditional rather than point forecasting. Sensing is restricted to known sources, personal histories, and contact recommendations. No agent has global network information.
+The baseline network is directed with fixed outdegree $\lfloor\texttt{CONTACTS}\times\texttt{FRIENDS}\rfloor=5$ and no self-links or duplicate destinations. Five is a parsimonious scenario anchor, not a documented empirical mean. It is consistent only with the broader finding that active interaction networks on Twitter are much sparser than declared follower links \citep{huberman2009}; RQ4 therefore varies the count from 3 to 10. Indegree is unconstrained and variable. For each source selected by a contact, only the largest contact evaluation is retained; this prevents repeated recommendations of one source from being summed mechanically, but may privilege an extreme contact evaluation. The source with the largest retained evaluation is recommended, with source-identifier iteration order resolving exact ties. The diagnostic re-executions report duplicate recommendations and ties so this deterministic rule is auditable. The sender's evaluation selects the recommendation, while the receiver's word-of-mouth (WOM) preference determines endorsement magnitude. A received recommendation makes a previously unknown source visible before label coverage is sampled.
 
-\subsection{Details: initialisation and input parameterisation}
+Recommendation evidence is parameterised by coverage $c$, sensitivity $s_e$, specificity $s_p$, delay $d$ and receiver scale $\lambda$. Coverage is sampled separately for the one selected sender--receiver recommendation in every receiver-period. When a label is available, its observed state is sampled using $s_e$ and $s_p$; the configured false/true policy then penalises, rewards or ignores the recommendation. Because all agents share the same preference vector, the non-zero contribution is $g\lambda W$ and is delivered at $t+1+d$. Table~\ref{tab:rq3-policy-configurations} gives the complete named-policy mapping. The original oracle boundary has $(c,s_e,s_p,d)=(1,1,1,0)$; the revision adds discovery-only, asymmetric flagging, delayed and imperfect policies and $\lambda\in\{0.25,0.5,1\}$.
 
-The workbook parameters are informed by aggregated responses from a Chilean survey of 500 X users. The source distributions and mean user weights translate survey constructs into model inputs; source reach values are 81.2\%, 46.7\%, 14.7\%, and 17.5\% for the four source types. We describe this as survey-informed parameterisation, not predictive calibration: the repository does not contain respondent-level microdata or an observed X cascade target against which output parameters were fitted. Consequently, the model supports comparative scenario reasoning but not claims of national representativeness or individual prediction. Survey instrument, sampling dates, recruitment, transformation rules, and ethics information remain author-verification items before submission.
+\input{tables/rq3-policy-configurations}
 
-Named strategies group attributes as follows. Engagement copies positive and negative emotion, simple language, sensationalism, entertainment, audiovisual content, and hashtags. Proximity copies political, geographic, and social proximity. Informational camouflage copies information quality and links. Credibility camouflage copies source credibility. The combined strategy copies all four groups from traditional media to the malicious source. Campaign intervals are inclusive; temporary changes are reverted after their final period.
+\subsection{Input parameterisation and scope of empirical claims}
+
+The input workbook was created from aggregate responses from an online survey of Chilean X users. The delivery file contains 510 complete records; the model population of 500 agents is a computational design choice, not the survey sample size. The workbook supplies category-level source-attribute distributions, mean user weights and initial reach values of 81.2\%, 46.7\%, 14.7\% and 17.5\%. We call this survey-informed parameterisation rather than calibration: respondent-level vectors and their correlations are not represented, and no observed X cascade was used to fit or test diffusion outputs.
+
+The computational study accessed only the aggregate workbook and no directly identifying respondent data. The survey materials record online consent, weekly-or-more X use as an eligibility criterion, and administration through an online panel provider. They do not, however, provide in the reproducibility repository a complete fieldwork report containing invitations, response rates, exclusions, final weighting and all transformations from the questionnaire to the workbook. These limits preclude a claim of national representativeness. The aggregate parameterisation supports the stated comparative scenarios, not population inference.
+
+Named strategies copy attributes from traditional media to the experimental source. Engagement covers positive and negative emotion, simple language, sensationalism, entertainment, audiovisual content and hashtags; proximity covers political, geographic and social proximity; informational camouflage covers information quality and links; and credibility camouflage covers source credibility. Combined imitation activates all four groups. Campaign intervals are inclusive. Attributes revert after a temporary campaign, but endorsements accumulated while it was active remain subject to the configured memory rule.
+
+\subsection{Outcomes and estimands}
+
+Let $N=500$, $T=400$, $D_t$ be the number of decisions, $F_t$ decisions attached to false source-period publications, and $A_t$ selections of the experimental source. We report separately
+\begin{align}
+R_{AP}&=\frac{\sum_{t}F_t}{NT}, &
+R_{FD}&=\frac{\sum_{t}F_t}{\sum_{t}D_t},\\
+R_{AD}&=\frac{\sum_{t}A_t}{\sum_{t}D_t}, &
+R_P&=\frac{\sum_{t}D_t}{NT}.
+\end{align}
+$R_{AP}$ is the false-repost rate per agent-period, $R_{FD}$ the false share among actual decisions, $R_{AD}$ the experimental-source share among decisions and $R_P$ participation. This resolves the denominator ambiguity under restricted reach or activity. Source-by-source selection totals identify displacement. Cumulative unique reach through period 400 can approach saturation under this population size and decision rule, so we also report unique experimental-source reposters at periods 25, 50, 100 and 200 and first repost time. Times to 25\%, 50\% and 75\% use the retrospectively observed period-400 total as denominator and are descriptive trajectory measures, not prospective diffusion thresholds.
+
+RQ2 uses matched windows. Each treatment is compared with its common-seed control during the campaign and, after removal, in periods 1--25, 26--50 and 51--100. This separates within-campaign efficacy from decay and uses the same distance from removal for every temporary campaign.
 
 \subsection{Experimental design and statistical analysis}
 
-Table~\ref{tab:design} summarises the study. Every treatment and its control use common seeds. RQ1 compares five permanent strategies with no strategy. RQ2 crosses credibility and informational camouflage with starts at periods 1, 101, and 201 and durations of 25, 100, or the remainder of the run. RQ3 crosses no strategy, credibility, and informational camouflage with reach levels 14.7\%, 10\%, 5\%, 1\%, and 0\%, both with and without social recommendations. RQ4 crosses three contact counts with four memory settings and compares permanent credibility camouflage with control.
+Table~\ref{tab:design} summarises the complete staged design. The original 2,010 runs are retained and reanalysed with corrected denominators and RQ2 windows. The major-revision suite adds 4,680 runs. RQ3 adds realistic recommendation policies, three reach levels, four strategies and receiver-scale sensitivity. RQ4 adds a Morris global sensitivity screen with eight trajectories across ten inputs \citep{morris1991}, plus random-fixed-outdegree versus directed small-world networks crossed with three activity levels. A separate set of 360 observational re-executions records RQ3 mechanism counts without changing the 6,690-run primary estimand set. Parameter ranges are listed in Appendix~\ref{app:odd}.
+
+The sensitivity bounds are scenario ranges, not estimated population distributions. They bracket the workbook values while keeping each input behaviourally and numerically valid: memory spans very rapid to persistent evidence; contact count spans 3--10 listened-to contacts; direct reach spans 1--14.7\%; WOM magnitude spans half to twice the legacy value; and source probabilities, choice base and attribute contrast vary around their workbook settings. Morris uses a five-level unit cube, step $\Delta=0.25$, eight seeded random trajectories without trajectory optimisation, and ten stochastic seeds per design point. Treatment-minus-control effects are computed within seed before elementary effects; $\mu^*$ and $\sigma$ then aggregate 80 seed-level effects per factor. Trajectory-cluster bootstrap and leave-one-trajectory-out ranks assess screening stability. Structural cells separately test whether conclusions survive reduced activity and a clustered directed topology.
 
 \begin{table}[ht]
 \centering
-\caption{Experimental design.}\label{tab:design}
-\begin{tabular}{lrrp{7.4cm}}
-\toprule RQ & Conditions & Seeds & Factors \\
+\caption{Staged experimental design. Run files are stochastic replications; common-seed treatment and control files are intentionally dependent.}
+\label{tab:design}
+\begin{tabular}{lrrp{7.0cm}}
+\toprule RQ & Conditions & Runs & Main factors \\
 \midrule
-RQ1 & 6 & 30 & Five source strategies and control \\
-RQ2 & 19 & 30 & Strategy, start period, and duration \\
-RQ3 & 30 & 30 & Strategy, malicious-source reach, and social recommendation \\
-RQ4 & 24 & 15 & Credibility strategy, contacts, and memory \\
-\midrule Total & 79 & & 2,010 independent run files \\
+RQ1 & 6 & 180 & Five source strategies and control \\
+RQ2 & 19 & 570 & Strategy, start period and duration \\
+RQ3 & 92 & 2,760 & Reach, strategy, recommendation policy, label quality and receiver scale \\
+RQ4 & 306 & 3,180 & Memory/connectivity grid, ten-factor Morris screen, activity and topology \\
+\midrule Total & 423 & 6,690 & Original and major-revision suites \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-For each seed, treatment minus matched control defines the effect. We report means, Student-$t$ 95\% confidence intervals, paired standardised effects ($d_z$), and Holm-adjusted $p$ values within each RQ and outcome family. Effect sizes on shares are expressed in percentage points (pp). Because this is a stochastic simulation experiment, intervals quantify Monte Carlo variability under the encoded model; they do not estimate sampling error for the population of X users.
+For each condition, treatment minus matched control defines the seed-level effect. We report the mean effect, unadjusted Student-$t$ 95\% Monte Carlo interval, paired $d_z$, baseline mean, absolute percentage-point change and relative change. Holm correction is applied to $p$ values within each RQ--outcome family; intervals are not multiplicity adjusted. Statistical significance is not treated as empirical uncertainty about X. Practical interpretation uses both absolute and relative magnitude and labels intervals crossing zero as imprecise rather than evidence of no effect. For the Morris screen, $\mu^*$ ranks mean absolute elementary effects and $\sigma$ indicates non-linearity or interaction.
+
+Thirty seeds are used for each RQ1--RQ3 condition, 15 for the original RQ4 grid and 10 for each global or structural sensitivity cell. This allocation prioritises broad uncertainty coverage in the computationally expensive sensitivity design. The public condition and effect tables provide each standard error and interval, from which realised Monte Carlo half-width is $(\mathrm{CI}_{high}-\mathrm{CI}_{low})/2$; these quantities do not convey population-sampling uncertainty.
 
 \subsection{Software execution and reproducibility}
 
-The Java reference implementation, study specification, processed run-level metrics and analysis scripts are open source. The study was run with six concurrent Java processes on a MacBook Pro with an Apple M2 Max processor (12 CPU cores: eight performance and four efficiency), 32 GB RAM, macOS 26.6.1, and OpenJDK 25.0.1. Timestamped study artefacts show an elapsed execution time of approximately 10 h 29 min, from 16 August 2026 at 13:48 to 17 August 2026 at 00:17 (America/Santiago). The public processed dataset reproduces all reported statistics, tables, and figures without the generated workbooks; the code, condition definitions and seeds permit a complete rerun. These materials are available from \ifdefined\ANONYMOUS a public reproducibility repository whose identifying address is omitted here to preserve double-anonymous review\else\url{https://github.com/pleger/FAKENEWS-ABM-News-Source-Strategies}\fi.
+The Java implementation separates model execution from study orchestration, so an individual workbook can still run without the study layer. It was adapted from an earlier, independently published agent-based simulation code line for cross-border e-commerce \ifdefined\ANONYMOUS (citations withheld for blinded review)\else\citep{teranAl:jos2022,teranAl:tpc2025}\fi, then materially re-specified for source-mediated news dissemination, source publication states, user evidence, recommendation policies and the present experimental design. The earlier applications establish software lineage, rather than empirical validation of false-news diffusion. The revision suite was executed with ten concurrent Java processes on a MacBook Pro with an Apple M2 Max processor (12 CPU cores: eight performance and four efficiency), 32 GB RAM, macOS 26.6.1 and OpenJDK 25.0.1. The final resumed execution stage began with 2,130 completed runs and produced the remaining 2,550 in 14~h 10~min; this interval is not presented as the elapsed time for the entire computational campaign. The completed/failed counts, environment and software revision are exported with the validated study artefacts.
+
+The open-source repository contains the executable study definition, input workbook, fixed seeds, tests, analysis scripts, processed one-row-per-run data, statistical contrasts, figures and SHA-256 checksums. Raw generated workbooks are excluded because of their size but are reproducible from the published inputs and seeds. The public repository is \url{https://github.com/pleger/FAKENEWS-ABM-News-Source-Strategies} \citep{fakenewsRepository2026}; the submitted manuscript cites the immutable public release \texttt{v0.2.0} and its recorded source revision.

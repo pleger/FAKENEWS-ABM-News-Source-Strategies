@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="700" viewBox="0 0 1200 700" role="img" aria-labelledby="title description">
+  <title id="title">ODD protocol for documenting an agent-based model</title>
+  <desc id="description">The Overview, Design concepts, and Details blocks connect a model's scientific purpose to executable detail and support transparent description, replication, verification, validation, and qualified inference.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#354052"/>
+    </marker>
+    <style>
+      .title { font: 700 34px Arial, Helvetica, sans-serif; fill: #172033; }
+      .subtitle { font: 400 21px Arial, Helvetica, sans-serif; fill: #4a5568; }
+      .block-title { font: 700 25px Arial, Helvetica, sans-serif; fill: #172033; }
+      .item { font: 400 18px Arial, Helvetica, sans-serif; fill: #263244; }
+      .number { font: 700 18px Arial, Helvetica, sans-serif; fill: #ffffff; }
+      .flow { font: 700 18px Arial, Helvetica, sans-serif; fill: #172033; }
+      .caption { font: 400 16px Arial, Helvetica, sans-serif; fill: #4a5568; }
+    </style>
+  </defs>
+
+  <rect width="1200" height="700" fill="#ffffff"/>
+  <text x="600" y="58" text-anchor="middle" class="title">ODD makes an agent-based model inspectable</text>
+  <text x="600" y="92" text-anchor="middle" class="subtitle">From scientific purpose to executable detail</text>
+
+  <g transform="translate(54 135)">
+    <rect x="0" y="0" width="330" height="365" rx="12" fill="#e8f1f8" stroke="#315f7d" stroke-width="2"/>
+    <circle cx="35" cy="38" r="19" fill="#315f7d"/>
+    <text x="35" y="44" text-anchor="middle" class="number">1</text>
+    <text x="67" y="47" class="block-title">Overview</text>
+    <line x1="25" y1="70" x2="305" y2="70" stroke="#315f7d" stroke-width="1.5"/>
+    <circle cx="31" cy="115" r="5" fill="#315f7d"/>
+    <text x="49" y="121" class="item">Purpose and patterns</text>
+    <circle cx="31" cy="173" r="5" fill="#315f7d"/>
+    <text x="49" y="168" class="item">Entities, state variables,</text>
+    <text x="49" y="192" class="item">and scales</text>
+    <circle cx="31" cy="249" r="5" fill="#315f7d"/>
+    <text x="49" y="244" class="item">Process overview and</text>
+    <text x="49" y="268" class="item">scheduling</text>
+    <text x="25" y="330" class="caption">What the model represents</text>
+  </g>
+
+  <line x1="398" y1="318" x2="431" y2="318" stroke="#354052" stroke-width="3" marker-end="url(#arrow)"/>
+
+  <g transform="translate(435 135)">
+    <rect x="0" y="0" width="330" height="365" rx="12" fill="#f3eddf" stroke="#80682f" stroke-width="2"/>
+    <circle cx="35" cy="38" r="19" fill="#80682f"/>
+    <text x="35" y="44" text-anchor="middle" class="number">2</text>
+    <text x="67" y="47" class="block-title">Design concepts</text>
+    <line x1="25" y1="70" x2="305" y2="70" stroke="#80682f" stroke-width="1.5"/>
+    <circle cx="31" cy="108" r="5" fill="#80682f"/>
+    <text x="49" y="114" class="item">Emergence and adaptation</text>
+    <circle cx="31" cy="160" r="5" fill="#80682f"/>
+    <text x="49" y="155" class="item">Learning, prediction,</text>
+    <text x="49" y="179" class="item">and sensing</text>
+    <circle cx="31" cy="225" r="5" fill="#80682f"/>
+    <text x="49" y="231" class="item">Interaction and stochasticity</text>
+    <circle cx="31" cy="277" r="5" fill="#80682f"/>
+    <text x="49" y="283" class="item">Collectives and observation</text>
+    <text x="25" y="330" class="caption">Why system behaviour emerges</text>
+  </g>
+
+  <line x1="779" y1="318" x2="812" y2="318" stroke="#354052" stroke-width="3" marker-end="url(#arrow)"/>
+
+  <g transform="translate(816 135)">
+    <rect x="0" y="0" width="330" height="365" rx="12" fill="#e8f2ea" stroke="#3f704d" stroke-width="2"/>
+    <circle cx="35" cy="38" r="19" fill="#3f704d"/>
+    <text x="35" y="44" text-anchor="middle" class="number">3</text>
+    <text x="67" y="47" class="block-title">Details</text>
+    <line x1="25" y1="70" x2="305" y2="70" stroke="#3f704d" stroke-width="1.5"/>
+    <circle cx="31" cy="115" r="5" fill="#3f704d"/>
+    <text x="49" y="121" class="item">Initialisation</text>
+    <circle cx="31" cy="173" r="5" fill="#3f704d"/>
+    <text x="49" y="179" class="item">Input data</text>
+    <circle cx="31" cy="231" r="5" fill="#3f704d"/>
+    <text x="49" y="237" class="item">Submodels and algorithms</text>
+    <text x="25" y="330" class="caption">How the model is executed</text>
+  </g>
+
+  <line x1="219" y1="514" x2="219" y2="548" stroke="#354052" stroke-width="2.5"/>
+  <line x1="600" y1="514" x2="600" y2="548" stroke="#354052" stroke-width="2.5"/>
+  <line x1="981" y1="514" x2="981" y2="548" stroke="#354052" stroke-width="2.5"/>
+  <line x1="219" y1="548" x2="981" y2="548" stroke="#354052" stroke-width="2.5"/>
+  <line x1="600" y1="548" x2="600" y2="571" stroke="#354052" stroke-width="2.5" marker-end="url(#arrow)"/>
+
+  <rect x="54" y="579" width="1092" height="82" rx="12" fill="#f4f5f7" stroke="#687386" stroke-width="2"/>
+  <text x="184" y="628" text-anchor="middle" class="flow">Transparent description</text>
+  <text x="376" y="628" text-anchor="middle" class="flow">&#8594;</text>
+  <text x="473" y="628" text-anchor="middle" class="flow">Replication</text>
+  <text x="585" y="628" text-anchor="middle" class="flow">&#8594;</text>
+  <text x="682" y="628" text-anchor="middle" class="flow">Verification</text>
+  <text x="797" y="628" text-anchor="middle" class="flow">&#8594;</text>
+  <text x="970" y="628" text-anchor="middle" class="flow">Validation and qualified inference</text>
+</svg>

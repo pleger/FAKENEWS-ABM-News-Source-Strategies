@@ -1,47 +1,97 @@
+\providecommand{\rqsummary}[1]{%
+\begin{center}\begingroup
+\setlength{\fboxsep}{8pt}%
+\fcolorbox{black!30}{black!5}{\parbox{.88\linewidth}{\itshape #1\/}}
+\endgroup\end{center}}
+
 \section{Scenario analysis}
+
+This section answers the four research questions in sequence. Each analysis distinguishes malicious-source audience outcomes from network-wide false-repost outcomes, reports uncertainty from paired seeded runs, and closes with a boxed statement of the principal result.
 
 \subsection{RQ1: source-imitation strategies}
 
-Figure~\ref{fig:rq1} shows that increasing the malicious source's audience did not automatically increase overall false-news exposure. Informational and credibility camouflage increased malicious-source share by 0.087 pp (95\% CI 0.065--0.109) and 0.048 pp (0.020--0.076), respectively. Combining all attribute groups produced the largest audience effect, 0.471 pp (0.399--0.543), and 17.17 additional unique malicious-source reposters at period 400 (13.74--20.59).
+Figure~\ref{fig:rq1} shows that increasing the experimental source's audience did not automatically increase overall false-news exposure. The control mean was 1.328\% of decisions for the experimental source and 11.464\% false decisions. Informational and credibility camouflage increased source share by 0.087 pp (95\% CI 0.065--0.109) and 0.048 pp (0.020--0.076), respectively. Combined imitation produced the largest audience effect, 0.471 pp (0.399--0.543), a 35.5\% relative increase over control, and 17.17 additional unique reposters by period 400 (13.74--20.59).
 
-The corresponding average false-repost-share effects were small. The combined strategy added 0.157 pp, but its interval included zero ($-0.017$ to 0.331 pp; Holm $p=0.301$). Proximity alone reduced false-repost share by 0.033 pp ($-0.055$ to $-0.012$; Holm $p=0.017$). In the last 100 periods, however, the combined strategy increased false-repost share by 0.199 pp (0.121--0.277). Thus RQ1 supports audience capture through imitation, particularly combined imitation, but does not support a general one-to-one conversion from source reach to total false-news exposure.
+The corresponding false-decision effects were smaller. Combined imitation added 0.157 pp ($-0.017$ to 0.331 pp; $d_z=0.337$; Holm $p=0.301$), a 1.4\% relative change whose interval is imprecise. Proximity reduced the false share by 0.033 pp ($-0.055$ to $-0.012$; $d_z=-0.584$; Holm $p=0.017$) while increasing experimental-source share. Source displacement explains this counterintuitive sign: relative to 200,000 control decisions, proximity added about 79 experimental-source and 526 traditional-source selections while removing about 398 unknown- and 206 mixed-source selections. Combined imitation added about 942 experimental-source selections, primarily displacing the unknown source. Thus RQ1 supports audience capture through imitation but not a one-to-one conversion from source success to false exposure.
+
+Period-400 unique reach is close to its ceiling: control already reaches 459.47 of 500 agents. Earlier horizons are more discriminating. At period 25 the control mean is 274.97 and combined imitation adds 34.07 unique reposters; the corresponding treatment effect declines to 17.17 by period 400 as control catches up. This pattern identifies faster audience acquisition rather than an unbounded long-run reach advantage.
 
 \begin{figure}[ht]\centering
 \includegraphics[width=.86\linewidth]{rq1-strategy-effects.png}
-\caption{Paired effects of permanent source strategies on average fake-news repost share. Error bars are 95\% $t$ intervals across 30 common seeds.}\label{fig:rq1}
+\caption{Paired strategy effects on the false share among decisions. Error bars are unadjusted 95\% $t$ intervals across 30 matched seeds; Holm correction applies to reported $p$ values, not intervals.}\label{fig:rq1}
 \end{figure}
+
+\rqsummary{\textbf{RQ1 key finding.} Multidimensional imitation produced the clearest audience gain, but malicious-source popularity and network-wide false-news exposure were not interchangeable outcomes.}
 
 \subsection{RQ2: timing, duration, and persistence}
 
-Timing and duration mainly changed malicious-source participation. Early permanent informational camouflage produced the largest average source-share gain, 0.087 pp (0.065--0.109), followed by the same strategy beginning at period 101 (0.051 pp) and period 201 (0.038 pp). The pattern is consistent with mechanical exposure time: earlier and longer campaigns provide more periods in which changed attributes can affect choices. A 100-period informational campaign beginning at period 1 added 0.035 pp to average source share, whereas a 25-period campaign added 0.015 pp.
+Timing and duration changed experimental-source participation during the periods in which a strategy was present. Every temporary and through-period-400 treatment had a positive treatment-window source-share estimate. The largest was the 25-period informational campaign beginning at period 1, 0.498 pp (0.381--0.615), followed by the corresponding credibility campaign, 0.271 pp (0.167--0.375). Full-run averages are smaller because they dilute these short interventions over 400 periods; they are therefore retained only as descriptive summaries, not as the principal timing estimand.
 
-These differences did not translate into robust average false-repost-share effects. Across the 18 treatment cells, all Holm-adjusted intervals for the full-run false-repost outcome included zero. Final-100-period effects were also small, and temporary strategies showed little persistence after removal. The evidence therefore answers RQ2 asymmetrically: timing and duration govern audience opportunity, but under rapid memory decay and truth-sensitive recommendations they do not reliably govern system-wide false-news share.
+Matched windows reveal dynamics hidden by the full-run mean. During the early 25-period informational campaign, false share among decisions increased by 0.213 pp (0.059--0.367); in periods 1--25 after removal it decreased by 0.212 pp ($-0.312$ to $-0.112$), then attenuated to $-0.102$ pp ($-0.230$ to 0.027) in post-removal periods 26--50 and $-0.010$ pp ($-0.027$ to 0.008) in periods 51--100. The analogous credibility campaign increased the during-window outcome by 0.121 pp (0.007--0.235) and decreased it by 0.140 pp ($-0.229$ to $-0.051$) immediately after removal. Other cells were smaller and frequently imprecise. The reversal is consistent with changed source competition and rapidly decaying evidence, not persistent damage continuing in the same direction.
 
 \begin{figure}[ht]\centering
-\includegraphics[width=.92\linewidth]{rq2-timing-duration.png}
-\caption{Average false-repost-share effects by strategy start and duration. Values are paired against the no-strategy control.}\label{fig:rq2}
+\includegraphics[width=.98\linewidth]{rq2-matched-windows.png}
+\caption{Treatment-window and immediate post-removal effects for RQ2. Points are matched-seed means and bars are unadjusted 95\% $t$ intervals across 30 seeds; effects use actual decisions as denominator.}\label{fig:rq2}
 \end{figure}
+
+\rqsummary{\textbf{RQ2 key finding.} Camouflage increased source share while active. The strongest short campaigns produced an immediate post-removal reversal in false-decision share that largely decayed by 51--100 periods, demonstrating why matched windows are preferable to full-run averages.}
 
 \subsection{RQ3: reach restrictions and social recommendations}
 
-Direct reach restrictions reduced both the malicious source's participation and the incremental effect of camouflage. With social recommendations disabled, informational camouflage added 0.510 pp to false-repost share at 14.7\% reach, 0.355 pp at 10\%, 0.192 pp at 5\%, and 0.047 pp at 1\%; at zero reach its effect was exactly zero. Credibility camouflage followed the same monotonic pattern with smaller effects.
+Recommendation policy materially changed both the baseline outcome and the effect of source imitation. Table~\ref{tab:rq3-policy} reports the combined-strategy effect on false share among decisions at 14.7\% direct reach and receiver scale $\lambda=0.5$. Immediate perfect labels provided the strongest attenuation: the combined effect was 0.149 pp (95\% CI 0.111--0.187) from a 9.821\% control mean. With recommendations disabled, the corresponding effect was 1.182 pp (1.077--1.287). Discovery-only recommendation increased it to 1.795 pp (1.610--1.979), because discovery expands visibility without providing truth-sensitive evidence.
 
-Truth-sensitive social recommendations changed the scale of these effects. At 14.7\% reach, the informational effect fell from 0.510 pp without recommendations to 0.019 pp with recommendations; the credibility effect fell from 0.313 to 0.010 pp. The recommendation mechanism can reveal previously unknown sources, but it also penalises recommendations associated with false publications. In this model the truth-sensitive component dominates, so social interaction does not simply bypass a reach restriction.
+Imperfect policies produced a qualitatively different result. False-only flagging yielded a 6.457 pp combined effect (6.177--6.737), fast imperfect labels 9.097 pp (8.753--9.441), and delayed imperfect labels 15.131 pp (14.724--15.538). These contrasts do not imply that labelling causes misinformation on X. They show that a modelled recommendation channel that expands source visibility can overwhelm its corrective signal when coverage, classification or timing is degraded.
 
-The absolute level of false reposts also declined when recommendations were active. For example, the no-strategy condition at 14.7\% reach averaged 14.483\% false reposts without recommendations and 9.820\% with them. Because the recommendation rule explicitly uses publication truth state, this comparison should be interpreted as a modelled policy mechanism rather than evidence about the current algorithm of X.
+The separate 360-run diagnostic reproduction makes this mechanism auditable without changing the primary estimand. It reproduced every archived run-level outcome exactly under paired seeds (zero outcome mismatches). In an active receiver-period, each user processed about five contact recommendations. Discovery occurred before label coverage: combined imitation produced 6.011 newly discovered sources per 1,000 receiver-periods under false-only, fast-imperfect and delayed-imperfect policies, versus 3.205 under the perfect-immediate boundary. For false-only flagging, the combined condition penalised 37.66\% of covered recommendations, compared with 23.66\% for control; the difference reflects the greater frequency with which the combined source was recommended, not a change to the configured label rule. Fast-imperfect and delayed-imperfect labels realised their configured coverage, sensitivity and specificity closely, while delayed evidence delivered 92.18\% of scheduled endorsements within the 400-period horizon. Table~\ref{tab:rq3-mechanism-audit} gives the configuration and observed mechanism rates; the public processed diagnostics retain counts for discovery, coverage, classification, rewards, penalties, duplicates and exact ties.
+
+Reach effects were consequently policy dependent rather than universally monotonic. Under disabled, discovery-only, perfect-immediate and delayed-imperfect policies, the combined false-decision effect was larger at 14.7\% than at 1\% reach. Under false-only flagging and fast imperfect labels it was largest at 1\%, reflecting non-linear changes in both treatment and matched control. Zero direct reach remains an exact absorbing boundary only when recommendation cannot discover the source; it is not a general estimate of account-removal policy.
+
+Receiver magnitude also changed the contrast. Under fast imperfect labels at 14.7\% reach, the combined effect decreased from 11.152 pp at $\lambda=0.25$ to 9.097 pp at $\lambda=0.5$ and 5.215 pp at $\lambda=1$. Because magnitude affects treatment and control simultaneously, this pattern is a model interaction rather than evidence that stronger interpersonal influence is intrinsically protective.
+
+\begin{table}[ht]
+\centering
+\caption{Combined-imitation effect on false share among decisions at 14.7\% direct reach and $\lambda=0.5$. Effects are percentage-point treatment-minus-control differences across 30 paired seeds; intervals are unadjusted 95\% Monte Carlo intervals.}
+\label{tab:rq3-policy}
+\input{tables/rq3-policy-effects}
+\end{table}
+
+\begin{table}[ht]
+\centering
+\caption{RQ3 mechanism audit for the combined-imitation diagnostic re-executions. Observed rates are calculated from 30 seeds and 400 periods; discovery is per 1,000 receiver-periods and penalty is per covered recommendation.}
+\label{tab:rq3-mechanism-audit}
+\input{tables/rq3-mechanism-audit}
+\end{table}
 
 \begin{figure}[ht]\centering
-\includegraphics[width=.92\linewidth]{rq3-reach-mitigation.png}
-\caption{Strategy effects across malicious-source reach limits, separated by the social-recommendation rule.}\label{fig:rq3}
+\includegraphics[width=.99\linewidth]{recommendation-realism.png}
+\caption{Recommendation-policy and reach sensitivity of strategy effects on false share among decisions. Points are paired means and bars are unadjusted 95\% Monte Carlo intervals across 30 matched seeds. The common vertical scale makes policy differences directly comparable.}\label{fig:rq3}
 \end{figure}
+
+\rqsummary{\textbf{RQ3 key finding.} Reach governance cannot be evaluated independently of recommendation quality. Perfect and immediate truth signals strongly attenuated strategy effects, whereas incomplete, inaccurate or delayed policies allowed the recommendation channel to amplify them.}
 
 \subsection{RQ4: sensitivity and robustness}
 
-Credibility camouflage increased malicious-source share across all twelve memory-connectivity combinations. Effects ranged from 0.043 to 0.295 pp, although the interval for 10 contacts and half-life 0.33 included zero. This supports a qualitatively robust audience-capture conclusion.
+The original memory--connectivity grid provides a local sensitivity check. Credibility camouflage increased experimental-source share in all twelve cells, with effects from 0.043 to 0.295 pp; only the interval for 10 contacts and half-life 0.33 crossed zero. Its false-decision effect remained positive under the 25-period hard window and five-period half-life, but became smaller under one-period and 0.33-period half-lives. This local result already identifies memory persistence as an important qualification.
 
-The false-repost conclusion was more sensitive. Under a 25-period hard window, credibility camouflage added 0.127--0.145 pp to average false-repost share. With a five-period half-life, effects remained positive at 0.073--0.104 pp. They became smaller with a one-period half-life and indistinguishable from zero under the 0.33-period half-life. Contact count changed magnitude less consistently than memory persistence. RQ4 therefore rejects an unconditional robustness claim for misinformation exposure: whether source camouflage accumulates into additional false reposts depends strongly on how long user evaluations remain influential.
+The ten-factor Morris screen extends the assessment beyond one-factor grids. For the combined strategy's false-decision effect, memory half-life had the largest mean absolute elementary effect ($\mu^*=0.806$ pp), followed by target reach (0.599), choice base (0.539), contacts (0.531) and WOM receiver scale (0.374). Their comparatively large $\sigma$ values indicate non-linearity or interaction rather than stable additive effects. For credibility camouflage, choice base ranked first ($\mu^*=0.204$ pp); attribute contrast, the unknown-source false probability, WOM scale and reach followed closely. Figure~\ref{fig:rq4-global} reports both strategy profiles.
 
 \begin{figure}[ht]\centering
-\includegraphics[width=.88\linewidth]{rq4-sensitivity.png}
-\caption{Sensitivity of the credibility-camouflage effect on average fake-news repost share to contact count and memory.}\label{fig:rq4}
+\includegraphics[width=.96\linewidth]{global-sensitivity.png}
+\caption{Morris global sensitivity of false-decision-share strategy effects. $\mu^*$ measures overall influence and $\sigma$ indicates non-linearity or interaction across eight trajectories, ten factors and ten stochastic seeds.}\label{fig:rq4-global}
 \end{figure}
+
+Structural sensitivity separates audience robustness from exposure robustness. Experimental-source-share intervals were positive for both credibility and combined imitation in all twelve strategy--activity--topology contrasts. For false share among decisions, combined imitation had a positive interval in five of six cells, whereas credibility camouflage did so in only one. The single imprecise combined cell was the fully active random fixed-outdegree network (0.706 pp, $-0.200$ to 1.612). Thus the broad audience conclusion survives structural changes, while false-exposure conclusions depend on strategy strength, activity and topology.
+
+\begin{figure}[ht]\centering
+\includegraphics[width=.94\linewidth]{structural-sensitivity.png}
+\caption{Structural sensitivity of false-decision-share effects across user activity and network topology. Points are paired means and bars are unadjusted 95\% Monte Carlo intervals across ten seeds.}\label{fig:rq4-structural}
+\end{figure}
+
+\begin{table}[ht]
+\centering
+\caption{Summary of local, global and structural robustness evidence for RQ4.}
+\label{tab:rq4-robustness}
+\input{tables/rq4-robustness}
+\end{table}
+
+\rqsummary{\textbf{RQ4 key finding.} Audience capture was robust across local and structural changes. False-exposure effects were less general: memory dominated the combined-strategy screen, interactions were substantial, and weak credibility camouflage seldom produced structurally precise exposure effects.}
