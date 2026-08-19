@@ -315,12 +315,13 @@ def _primary(effects: pd.DataFrame, rq: str) -> pd.DataFrame:
 
 def save_figures(effects: pd.DataFrame, output: Path) -> None:
     figures = output / "figures"; figures.mkdir(parents=True, exist_ok=True)
-    plt.rcParams.update({"font.size": 9, "figure.dpi": 150})
+    plt.rcParams.update({"font.size": 10, "axes.labelsize": 10,
+                          "axes.titlesize": 11, "figure.dpi": 150})
     q1 = _primary(effects, "RQ1").sort_values("effect")
-    fig, ax = plt.subplots(figsize=(7.2, 3.8)); y = np.arange(len(q1))
+    fig, ax = plt.subplots(figsize=(8.6, 4.4)); y = np.arange(len(q1))
     ax.errorbar(q1.effect * 100, y, xerr=[(q1.effect-q1.ci95_low)*100, (q1.ci95_high-q1.effect)*100], fmt="o", color="#9c2f2f", capsize=3)
     ax.axvline(0, color="black", lw=.7); ax.set_yticks(y, q1.condition.str.replace("_", " "))
-    ax.set_xlabel("Effect on false share among decisions (percentage points)"); ax.set_title("RQ1: imitation strategies versus no strategy")
+    ax.set_xlabel("Treatment--control difference (percentage points)"); ax.set_title("RQ1: imitation strategies versus no strategy")
     fig.tight_layout(); fig.savefig(figures / "rq1-strategy-effects.svg"); fig.savefig(figures / "rq1-strategy-effects.png", dpi=300); plt.close(fig)
 
     q2 = _primary(effects, "RQ2").copy(); q2["strategy_label"] = q2.condition.str.split("_p").str[0]
@@ -364,7 +365,7 @@ def save_rq2_window_figure(window_effects: pd.DataFrame, output: Path) -> None:
         duration = "through period 400" if duration == "permanent" else duration.removeprefix("d") + " periods"
         return f"{strategy}; start {start}; {duration}"
     labels = [descriptive_label(value) for value in conditions]
-    fig, axes = plt.subplots(1, 2, figsize=(11.4, 7.0), sharey=True)
+    fig, axes = plt.subplots(1, 2, figsize=(12.8, 8.0), sharey=True)
     colors = {"during": "#2b6f92", "post_1_25": "#b3532f"}
     offsets = {"during": -0.13, "post_1_25": 0.13}
     for ax, metric, title in zip(axes,
@@ -382,9 +383,9 @@ def save_rq2_window_figure(window_effects: pd.DataFrame, output: Path) -> None:
                         color=colors[window], capsize=2,
                         label="During campaign" if window == "during" else "Periods 1--25 after removal")
         ax.axvline(0, color="black", lw=.7); ax.set_title(title)
-        ax.set_xlabel("Paired effect (percentage points)")
+        ax.set_xlabel("Treatment--control difference (percentage points)")
     axes[0].set_yticks(np.arange(len(conditions)), labels)
-    axes[1].legend(loc="lower right", fontsize=8)
+    axes[1].legend(loc="lower right", fontsize=9)
     fig.suptitle("RQ2 matched campaign and immediate post-removal windows")
     fig.tight_layout(); fig.savefig(figures / "rq2-matched-windows.svg")
     fig.savefig(figures / "rq2-matched-windows.png", dpi=300); plt.close(fig)

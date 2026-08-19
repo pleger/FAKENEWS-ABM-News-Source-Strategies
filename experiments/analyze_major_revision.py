@@ -402,7 +402,7 @@ def figures(recommendation: pd.DataFrame, structural: pd.DataFrame,
     fig.savefig(directory / "structural-sensitivity.png", dpi=300); plt.close(fig)
 
     plot = morris[morris.metric == metric].copy()
-    fig, axes = plt.subplots(1, 2, figsize=(9, 4.8), sharex=True, sharey=True)
+    fig, axes = plt.subplots(1, 2, figsize=(10.8, 5.6), sharex=True, sharey=True)
     label_offsets = {
         ("combined", "memory_half_life"): (-5, 4),
         ("credibility", "base"): (4, 4),
@@ -417,7 +417,7 @@ def figures(recommendation: pd.DataFrame, structural: pd.DataFrame,
             alignment = "right" if (strategy, row.factor) == ("combined", "memory_half_life") else "left"
             ax.annotate(row.factor.replace("_fake_probability", " p(false)").replace("_", " "),
                         (row.mu_star * 100, row.sigma * 100), xytext=offset,
-                        textcoords="offset points", fontsize=7, ha=alignment)
+                        textcoords="offset points", fontsize=8.5, ha=alignment)
         ax.set_title(strategy.title()); ax.set_xlabel(r"Overall influence $\mu^*$ (pp)")
         ax.set_ylabel(r"Non-linearity/interaction $\sigma$ (pp)")
         ax.grid(alpha=.18)
