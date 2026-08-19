@@ -9,6 +9,7 @@
 \usepackage{microtype}
 \usepackage{lineno}
 \usepackage{setspace}
+\usepackage{placeins}
 
 
 \graphicspath{{images/}}
@@ -63,6 +64,8 @@ Paul Leger\textsuperscript{1,*}, Agust\'in Olivares\textsuperscript{1}, Oswaldo 
 \input{sections/08-declarations}
 \appendix
 \input{sections/09-odd-specification}
+\clearpage
 \bibliographystyle{plainnat}
+\providecommand{\doi}[1]{\url{https://doi.org/#1}}
 \bibliography{reference}
 \end{document}

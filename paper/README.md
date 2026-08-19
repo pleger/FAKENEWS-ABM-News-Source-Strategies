@@ -13,7 +13,7 @@ same modular manuscript. Section files live in `sections/`, tables in `tables/`,
 and figures in `images/`.
 
 Journal articles and proceedings entries in `reference.bib` include a DOI.
-The software package is cited by its public immutable GitHub release, exact
+The software package is cited by public release `v0.2.2`, its exact
 source revision and checksums. A repository DOI may additionally be minted by
 archiving that release in Zenodo or an equivalent service.
 Outstanding non-computational submission items are recorded in

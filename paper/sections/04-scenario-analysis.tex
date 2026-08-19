@@ -6,7 +6,7 @@
 
 \section{Scenario analysis}
 
-This section answers the four research questions in sequence. Each analysis distinguishes malicious-source audience outcomes from network-wide false-repost outcomes, reports uncertainty from paired seeded runs, and closes with a boxed statement of the principal result.
+This section answers the four research questions in sequence. Each analysis distinguishes experimental-source audience outcomes from network-wide false-repost outcomes, reports uncertainty from paired seeded runs, and closes with a boxed statement of the principal result.
 
 \subsection{RQ1: source-imitation strategies}
 
@@ -18,7 +18,7 @@ Period-400 unique reach is close to its ceiling: control already reaches 459.47 
 
 \begin{figure}[ht]\centering
 \includegraphics[width=.86\linewidth]{rq1-strategy-effects.png}
-\caption{Paired strategy effects on the false share among decisions. Error bars are unadjusted 95\% $t$ intervals across 30 matched seeds; Holm correction applies to reported $p$ values, not intervals.}\label{fig:rq1}
+\caption{Paired treatment--control differences in false share among actual source-selection decisions (percentage points). Error bars are unadjusted 95\% $t$ Monte Carlo intervals across 30 matched seeds; Holm correction applies to reported $p$ values, not intervals.}\label{fig:rq1}
 \end{figure}
 
 \rqsummary{\textbf{RQ1 key finding.} Multidimensional imitation produced the clearest audience gain, but malicious-source popularity and network-wide false-news exposure were not interchangeable outcomes.}
@@ -27,44 +27,44 @@ Period-400 unique reach is close to its ceiling: control already reaches 459.47 
 
 Timing and duration changed experimental-source participation during the periods in which a strategy was present. Every temporary and through-period-400 treatment had a positive treatment-window source-share estimate. The largest was the 25-period informational campaign beginning at period 1, 0.498 pp (0.381--0.615), followed by the corresponding credibility campaign, 0.271 pp (0.167--0.375). Full-run averages are smaller because they dilute these short interventions over 400 periods; they are therefore retained only as descriptive summaries, not as the principal timing estimand.
 
-Matched windows reveal dynamics hidden by the full-run mean. During the early 25-period informational campaign, false share among decisions increased by 0.213 pp (0.059--0.367); in periods 1--25 after removal it decreased by 0.212 pp ($-0.312$ to $-0.112$), then attenuated to $-0.102$ pp ($-0.230$ to 0.027) in post-removal periods 26--50 and $-0.010$ pp ($-0.027$ to 0.008) in periods 51--100. The analogous credibility campaign increased the during-window outcome by 0.121 pp (0.007--0.235) and decreased it by 0.140 pp ($-0.229$ to $-0.051$) immediately after removal. The released source-window decomposition shows that, for the early informational campaign, experimental-source selection changed by +0.498 pp during the campaign and $-0.180$ pp immediately after removal, while traditional-media selection changed by +0.525 pp in the post-removal window. One plausible explanation for the reversal is therefore changing source competition combined with rapidly decaying evidence; this decomposition does not establish a causal mechanism. Other cells were smaller and frequently imprecise.
+Matched windows reveal dynamics hidden by the full-run mean. During the early 25-period informational campaign, false share among decisions increased by 0.213 pp (0.059--0.367); in the immediate post-removal interval (periods 1--25) it decreased by 0.212 pp ($-0.312$ to $-0.112$), then attenuated to $-0.102$ pp ($-0.230$ to 0.027) in periods 26--50 and $-0.010$ pp ($-0.027$ to 0.008) in the final post-campaign interval (periods 51--100). The analogous credibility campaign increased the active-campaign outcome by 0.121 pp (0.007--0.235) and decreased it by 0.140 pp ($-0.229$ to $-0.051$) immediately after removal. For the early informational campaign, the source-window decomposition records +0.498 pp experimental-source selection during the campaign, $-0.180$ pp immediately after removal and +0.525 pp traditional-media selection in that immediate post-removal interval. Changing source competition combined with rapidly decaying evidence is one plausible explanation, not a causal identification. Other cells were smaller and frequently imprecise.
 
 \begin{figure}[ht]\centering
 \includegraphics[width=.98\linewidth]{rq2-matched-windows.png}
-\caption{Treatment-window and immediate post-removal effects for RQ2. Points are matched-seed means and bars are unadjusted 95\% $t$ intervals across 30 seeds; effects use actual decisions as denominator.}\label{fig:rq2}
+\caption{RQ2 active-campaign and immediate post-removal treatment--control effects. Points are matched-seed means and bars are unadjusted 95\% $t$ Monte Carlo intervals across 30 paired seeds; effects use actual source-selection decisions as denominator. The final post-campaign interval (periods 51--100 after removal) is reported in the text and processed data.}\label{fig:rq2}
 \end{figure}
 
 \rqsummary{\textbf{RQ2 key finding.} Camouflage increased source share while active. The strongest short campaigns produced an immediate post-removal reversal in false-decision share that largely decayed by 51--100 periods, demonstrating why matched windows are preferable to full-run averages.}
 
 \subsection{RQ3: reach restrictions and social recommendations}
 
-Recommendation policy materially changed both the baseline outcome and the effect of source imitation. Table~\ref{tab:rq3-policy} reports the combined-strategy effect on false share among decisions at 14.7\% direct reach and receiver scale $\lambda=0.5$. Immediate perfect labels provided the strongest attenuation: the combined effect was 0.149 pp (95\% CI 0.111--0.187) from a 9.821\% control mean. With recommendations disabled, the corresponding effect was 1.182 pp (1.077--1.287). Discovery-only recommendation increased it to 1.795 pp (1.610--1.979), because discovery expands visibility without providing truth-sensitive evidence.
+Recommendation policy materially changed both the baseline outcome and the effect of source imitation. Table~\ref{tab:rq3-policy} reports the combined-strategy effect on false share among decisions at 14.7\% direct reach and receiver scale $\lambda=0.5$. Perfect immediate (oracle) provided the strongest attenuation: the combined effect was 0.149 pp (95\% CI 0.111--0.187) from a 9.821\% control mean. With recommendations disabled, the corresponding effect was 1.182 pp (1.077--1.287). Discovery-only recommendation increased it to 1.795 pp (1.610--1.979), because discovery expands visibility without providing truth-sensitive evidence.
 
-Imperfect policies produced a qualitatively different result. False-only flagging yielded a 6.457 pp combined effect (6.177--6.737), fast imperfect labels 9.097 pp (8.753--9.441), and delayed imperfect labels 15.131 pp (14.724--15.538). These contrasts do not imply that labelling causes misinformation on X. They show that a modelled recommendation channel that expands source visibility can overwhelm its corrective signal when coverage, classification or timing is degraded.
+Imperfect policies produced a qualitatively different result. False-only flag yielded a 6.457 pp combined effect (6.177--6.737), Fast imperfect 9.097 pp (8.753--9.441), and Delayed imperfect 15.131 pp (14.724--15.538). These contrasts do not imply that labelling causes misinformation on X. They show that a modelled recommendation channel that expands source visibility can overwhelm its corrective signal when coverage, classification or timing is degraded.
 
-The separate 360-run diagnostic reproduction is additional to the 6,690 primary runs and makes this mechanism auditable without changing the primary estimand. It reproduced every archived run-level outcome within an absolute tolerance of $10^{-15}$ under paired seeds (zero outcome mismatches). In an active receiver-period, each user evaluated about five contact-originated candidates but retained only the single source with the strongest recommendation. Discovery occurred before label coverage. Its rate can nonetheless differ between policies because earlier policy effects alter later contact selections: combined imitation produced 6.011 newly discovered sources per 1,000 receiver-periods under false-only, fast-imperfect and delayed-imperfect policies, versus 3.205 under the perfect-immediate boundary. For false-only flagging, the combined condition penalised 37.66\% of covered recommendations, compared with 23.66\% for control; the paired difference was 13.99 pp. The difference reflects the greater frequency with which the combined source was recommended, not a change to the configured label rule. Fast-imperfect and delayed-imperfect labels realised their configured coverage, sensitivity and specificity closely, while delayed evidence delivered 92.18\% of scheduled endorsements within the 400-period horizon. Table~\ref{tab:rq3-mechanism-audit} distinguishes configured parameters from observed control and treatment rates; the public processed diagnostics retain exact counts and paired differences for discovery, coverage, classification, rewards, penalties, duplicates and ties.
+The separate 360-run diagnostic reproduction is additional to the 6,690 primary runs and makes this mechanism auditable without changing the primary estimand. It reproduced every archived run-level outcome within an absolute tolerance of $10^{-15}$ under paired seeds (zero outcome mismatches). In an active receiver-period, each user evaluated about five contact-originated candidates but retained only the single source with the strongest recommendation. Discovery occurred before label coverage. Its rate can nonetheless differ between policies because earlier policy effects alter later contact selections: combined imitation produced 6.011 newly discovered sources per 1,000 receiver-periods under False-only flag, Fast imperfect and Delayed imperfect policies, versus 3.205 under the Perfect immediate (oracle) boundary. Under False-only flag, the combined condition penalised 37.66\% of covered recommendations, compared with 23.66\% for control; the paired difference was 13.99 pp. The difference reflects the greater frequency with which the combined source was recommended, not a change to the configured label rule. Fast imperfect and Delayed imperfect labels realised their configured coverage, sensitivity and specificity closely, while delayed evidence delivered 92.18\% of scheduled endorsements within the 400-period horizon. Table~\ref{tab:rq3-mechanism-audit} distinguishes configured parameters from observed control and treatment rates; the public processed diagnostics retain exact counts and paired differences for discovery, coverage, classification, rewards, penalties, duplicates and ties.
 
-Reach effects were consequently policy dependent rather than universally monotonic. Under disabled, discovery-only, perfect-immediate and delayed-imperfect policies, the combined false-decision effect was larger at 14.7\% than at 1\% reach. Under false-only flagging and fast imperfect labels it was largest at 1\%, reflecting non-linear changes in both treatment and matched control. Zero direct reach remains an exact absorbing boundary only when recommendation cannot discover the source; it is not a general estimate of account-removal policy.
+Reach effects were consequently policy dependent rather than universally monotonic. Under Disabled, Discovery-only, Perfect immediate (oracle) and Delayed imperfect policies, the combined false-decision effect was larger at 14.7\% than at 1\% reach. Under False-only flag and Fast imperfect labels it was largest at 1\%, reflecting non-linear changes in both treatment and matched control. Zero direct reach remains an exact absorbing boundary only when recommendation cannot discover the source; it is not a general estimate of account-removal policy.
 
-Receiver magnitude also changed the contrast. Under fast imperfect labels at 14.7\% reach, the combined effect decreased from 11.152 pp at $\lambda=0.25$ to 9.097 pp at $\lambda=0.5$ and 5.215 pp at $\lambda=1$. Because magnitude affects treatment and control simultaneously, this pattern is a model interaction rather than evidence that stronger interpersonal influence is intrinsically protective.
+Receiver magnitude also changed the contrast. Under Fast imperfect labels at 14.7\% reach, the combined effect decreased from 11.152 pp at $\lambda=0.25$ to 9.097 pp at $\lambda=0.5$ and 5.215 pp at $\lambda=1$. Because magnitude affects treatment and control simultaneously, this pattern is a model interaction rather than evidence that stronger interpersonal influence is intrinsically protective.
 
 \begin{table}[ht]
 \centering
-\caption{Combined-imitation effect on false share among decisions at 14.7\% direct reach and $\lambda=0.5$. Effects are percentage-point treatment-minus-control differences across 30 paired seeds; intervals are unadjusted 95\% Monte Carlo intervals.}
+\caption{Combined-imitation effect on false share among actual source-selection decisions at 14.7\% direct reach and $\lambda=0.5$. Effects are percentage-point treatment--control differences across 30 paired seeds; intervals are unadjusted 95\% Monte Carlo intervals.}
 \label{tab:rq3-policy}
 \input{tables/rq3-policy-effects}
 \end{table}
 
 \begin{table}[ht]
 \centering
-\caption{RQ3 mechanism audit for diagnostic re-executions. Configured values are shown separately from empirical control (C) and combined-imitation treatment (T) rates, calculated from 30 seeds and 400 periods. Discovery and ties are per 1,000 receiver-periods; penalty and duplicate rates use their event-specific denominators.}
+\caption{RQ3 mechanism audit for 360 diagnostic re-executions, excluded from primary inferential comparisons. Configured values are shown separately from empirical control (C) and combined-imitation treatment (T) rates, calculated from 30 seeds and 400 periods. Discovery and ties are per 1,000 receiver-periods; penalty and duplicate rates are percentages using their event-specific denominators.}
 \label{tab:rq3-mechanism-audit}
 \input{tables/rq3-mechanism-audit}
 \end{table}
 
 \begin{figure}[ht]\centering
 \includegraphics[width=.99\linewidth]{recommendation-realism.png}
-\caption{Recommendation-policy and reach sensitivity of strategy effects on false share among decisions. Points are paired means and bars are unadjusted 95\% Monte Carlo intervals across 30 matched seeds. The common vertical scale makes policy differences directly comparable.}\label{fig:rq3}
+\caption{Recommendation-policy and reach sensitivity of strategy effects on false share among actual source-selection decisions. Points are paired means and bars are unadjusted 95\% Monte Carlo intervals across 30 matched seeds. Coverage refers to the selected receiver--recommendation event, not general classifier or label availability. The common vertical scale makes policy differences directly comparable.}\label{fig:rq3}
 \end{figure}
 
 \rqsummary{\textbf{RQ3 key finding.} Reach governance cannot be evaluated independently of recommendation quality. Perfect and immediate truth signals strongly attenuated strategy effects, whereas incomplete, inaccurate or delayed policies allowed the recommendation channel to amplify them.}
@@ -82,7 +82,7 @@ The ten-factor Morris screen extends the assessment beyond one-factor grids. For
 
 \begin{table}[ht]
 \centering
-\caption{Trajectory-cluster bootstrap and leave-one-trajectory-out Morris stability for leading combined-strategy factors.}
+\caption{Trajectory-cluster bootstrap and leave-one-trajectory-out Morris stability for leading combined-strategy factors. Bootstrap rank intervals are percentile 2.5--97.5\% intervals from 10,000 resamples that retain all ten seeds within each sampled trajectory.}
 \label{tab:morris-stability}
 \input{tables/morris-stability}
 \end{table}
@@ -91,7 +91,7 @@ Structural sensitivity separates audience robustness from exposure robustness. E
 
 \begin{figure}[ht]\centering
 \includegraphics[width=.94\linewidth]{structural-sensitivity.png}
-\caption{Structural sensitivity of false-decision-share (top row) and participation (bottom row) effects across user activity and network topology. Points are paired means and bars are unadjusted 95\% Monte Carlo intervals across ten seeds.}\label{fig:rq4-structural}
+\caption{Structural sensitivity of false-decision-share (top row) and participation (bottom row) effects across user activity and network topology. Points are paired means and bars are unadjusted 95\% Monte Carlo intervals across ten seeds. Participation effects are exactly zero to numerical precision because activity is imposed symmetrically within each treatment--control pair.}\label{fig:rq4-structural}
 \end{figure}
 
 \begin{table}[ht]

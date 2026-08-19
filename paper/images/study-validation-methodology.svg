@@ -5,8 +5,8 @@
   <defs>
     <style>
       .canvas { fill: #f7f9fb; }
-      .title { fill: #142b3d; font: 700 42px Arial, Helvetica, sans-serif; }
-      .subtitle { fill: #526575; font: 21px Arial, Helvetica, sans-serif; }
+      .title { fill: #142b3d; font: 700 46px Arial, Helvetica, sans-serif; }
+      .subtitle { fill: #526575; font: 24px Arial, Helvetica, sans-serif; }
       .panel { fill: #ffffff; stroke: #cad4dc; stroke-width: 2.2; }
       .evidence { fill: #eef5fa; stroke: #2c6e9b; stroke-width: 2.5; }
       .verify { fill: #edf7f4; stroke: #2a7f75; stroke-width: 2.5; }
@@ -16,21 +16,21 @@
       .report { fill: #f0f4f6; stroke: #607789; stroke-width: 2.5; }
       .phaseNumber { fill: #17324d; }
       .phaseNumberText { fill: #ffffff; font: 700 20px Arial, Helvetica, sans-serif; text-anchor: middle; }
-      .nodeTitle { fill: #17324d; font: 700 24px Arial, Helvetica, sans-serif; }
-      .nodeText { fill: #334a5b; font: 18px Arial, Helvetica, sans-serif; }
-      .small { fill: #526575; font: 16px Arial, Helvetica, sans-serif; }
-      .rqTitle { fill: #17324d; font: 700 18px Arial, Helvetica, sans-serif; }
-      .rqText { fill: #3e5363; font: 16px Arial, Helvetica, sans-serif; }
+      .nodeTitle { fill: #17324d; font: 700 26px Arial, Helvetica, sans-serif; }
+      .nodeText { fill: #334a5b; font: 19px Arial, Helvetica, sans-serif; }
+      .small { fill: #526575; font: 17px Arial, Helvetica, sans-serif; }
+      .rqTitle { fill: #17324d; font: 700 19px Arial, Helvetica, sans-serif; }
+      .rqText { fill: #3e5363; font: 17px Arial, Helvetica, sans-serif; }
       .arrow { fill: none; stroke: #41596b; stroke-width: 3.2; stroke-linecap: round; stroke-linejoin: round; marker-end: url(#arrow); }
       .arrowDashed { fill: none; stroke: #718494; stroke-width: 2.5; stroke-dasharray: 9 7; marker-end: url(#arrowMuted); }
       .gate { fill: #ffffff; stroke: #b23a48; stroke-width: 2.3; }
       .gateText { fill: #8e2e3a; font: 700 15px Arial, Helvetica, sans-serif; text-anchor: middle; }
       .badge { fill: #e8eef2; stroke: #c5d0d8; stroke-width: 1.5; }
-      .badgeText { fill: #334a5b; font: 700 16px Arial, Helvetica, sans-serif; text-anchor: middle; }
+      .badgeText { fill: #334a5b; font: 700 17px Arial, Helvetica, sans-serif; text-anchor: middle; }
       .scope { fill: #fffdf5; stroke: #c4a24f; stroke-width: 2; }
       .scopeTitle { fill: #735d23; font: 700 18px Arial, Helvetica, sans-serif; }
-      .scopeText { fill: #594f35; font: 16px Arial, Helvetica, sans-serif; }
-      .footer { fill: #42596a; font: 16px Arial, Helvetica, sans-serif; }
+      .scopeText { fill: #594f35; font: 17px Arial, Helvetica, sans-serif; }
+      .footer { fill: #42596a; font: 17px Arial, Helvetica, sans-serif; }
     </style>
     <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#41596b"/></marker>
     <marker id="arrowMuted" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#718494"/></marker>

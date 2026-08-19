@@ -5,8 +5,8 @@
   <defs>
     <style>
       .canvas { fill: #f7f9fb; }
-      .title { fill: #142b3d; font: 700 42px Arial, Helvetica, sans-serif; }
-      .subtitle { fill: #526575; font: 21px Arial, Helvetica, sans-serif; }
+      .title { fill: #142b3d; font: 700 46px Arial, Helvetica, sans-serif; }
+      .subtitle { fill: #526575; font: 24px Arial, Helvetica, sans-serif; }
       .panel { fill: #ffffff; stroke: #cad4dc; stroke-width: 2.2; }
       .evidence { fill: #eef5fa; stroke: #2c6e9b; stroke-width: 2.5; }
       .verify { fill: #edf7f4; stroke: #2a7f75; stroke-width: 2.5; }
@@ -16,21 +16,21 @@
       .report { fill: #f0f4f6; stroke: #607789; stroke-width: 2.5; }
       .phaseNumber { fill: #17324d; }
       .phaseNumberText { fill: #ffffff; font: 700 20px Arial, Helvetica, sans-serif; text-anchor: middle; }
-      .nodeTitle { fill: #17324d; font: 700 24px Arial, Helvetica, sans-serif; }
-      .nodeText { fill: #334a5b; font: 18px Arial, Helvetica, sans-serif; }
-      .small { fill: #526575; font: 16px Arial, Helvetica, sans-serif; }
-      .rqTitle { fill: #17324d; font: 700 18px Arial, Helvetica, sans-serif; }
-      .rqText { fill: #3e5363; font: 16px Arial, Helvetica, sans-serif; }
+      .nodeTitle { fill: #17324d; font: 700 26px Arial, Helvetica, sans-serif; }
+      .nodeText { fill: #334a5b; font: 19px Arial, Helvetica, sans-serif; }
+      .small { fill: #526575; font: 17px Arial, Helvetica, sans-serif; }
+      .rqTitle { fill: #17324d; font: 700 19px Arial, Helvetica, sans-serif; }
+      .rqText { fill: #3e5363; font: 17px Arial, Helvetica, sans-serif; }
       .arrow { fill: none; stroke: #41596b; stroke-width: 3.2; stroke-linecap: round; stroke-linejoin: round; marker-end: url(#arrow); }
       .arrowDashed { fill: none; stroke: #718494; stroke-width: 2.5; stroke-dasharray: 9 7; marker-end: url(#arrowMuted); }
       .gate { fill: #ffffff; stroke: #b23a48; stroke-width: 2.3; }
       .gateText { fill: #8e2e3a; font: 700 15px Arial, Helvetica, sans-serif; text-anchor: middle; }
       .badge { fill: #e8eef2; stroke: #c5d0d8; stroke-width: 1.5; }
-      .badgeText { fill: #334a5b; font: 700 16px Arial, Helvetica, sans-serif; text-anchor: middle; }
+      .badgeText { fill: #334a5b; font: 700 17px Arial, Helvetica, sans-serif; text-anchor: middle; }
       .scope { fill: #fffdf5; stroke: #c4a24f; stroke-width: 2; }
       .scopeTitle { fill: #735d23; font: 700 18px Arial, Helvetica, sans-serif; }
-      .scopeText { fill: #594f35; font: 16px Arial, Helvetica, sans-serif; }
-      .footer { fill: #42596a; font: 16px Arial, Helvetica, sans-serif; }
+      .scopeText { fill: #594f35; font: 17px Arial, Helvetica, sans-serif; }
+      .footer { fill: #42596a; font: 17px Arial, Helvetica, sans-serif; }
     </style>
     <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#41596b"/></marker>
     <marker id="arrowMuted" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#718494"/></marker>
@@ -40,8 +40,8 @@
     <rect class="canvas" width="1800" height="1240"/>
     <text class="title" x="60" y="64">Model validation and experimental methodology</text>
     <text class="subtitle" x="60" y="101">From survey-informed assumptions to reproducible evidence on malicious news-source strategies.</text>
-    <rect class="badge" x="1320" y="43" width="190" height="38" rx="19"/><text class="badgeText" x="1415" y="68">79 conditions</text>
-    <rect class="badge" x="1525" y="43" width="215" height="38" rx="19"/><text class="badgeText" x="1632" y="68">2,010 seeded runs</text>
+    <rect class="badge" x="1320" y="43" width="190" height="38" rx="19"/><text class="badgeText" x="1415" y="68">423 conditions</text>
+    <rect class="badge" x="1525" y="43" width="215" height="38" rx="19"/><text class="badgeText" x="1632" y="68">6,690 primary runs</text>
   </g>
 
   <g id="phase-1-model-specification">
@@ -66,15 +66,15 @@
     <text class="nodeTitle" x="553" y="203">Verification and validation</text>
     <text class="nodeText" x="510" y="250">Conceptual validity</text>
     <text class="small" x="510" y="278">entities, assumptions, causal logic,</text>
-    <text class="small" x="510" y="301">and expert review</text>
+    <text class="small" x="510" y="301">boundary tests, and explicit limitations</text>
     <text class="nodeText" x="510" y="343">Computational verification</text>
     <text class="small" x="510" y="371">automated tests, invariants, timing,</text>
     <text class="small" x="510" y="394">and backward compatibility</text>
-    <text class="nodeText" x="510" y="436">Behavioural plausibility</text>
-    <text class="small" x="510" y="464">baseline patterns, social-influence</text>
-    <text class="small" x="510" y="487">direction, publication rates</text>
+    <text class="nodeText" x="510" y="436">Qualified validation scope</text>
+    <text class="small" x="510" y="464">survey-input validity and sensitivity;</text>
+    <text class="small" x="510" y="487">no predictive validation against X</text>
     <rect class="badge" x="510" y="510" width="300" height="28" rx="14"/>
-    <text class="badgeText" x="660" y="530">Predefined acceptance criteria</text>
+    <text class="badgeText" x="660" y="530">Comparative mechanism use only</text>
   </g>
 
   <g id="phase-3-study-design">
@@ -85,20 +85,20 @@
     <text class="rqText" x="935" y="275">6 conditions × 30 seeds = 180 runs</text>
     <text class="rqTitle" x="935" y="319">RQ2 · Timing and duration</text>
     <text class="rqText" x="935" y="344">19 conditions × 30 seeds = 570 runs</text>
-    <text class="rqTitle" x="935" y="380">RQ3 · Reach mitigation</text>
-    <text class="rqText" x="935" y="404">reach restrictions × social recommendations</text>
-    <text class="rqText" x="935" y="427">30 conditions × 30 seeds = 900 runs</text>
+    <text class="rqTitle" x="935" y="380">RQ3 · Reach and recommendation</text>
+    <text class="rqText" x="935" y="404">92 conditions × 30 seeds</text>
+    <text class="rqText" x="935" y="427">= 2,760 primary runs</text>
     <text class="rqTitle" x="935" y="465">RQ4 · Sensitivity and robustness</text>
-    <text class="rqText" x="935" y="490">24 conditions × 15 seeds = 360 runs</text>
+    <text class="rqText" x="935" y="490">306 conditions = 3,180 primary runs</text>
     <rect class="badge" x="935" y="510" width="300" height="28" rx="14"/>
-    <text class="badgeText" x="1085" y="530">Treatment–control pairing</text>
+    <text class="badgeText" x="1085" y="530">+ 360 diagnostic re-executions</text>
   </g>
 
   <g id="phase-4-execution">
     <rect class="execute" x="1330" y="155" width="415" height="405" rx="18"/>
     <circle class="phaseNumber" cx="1367" cy="195" r="23"/><text class="phaseNumberText" x="1367" y="202">4</text>
     <text class="nodeTitle" x="1403" y="203">Monte Carlo simulation</text>
-    <text class="nodeText" x="1360" y="250">Independent replications</text>
+    <text class="nodeText" x="1360" y="250">Seeded stochastic replications</text>
     <text class="small" x="1360" y="278">each condition is evaluated across</text>
     <text class="small" x="1360" y="301">multiple stochastic realisations</text>
     <text class="nodeText" x="1360" y="343">Common random numbers</text>
@@ -107,7 +107,7 @@
     <text class="small" x="1360" y="441">conditions, seeds, completion status,</text>
     <text class="small" x="1360" y="464">and outputs are recorded for every run</text>
     <rect class="badge" x="1360" y="497" width="325" height="38" rx="19"/>
-    <text class="badgeText" x="1522" y="522">Complete raw output for every run</text>
+    <text class="badgeText" x="1522" y="522">Processed data and checksums</text>
   </g>
 
   <path class="arrow" d="M445 358 H475"/>
@@ -139,7 +139,7 @@
     <circle class="phaseNumber" cx="942" cy="800" r="23"/><text class="phaseNumberText" x="942" y="807">6</text>
     <text class="nodeTitle" x="978" y="808">Metrics and paired analysis</text>
     <text class="nodeText" x="935" y="855">Primary metric</text>
-    <text class="small" x="955" y="883">realised fake-repost share</text>
+    <text class="small" x="955" y="883">false share among actual decisions</text>
     <text class="nodeText" x="935" y="925">Secondary metrics</text>
     <text class="small" x="955" y="953">target selection, cumulative burden,</text>
     <text class="small" x="955" y="976">unique reposters, persistence</text>
@@ -166,7 +166,7 @@
     <text class="nodeText" x="85" y="855">• model and study specification</text>
     <text class="nodeText" x="85" y="893">• scenario definitions and parameters</text>
     <text class="nodeText" x="85" y="931">• random seeds and provenance records</text>
-    <text class="nodeText" x="85" y="969">• raw results by research question</text>
+    <text class="nodeText" x="85" y="969">• processed run-level results and checksums</text>
     <text class="nodeText" x="85" y="1007">• analysis code and publication figures</text>
     <rect class="badge" x="85" y="1034" width="300" height="32" rx="16"/>
     <text class="badgeText" x="235" y="1056">Public versioned release</text>

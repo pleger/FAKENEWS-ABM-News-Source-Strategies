@@ -3,19 +3,21 @@
 \caption{Complete configuration of named RQ3 recommendation policies. Coverage is sampled for each selected receiver--recommendation event. Discovery occurs before coverage; therefore an uncovered or ignored recommendation can still reveal a source.}
 \label{tab:rq3-policy-configurations}
 \small
-\begin{tabular}{lcccccccc}
+\begin{tabular}{lccccccc}
 \toprule
-Policy & WOM & $g_F$ & $g_T$ & $c$ & $s_e$ & $s_p$ & $d$ & $\lambda$ \\
+Policy & \multicolumn{2}{c}{WOM effect} & Coverage & \multicolumn{2}{c}{Classification accuracy} & Delay & Receiver \\
+\cmidrule(lr){2-3}\cmidrule(lr){5-6}
+ & $g_F$ & $g_T$ & $c$ (\%) & $s_e$ (\%) & $s_p$ (\%) & $d$ (periods) & $\lambda$ \\
 \midrule
-Disabled & off & -- & -- & -- & -- & -- & -- & .50 \\
-Discovery only & on & 0 & 0 & 1.00 & 1.00 & 1.00 & 0 & .50 \\
-False-only flag & on & $-1$ & 0 & 1.00 & 1.00 & 1.00 & 0 & .50 \\
-Perfect immediate (oracle) & on & $-1$ & $+1$ & 1.00 & 1.00 & 1.00 & 0 & .50 \\
-Fast imperfect & on & $-1$ & 0 & .80 & .90 & .95 & 5 & .50 \\
-Delayed imperfect & on & $-1$ & 0 & .50 & .75 & .90 & 25 & .50 \\
+Disabled & -- & -- & -- & -- & -- & -- & .50 \\
+Discovery only & 0 & 0 & 100 & 100 & 100 & 0 & .50 \\
+False-only flag & $-1$ & 0 & 100 & 100 & 100 & 0 & .50 \\
+Perfect immediate (oracle) & $-1$ & $+1$ & 100 & 100 & 100 & 0 & .50 \\
+Fast imperfect & $-1$ & 0 & 80 & 90 & 95 & 5 & .50 \\
+Delayed imperfect & $-1$ & 0 & 50 & 75 & 90 & 25 & .50 \\
 \bottomrule
 \end{tabular}
 \vspace{1mm}
 
-\footnotesize $g_F$ and $g_T$ are the effects assigned to an observed false or true label: $-1$ penalises, 0 ignores and $+1$ rewards. Sensitivity $s_e$ is $P(\text{observed false}\mid\text{false})$; specificity $s_p$ is $P(\text{observed true}\mid\text{true})$. Receiver-scale experiments additionally use $\lambda\in\{.25,1.00\}$ with the imperfect-fast policy.
+\footnotesize $g_F$ and $g_T$ are WOM effects assigned to an observed false or true label: $-1$ penalises, 0 ignores and $+1$ rewards. Sensitivity $s_e$ is $P(\text{observed false}\mid\text{false})$; specificity $s_p$ is $P(\text{observed true}\mid\text{true})$. Receiver-scale experiments additionally use $\lambda\in\{.25,1.00\}$ with Fast imperfect.
 \end{table*}

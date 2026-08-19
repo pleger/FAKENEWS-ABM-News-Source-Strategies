@@ -218,7 +218,7 @@ Build a distributable package:
 make dist
 ```
 
-The package is written to `dist/FAKENEWS-ABM-0.2.1.zip`. After unzipping it, run:
+The package is written to `dist/FAKENEWS-ABM-0.2.2.zip`. After unzipping it, run:
 
 ```sh
 bin/fakenews-abm --input FAKENEWS_BASELINE --no-gui

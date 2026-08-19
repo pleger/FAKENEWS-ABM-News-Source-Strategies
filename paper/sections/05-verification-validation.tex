@@ -1,6 +1,6 @@
 \section{Verification and validation}
 
-This section follows the separation proposed by \citet{sargent2013}: conceptual-model validation, input-data validation, computerised-model verification and operational validation are different claims. It reports the evidence available for each and defines the qualified domain of use. No undocumented expert panel or external acceptance criterion is claimed.
+This section follows the separation proposed by \citet{sargent2013}: conceptual-model validation, input-data validation, computerised-model verification and operational validation are different claims. It first documents internal implementation and output checks, then the conceptual and input-data evidence, and finally uncertainty analysis and the absence of predictive external validation. No undocumented expert panel or external acceptance criterion is claimed.
 
 \subsection{Computerised-model and analysis verification}
 
@@ -8,7 +8,9 @@ The software separates input loading, source and user behaviour, scenario transf
 
 Automated tests cover configuration defaults and fatal validation, hard-window and exponential memory, recommendation outcomes, imperfect-label configuration, strategy resolution, temporary restoration, seeded reproducibility, source publication ordering, activity, topology configuration, output reporting, study planning and backward compatibility. A regression test specifically verifies that source-attribute contrast survives initialization and reset. Analysis tests cover seed pairing, intervals, denominator construction and matched time windows.
 
-The output-validation layer checks unique condition--seed identifiers, completed status, 400 ordered periods, binary publication states, valid decision totals, expected condition counts and bounds for every share. It passed for all 4,680 revision workbooks: 1,860 RQ3 runs across 62 conditions and 2,820 RQ4 runs across 282 conditions, with no duplicate condition--seed keys. Together with the 2,010 reanalysed runs, the staged design contains 6,690 runs across 423 conditions. A separate 360-run RQ3 diagnostic reproduction passed period-level accounting checks and reproduced every archived primary outcome exactly under the corresponding seed and condition. Processed artefacts include checksums and reconstructable decision totals. These checks demonstrate consistency with the specification; they do not demonstrate correspondence with X.
+The output-validation layer checks unique condition--seed identifiers, completed status, 400 ordered periods, binary publication states, valid decision totals, expected condition counts and bounds for every share. It passed for all 4,680 revision workbooks: 1,860 RQ3 runs across 62 conditions and 2,820 RQ4 runs across 282 conditions, with no duplicate condition--seed keys. Together with the 2,010 reanalysed runs, the staged design contains 6,690 runs across 423 conditions.
+
+A separate 360-run RQ3 diagnostic reproduction passed period-level accounting checks and reproduced every archived primary outcome within an absolute tolerance of $10^{-15}$ under the corresponding seed and condition. Processed artefacts include checksums and reconstructable decision totals. These checks demonstrate consistency with the specification; they do not demonstrate correspondence with X.
 
 \subsection{Conceptual-model validation}
 
